@@ -1,0 +1,124 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [
+  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"}
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Framework :: Pydantic :: 2",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Typing :: Typed"
+]
+dependencies = [
+  "esak >= 1.3.2",
+  "himon >= 0.5.0",
+  "mokkari >= 3.0.1",
+  "natsort >= 8.4.0",
+  "pillow >= 10.2.0",
+  "pydantic >= 2.6.4",
+  "rarfile >= 4.1",
+  "rich >= 13.7.1",
+  "simyan >= 1.2.0",
+  "tomli >= 2.0.1; python_version < \"3.11\"",
+  "tomli-w >= 1.0.0",
+  "xmltodict >= 0.13.0"
+]
+description = "Unify and organize your comic collection."
+dynamic = ["version"]
+keywords = ["comic", "comics", "metadata", "tagger", "tagging"]
+license = {text = "MIT"}
+name = "perdoo"
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[project.optional-dependencies]
+cb7 = [
+  "py7zr >= 0.21.0"
+]
+dev = [
+  "pre-commit >= 3.6.2"
+]
+
+[project.scripts]
+Perdoo = "perdoo.__main__:main"
+
+[project.urls]
+Documentation = "https://github.com/ComicCorps/Perdoo#readme"
+Homepage = "https://pypi.org/project/Perdoo"
+Issues = "https://github.com/ComicCorps/Perdoo/issues"
+Source = "https://github.com/ComicCorps/Perdoo"
+
+[tool.hatch.version]
+path = "perdoo/__init__.py"
+
+[tool.ruff]
+fix = true
+line-length = 100
+output-format = "grouped"
+show-fixes = true
+unsafe-fixes = true
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "native"
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+ignore = [
+  "C90",
+  "COM812",
+  "D",
+  "DTZ",
+  "EM",
+  "ERA001",
+  "EXE",
+  "FBT",
+  "PLR0912",
+  "PLR0915",
+  "PLR2004",
+  "TCH",
+  "TRY003",
+  "TRY300"
+]
+ignore-init-module-imports = true
+select = ["ALL"]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+mypy-init-return = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "pydantic.field_validator"]
+
+[tool.ruff.lint.per-file-ignores]
+"perdoo/models/_base.py" = ["PLW2901"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
