@@ -128,6 +128,7 @@ def add_issue_to_metron_info(issue: Issue, metron_info: MetronInfo) -> None:
     metron_info.summary = issue.summary
     metron_info.teams = [Resource(id=x.id, value=x.name) for x in issue.teams]
     metron_info.collection_title = issue.name
+    metron_info.url = issue.site_url
 
 
 def add_issue_to_comic_info(issue: Issue, comic_info: ComicInfo) -> None:
@@ -142,6 +143,7 @@ def add_issue_to_comic_info(issue: Issue, comic_info: ComicInfo) -> None:
     comic_info.summary = issue.summary
     comic_info.team_list = [x.name for x in issue.teams]
     comic_info.title = issue.name
+    comic_info.web = issue.site_url
 
 
 class Comicvine(BaseService[Publisher, Volume, Issue]):

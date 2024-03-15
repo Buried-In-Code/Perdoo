@@ -91,6 +91,10 @@ class Format(Enum):
         for entry in Format:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
+        # region Manual matches
+        if value.casefold() == "Limited Series".casefold():
+            return Format.LIMITED
+        # endregion
         raise ValueError(f"'{value}' isnt a valid metron_info.Format")
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
