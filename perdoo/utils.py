@@ -417,7 +417,8 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
         number=metadata.issue.number,
         summary=metadata.issue.summary,
         notes=metadata.notes,
-        cover_date=metadata.issue.cover_date or DatePrompt.ask("Cover date", default=date.today()),
+        cover_date=metadata.issue.cover_date
+        or DatePrompt.ask("Cover date", default=date.today(), console=CONSOLE),
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         genres=genres,

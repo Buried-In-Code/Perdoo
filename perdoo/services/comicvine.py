@@ -108,7 +108,7 @@ def add_issue_to_metron_info(issue: Issue, metron_info: MetronInfo) -> None:
     metron_info.arcs = [Arc(id=x.id, name=x.name) for x in issue.story_arcs]
     metron_info.characters = [Resource(id=x.id, value=x.name) for x in issue.characters]
     metron_info.cover_date = (
-        issue.cover_date or DatePrompt.ask("Cover Date", default=date.today()),
+        issue.cover_date or DatePrompt.ask("Cover Date", default=date.today(), console=CONSOLE),
     )
     credits_ = []
     for x in issue.creators:
@@ -144,7 +144,7 @@ def add_issue_to_comic_info(issue: Issue, comic_info: ComicInfo) -> None:
     comic_info.title = issue.name
 
 
-class Comicvine(BaseService):
+class Comicvine(BaseService[Publisher, Volume, Issue]):
     def __init__(self: Comicvine, settings: ComicvineSettings):
         cache = SQLiteCache(path=get_cache_dir() / "simyan.sqlite", expiry=14)
         self.session = Simyan(api_key=settings.api_key, cache=cache)
@@ -171,9 +171,9 @@ class Comicvine(BaseService):
             LOGGER.exception("")
             return None
 
-    def fetch_publisher(
-        self: Comicvine, metadata: Metadata, metron_info: MetronInfo, comic_info: ComicInfo
-    ) -> Publisher | None:
+    def _get_publisher_id(
+        self: Comicvine, metadata: Metadata, metron_info: MetronInfo
+    ) -> int | None:
         publisher_id = next(
             (
                 x.value
@@ -181,15 +181,17 @@ class Comicvine(BaseService):
                 if x.source == Source.COMICVINE
             ),
             None,
-        )
-        publisher_id = publisher_id or (
+        ) or (
             metron_info.publisher.id
             if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
             else None
         )
-        publisher_id = publisher_id or self._search_publishers(
-            title=metadata.issue.series.publisher.title
-        )
+        return publisher_id or self._search_publishers(title=metadata.issue.series.publisher.title)
+
+    def fetch_publisher(
+        self: Comicvine, metadata: Metadata, metron_info: MetronInfo, comic_info: ComicInfo
+    ) -> Publisher | None:
+        publisher_id = self._get_publisher_id(metadata=metadata, metron_info=metron_info)
         if not publisher_id:
             return None
         try:
@@ -233,6 +235,20 @@ class Comicvine(BaseService):
             LOGGER.exception("")
             return None
 
+    def _get_series_id(
+        self: Comicvine, publisher_id: int, metadata: Metadata, metron_info: MetronInfo
+    ) -> int | None:
+        series_id = next(
+            (x.value for x in metadata.issue.series.resources if x.source == Source.COMICVINE), None
+        ) or (
+            metron_info.series.id
+            if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
+            else None
+        )
+        return series_id or self._search_series(
+            publisher_id=publisher_id, title=metadata.issue.series.title
+        )
+
     def fetch_series(
         self: Comicvine,
         metadata: Metadata,
@@ -240,16 +256,8 @@ class Comicvine(BaseService):
         comic_info: ComicInfo,
         publisher_id: int,
     ) -> Volume | None:
-        series_id = next(
-            (x.value for x in metadata.issue.series.resources if x.source == Source.COMICVINE), None
-        )
-        series_id = series_id or (
-            metron_info.series.id
-            if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
-            else None
-        )
-        series_id = series_id or self._search_series(
-            publisher_id=publisher_id, title=metadata.issue.series.title
+        series_id = self._get_series_id(
+            publisher_id=publisher_id, metadata=metadata, metron_info=metron_info
         )
         if not series_id:
             return None
@@ -294,6 +302,18 @@ class Comicvine(BaseService):
             LOGGER.exception("")
             return None
 
+    def _get_issue_id(
+        self: Comicvine, series_id: int, metadata: Metadata, metron_info: MetronInfo
+    ) -> int | None:
+        issue_id = next(
+            (x.value for x in metadata.issue.resources if x.source == Source.COMICVINE), None
+        ) or (
+            metron_info.id.value
+            if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
+            else None
+        )
+        return issue_id or self._search_issues(series_id=series_id, number=metadata.issue.number)
+
     def fetch_issue(
         self: Comicvine,
         metadata: Metadata,
@@ -301,16 +321,8 @@ class Comicvine(BaseService):
         comic_info: ComicInfo,
         series_id: int,
     ) -> Issue | None:
-        issue_id = next(
-            (x.value for x in metadata.issue.resources if x.source == Source.COMICVINE), None
-        )
-        issue_id = issue_id or (
-            metron_info.id.value
-            if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
-            else None
-        )
-        issue_id = issue_id or self._search_issues(
-            series_id=series_id, number=metadata.number or metron_info.number or comic_info.number
+        issue_id = self._get_issue_id(
+            series_id=series_id, metadata=metadata, metron_info=metron_info
         )
         if not issue_id:
             return None
