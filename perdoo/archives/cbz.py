@@ -25,9 +25,8 @@ class CBZArchive(BaseArchive):
 
     def read_file(self: CBZArchive, filename: str) -> bytes:
         try:
-            with zipfile.ZipFile(self.path, "r") as zip_file:  # noqa: SIM117
-                with zip_file.open(filename) as file:
-                    return file.read()
+            with zipfile.ZipFile(self.path, "r") as zip_file, zip_file.open(filename) as file:
+                return file.read()
         except (zipfile.BadZipFile, KeyError):
             LOGGER.exception("Unable to read %s", self.path.name)
             return b""

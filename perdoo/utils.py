@@ -12,14 +12,15 @@ __all__ = [
 
 import logging
 import re
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 from natsort import humansorted, ns
 from rich.prompt import Prompt
 
+from perdoo import IMAGE_EXTENSIONS
 from perdoo.archives import BaseArchive
-from perdoo.console import CONSOLE
+from perdoo.console import CONSOLE, DatePrompt
 from perdoo.models import ComicInfo, Metadata, MetronInfo
 
 LOGGER = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ def sanitize(value: str | None) -> str | None:
 
 
 def metron_to_metadata(metron_info: MetronInfo) -> Metadata:
+    LOGGER.info("Generating Metadata from MetronInfo details")
     from perdoo.models.metadata import (
         Credit,
         Format,
@@ -63,12 +65,12 @@ def metron_to_metadata(metron_info: MetronInfo) -> Metadata:
     )
 
     try:
-        source = Source.load(metron_info.id.source.value) if metron_info.id else None
+        source = Source.load(value=metron_info.id.source.value) if metron_info.id else None
     except ValueError as err:
         LOGGER.warning(err)
         source = None
     try:
-        format_ = Format.load(metron_info.series.format_.value)
+        format_ = Format.load(value=metron_info.series.format_.value)
     except ValueError as err:
         LOGGER.warning(err)
         format_ = Format.COMIC
@@ -76,7 +78,7 @@ def metron_to_metadata(metron_info: MetronInfo) -> Metadata:
     pages = []
     for x in metron_info.pages:
         try:
-            type_ = PageType.load(x.type_.value)
+            type_ = PageType.load(value=x.type_.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -180,6 +182,7 @@ def metron_to_metadata(metron_info: MetronInfo) -> Metadata:
 
 
 def comic_to_metadata(comic_info: ComicInfo) -> Metadata:
+    LOGGER.info("Generating Metadata from ComicInfo details")
     from perdoo.models.metadata import (
         Credit,
         Format,
@@ -194,7 +197,7 @@ def comic_to_metadata(comic_info: ComicInfo) -> Metadata:
     )
 
     try:
-        format_ = Format.load(comic_info.format_) if comic_info.format_ else Format.COMIC
+        format_ = Format.load(value=comic_info.format_) if comic_info.format_ else Format.COMIC
     except ValueError as err:
         LOGGER.warning(err)
         format_ = Format.COMIC
@@ -202,7 +205,7 @@ def comic_to_metadata(comic_info: ComicInfo) -> Metadata:
     pages = []
     for x in comic_info.pages:
         try:
-            type_ = PageType.load(x.type_.value)
+            type_ = PageType.load(value=x.type_.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -257,6 +260,7 @@ def comic_to_metadata(comic_info: ComicInfo) -> Metadata:
 
 
 def create_metadata(archive: BaseArchive) -> Metadata:
+    LOGGER.info("Manually generating Metadata details")
     from perdoo.models.metadata import Issue, Meta, Series, TitledResource, Tool
 
     return Metadata(
@@ -266,13 +270,16 @@ def create_metadata(archive: BaseArchive) -> Metadata:
                 title=Prompt.ask("Series title", console=CONSOLE),
             ),
             number=Prompt.ask("Issue number", console=CONSOLE),
-            page_count=len([x for x in archive.list_filenames() if x.endswith(".jpg")]),
+            page_count=len(
+                [x for x in archive.list_filenames() if Path(x).suffix in IMAGE_EXTENSIONS]
+            ),
         ),
         meta=Meta(date_=date.today(), tool=Tool(value="Manual")),
     )
 
 
 def metadata_to_metron(metadata: Metadata) -> MetronInfo:
+    LOGGER.info("Generating MetronInfo from Metadata details")
     from perdoo.models.metadata import Resource as MetadataResource, Source as MetadataSource
     from perdoo.models.metron_info import (
         Arc,
@@ -312,7 +319,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
     )
 
     try:
-        format_ = Format.load(metadata.issue.format_.value)
+        format_ = Format.load(value=metadata.issue.format_.value)
     except ValueError as err:
         LOGGER.warning(err)
         format_ = None
@@ -320,7 +327,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
     genres = []
     for genre in metadata.issue.series.genres:
         try:
-            value = Genre.load(genre.title)
+            value = Genre.load(value=genre.title)
         except ValueError as err:
             LOGGER.warning(err)
             continue
@@ -335,7 +342,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
         roles = []
         for role in credit.roles:
             try:
-                value = Role.load(role.title)
+                value = Role.load(value=role.title)
             except ValueError as err:
                 LOGGER.warning(err)
                 value = Role.OTHER
@@ -360,7 +367,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
     pages = []
     for page in metadata.pages:
         try:
-            type_ = PageType.load(page.type_.value)
+            type_ = PageType.load(value=page.type_.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -410,8 +417,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
         number=metadata.issue.number,
         summary=metadata.issue.summary,
         notes=metadata.notes,
-        cover_date=metadata.issue.cover_date
-        or datetime.strptime(Prompt.ask("Cover date (yyyy-mm-dd)"), "%Y-%m-%d").date(),
+        cover_date=metadata.issue.cover_date or DatePrompt.ask("Cover date", default=date.today()),
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         genres=genres,
@@ -450,12 +456,13 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
 
 
 def metadata_to_comic(metadata: Metadata) -> ComicInfo:
+    LOGGER.info("Generating ComicInfo from Metadata details")
     from perdoo.models.comic_info import Page, PageType
 
     pages = []
     for page in metadata.pages:
         try:
-            type_ = PageType.load(page.type_.value)
+            type_ = PageType.load(value=page.type_.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -478,9 +485,9 @@ def metadata_to_comic(metadata: Metadata) -> ComicInfo:
         summary=metadata.issue.summary,
         notes=metadata.notes,
         publisher=metadata.issue.series.publisher.title,
-        page_count=metadata.iasue.page_count,
+        page_count=metadata.issue.page_count,
         language_iso=metadata.issue.language,
-        format_=metadata.issue.format.value,
+        format_=metadata.issue.format_.value,
         pages=pages,
     )
     output.cover_date = metadata.issue.cover_date or metadata.issue.store_date

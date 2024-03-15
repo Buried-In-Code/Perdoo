@@ -36,9 +36,8 @@ class CB7Archive(BaseArchive):
 
     def read_file(self: CB7Archive, filename: str) -> bytes:
         try:
-            with py7zr.SevenZipFile(self.path, "r") as archive:  # noqa: SIM117
-                with archive.open(filename) as file:
-                    return file.read()
+            with py7zr.SevenZipFile(self.path, "r") as archive, archive.open(filename) as file:
+                return file.read()
         except (py7zr.Bad7zFile, KeyError):
             LOGGER.exception("Unable to read %s", self.path.name)
             return b""
@@ -61,7 +60,7 @@ class CB7Archive(BaseArchive):
         try:
             with py7zr.SevenZipFile(output_file, "w") as archive:
                 for file in list_files(path=src):
-                    archive.write(file, arcname=file.relative_to(src))
+                    archive.write(file, arcname=str(file.relative_to(src)))
             return output_file
         except py7zr.Bad7zFile:
             LOGGER.exception("")

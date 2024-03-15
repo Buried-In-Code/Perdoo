@@ -8,13 +8,11 @@ from pathlib import Path
 from platform import python_version
 from tempfile import TemporaryDirectory
 
-from PIL import Image
-
 from perdoo import ARCHIVE_EXTENSIONS, IMAGE_EXTENSIONS, __version__, setup_logging
 from perdoo.archives import BaseArchive, CB7Archive, CBTArchive, CBZArchive, get_archive
 from perdoo.console import CONSOLE
 from perdoo.models import ComicInfo, Metadata, MetronInfo
-from perdoo.models.metadata import Format, Tool, Meta
+from perdoo.models.metadata import Format, Meta, Tool
 from perdoo.services import Comicvine, League, Marvel, Metron
 from perdoo.settings import OutputFormat, Settings
 from perdoo.utils import (
@@ -75,7 +73,7 @@ def read_archive(archive: BaseArchive) -> tuple[Metadata, MetronInfo, ComicInfo]
         metron_info = metadata_to_metron(metadata=metadata)
     if not comic_info:
         comic_info = metadata_to_comic(metadata=metadata)
-    return (metadata, metron_info, comic_info)
+    return metadata, metron_info, comic_info
 
 
 def fetch_from_services(
@@ -143,103 +141,43 @@ def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
     )
 
 
+def rename_images(folder: Path, filename: str) -> None:
+    image_list = list_files(folder, *IMAGE_EXTENSIONS)
+    pad_count = len(str(len(image_list)))
+    for index, img_file in enumerate(image_list):
+        new_filename = f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}"
+        if img_file.name != new_filename:
+            LOGGER.info("Renamed %s to %s", img_file.name, new_filename)
+            img_file.rename(folder / f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}")
+
+
 def process_pages(
     folder: Path, metadata: Metadata, metron_info: MetronInfo, comic_info: ComicInfo, filename: str
 ) -> None:
-    from perdoo.models.comic_info import Page as ComicPage, PageType as ComicPageType
-    from perdoo.models.metadata import Page as MetadataPage, PageType as MetadataPageType
-    from perdoo.models.metron_info import Page as MetronPage, PageType as MetronPageType
+    from perdoo.models.comic_info import Page as ComicPage
+    from perdoo.models.metadata import Page as MetadataPage
+    from perdoo.models.metron_info import Page as MetronPage
 
-    def rename_images() -> None:
-        image_list = list_files(folder, *IMAGE_EXTENSIONS)
-        pad_count = len(str(len(image_list)))
-        for index, img_file in enumerate(image_list):
-            new_filename = f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}"
-            if img_file.name != new_filename:
-                LOGGER.info("Renamed %s to %s", img_file.name, new_filename)
-                img_file.rename(
-                    folder / f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}"
-                )
-
-    def process_metadata_page(index_: int, img_file: Path, is_final_page: bool) -> MetadataPage:
-        page = next((x for x in metadata.pages if x.index == index_), None)
-        if page:
-            page_type = page.type_
-        elif index_ == 0:
-            page_type = MetadataPageType.FRONT_COVER
-        elif is_final_page:
-            page_type = MetadataPageType.BACK_COVER
-        else:
-            page_type = MetadataPageType.STORY
-        with Image.open(img_file) as img:
-            width, height = img.size
-        return MetadataPage(
-            double_page=width >= height,
-            filename=img_file.name,
-            height=height,
-            index=index_,
-            size=img_file.stat().st_size,
-            type_=page_type,
-            width=width,
-        )
-
-    def process_metron_info_page(index_: int, img_file: Path, is_final_page: bool) -> MetronPage:
-        page = next((x for x in metron_info.pages if x.image == index_), None)
-        if page:
-            page_type = page.type_
-        elif index_ == 0:
-            page_type = MetronPageType.FRONT_COVER
-        elif is_final_page:
-            page_type = MetronPageType.BACK_COVER
-        else:
-            page_type = MetronPageType.STORY
-        with Image.open(img_file) as img:
-            width, height = img.size
-        return MetronPage(
-            image=index_,
-            page_type=page_type,
-            double_page=width >= height,
-            image_size=img_file.stat().st_size,
-            image_width=width,
-            image_height=height,
-        )
-
-    def process_comic_info_page(index_: int, img_file: Path, is_final_page: bool) -> ComicPage:
-        page = next((x for x in comic_info.pages if x.image == index_), None)
-        if page:
-            page_type = page.type_
-        elif index_ == 0:
-            page_type = ComicPageType.FRONT_COVER
-        elif is_final_page:
-            page_type = ComicPageType.BACK_COVER
-        else:
-            page_type = ComicPageType.STORY
-        with Image.open(img_file) as img:
-            width, height = img.size
-        return ComicPage(
-            image=index_,
-            page_type=page_type,
-            double_page=width >= height,
-            image_size=img_file.stat().st_size,
-            image_width=width,
-            image_height=height,
-        )
-
-    rename_images()
+    rename_images(folder=folder, filename=filename)
     image_list = list_files(folder, *IMAGE_EXTENSIONS)
     metadata_pages = set()
     metron_info_pages = set()
     comic_info_pages = set()
-    for index_, img_file in enumerate(image_list):
-        is_final_page = index_ == len(image_list) - 1
+    for index, img_file in enumerate(image_list):
+        is_final_page = index == len(image_list) - 1
+        page = next((x for x in metadata.pages if x.index == index), None)
         metadata_pages.add(
-            process_metadata_page(index_=index_, img_file=img_file, is_final_page=is_final_page)
+            MetadataPage.from_path(
+                file=img_file, index=index, is_final_page=is_final_page, page=page
+            )
         )
+        page = next((x for x in metron_info.pages if x.image == index), None)
         metron_info_pages.add(
-            process_metron_info_page(index_=index_, img_file=img_file, is_final_page=is_final_page)
+            MetronPage.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
         )
+        page = next((x for x in comic_info.pages if x.image == index), None)
         comic_info_pages.add(
-            process_comic_info_page(index_=index_, img_file=img_file, is_final_page=is_final_page)
+            ComicPage.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
         )
     metadata.pages = sorted(metadata_pages)
     metron_info.pages = sorted(metron_info_pages)

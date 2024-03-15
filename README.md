@@ -12,8 +12,40 @@
 
 [![Github - Contributors](https://img.shields.io/github/contributors/ComicCorps/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/ComicCorps/Perdoo/graphs/contributors)
 
-Perdoo's goal is to help sort and organize your comic collection by using the information stored in metadata files inside the comic archives.\
-It also formats your digital comics into a single format (cbz or cb7), adds and/or updates the stored metadata files.
+Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.\
+Perdoo standardizes all your digital comics into a unified format (cb7, cbt, or cbz).\
+It adds and/or updates metadata files using supported services.\
+Unlike other tagging tools, Perdoo employs a manual approach when metadata files are absent, prompting users to enter the necessary Publisher/Series/Issue details for search purposes.
+
+## Installation
+
+### PyPI
+
+1. Ensure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
+2. Install the project from PyPI: `pip install perdoo`
+
+### Pipx
+
+1. Ensure you have [Pipx](https://pipxproject.github.io/pipx/) installed: `pipx --version`
+2. Install the project: `pipx install perdoo`
+
+### GitHub
+
+1. Ensure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
+2. Clone the repository: `git clone https://github.com/ComicCorps/Perdoo`
+3. Install the project: `pip install .`
+
+## Execution
+
+- `Perdoo <arguments>`
+
+### Arguments
+
+| Argument    | Type | Description                                                             |
+| ----------- | ---- | ----------------------------------------------------------------------- |
+| `--force`   | bool | Forces the sync of archives, regardless of when they were last updated. |
+| `--version` | bool | Displays the version of Perdoo running.                                 |
+| `--debug`   | bool | Displays extra/debug messages while running.                            |
 
 ## Supported Formats
 
@@ -30,41 +62,11 @@ It also formats your digital comics into a single format (cbz or cb7), adds and/
 - .cbz _(Default)_
 - .cb7 _(Requires installing `cb7` dependencies: `pip install perdoo[cb7]`)_
 
-### Info Files
+### Metadata Files
 
 - [Metadata.xml](https://github.com/ComicCorps/Schemas)
 - [MetronInfo.xml](https://github.com/Metron-Project/metroninfo)
 - [ComicInfo.xml](https://github.com/anansi-project/comicinfo)
-
-## Installation
-
-### PyPI _(Not currently released on PyPI)_
-
-1. Make sure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
-2. Install the project from PyPI: `pip install perdoo`
-
-### Pipx
-
-1. Make sure you have [Pipx]() installed: `pipx --version`
-2. Install the project: `pipx install perdoo`
-
-### Github
-
-1. Make sure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
-2. Clone the repo: `git clone https://github.com/ComicCorps/Perdoo`
-3. Install the project: `pip install .`
-
-## Execution
-
-- `Perdoo <arguments>`
-
-### Arguments
-
-| Argument        | Type | Description                                                                       |
-| --------------- | ---- | --------------------------------------------------------------------------------- |
-| `--manual-edit` | bool | Pause the Script before bundling the files to allow manual removal of Ads, etc... |
-| `--version`     | bool | Display the version of Perdoo running                                          |
-| `--debug`       | bool | Display extra/debug messages while running                                        |
 
 ## Services
 
@@ -73,15 +75,15 @@ It also formats your digital comics into a single format (cbz or cb7), adds and/
 - [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) library.
 - [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
 
-## File Renaming
+## File Organization
 
 ### Series Naming
 
-Series with volume greater than 1 will display its volume in the title.
+Series with a volume greater than 1 will display its volume in the title.
 
 ### Comic Naming
 
-The files are named based on the format of Comic:
+The files are named based on the format of the comic:
 
 - **_Default/Comic_**: `{Series Title}_#{Issue Number}.cbz`
 - Annual: `{Series Title}_Annual_#{Issue Number}.cbz`

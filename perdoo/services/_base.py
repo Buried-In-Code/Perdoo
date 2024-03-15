@@ -9,23 +9,7 @@ from perdoo.models import ComicInfo, Metadata, MetronInfo
 
 class BaseService:
     @abstractmethod
-    def fetch_publisher(
-        self: BaseService,
-        metadata: Metadata | None,
-        metron_info: MetronInfo | None,
-        comic_info: ComicInfo | None,
-    ) -> bool: ...
-
-    @abstractmethod
-    def fetch_series(
-        self: BaseService,
-        metadata: Metadata | None,
-        metron_info: MetronInfo | None,
-        comic_info: ComicInfo | None,
-    ) -> bool: ...
-
-    @abstractmethod
-    def fetch_issue(
+    def fetch(
         self: BaseService,
         metadata: Metadata | None,
         metron_info: MetronInfo | None,

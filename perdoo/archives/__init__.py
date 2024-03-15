@@ -1,4 +1,4 @@
-__all__ = ["get_archiver", "BaseArchive"]
+__all__ = ["BaseArchive", "CB7Archive", "CBTArchive", "CBZArchive", "get_archive"]
 
 from pathlib import Path
 from tarfile import is_tarfile

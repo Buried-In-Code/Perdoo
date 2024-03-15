@@ -2,8 +2,8 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.2
     hooks:
-      - id: ruff
       - id: ruff-format
+      - id: ruff
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.17
     hooks:
@@ -23,7 +23,6 @@ repos:
       - id: check-docstring-first
       - id: check-merge-conflict
       - id: check-toml
-      - id: check-xml
       - id: check-yaml
         args:
           - --allow-multiple-documents

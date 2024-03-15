@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import xmltodict
+from PIL import Image
 from pydantic import Field
 
 from perdoo import __version__
@@ -295,6 +296,28 @@ class Page(PascalModel):
     def __hash__(self: Page) -> int:
         return hash((type(self), self.filename))
 
+    @staticmethod
+    def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
+        if page:
+            page_type = page.type_
+        elif index == 0:
+            page_type = PageType.FRONT_COVER
+        elif is_final_page:
+            page_type = PageType.BACK_COVER
+        else:
+            page_type = PageType.STORY
+        with Image.open(file) as img:
+            width, height = img.size
+        return Page(
+            double_page=width >= height,
+            filename=file.name,
+            height=height,
+            index=index,
+            size=file.stat().st_size,
+            type_=page_type,
+            width=width,
+        )
+
 
 class Metadata(PascalModel, InfoModel):
     issue: Issue
@@ -321,10 +344,10 @@ class Metadata(PascalModel, InfoModel):
     def __hash__(self: Metadata) -> int:
         return hash((type(self), self.issue))
 
-    @staticmethod
-    def from_bytes(content: bytes) -> Metadata:
-        xml_content = xmltodict.parse(content, force_list=list(Metadata.list_fields.values()))
-        return Metadata(**xml_content["Metadata"])
+    @classmethod
+    def from_bytes(cls: type[Metadata], content: bytes) -> Metadata:
+        xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
+        return cls(**xml_content["Metadata"])
 
     def to_file(self: Metadata, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)

@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 
 import xmltodict
 from natsort import humansorted, ns
+from PIL import Image
 from pydantic import Field
 
 from perdoo.models._base import InfoModel, PascalModel
@@ -154,6 +155,27 @@ class Page(PascalModel):
     def __hash__(self: Page) -> int:
         return hash((type(self), self.image))
 
+    @staticmethod
+    def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
+        if page:
+            page_type = page.type_
+        elif index == 0:
+            page_type = PageType.FRONT_COVER
+        elif is_final_page:
+            page_type = PageType.BACK_COVER
+        else:
+            page_type = PageType.STORY
+        with Image.open(file) as img:
+            width, height = img.size
+        return Page(
+            image=index,
+            type_=page_type,
+            double_page=width >= height,
+            image_size=file.stat().st_size,
+            image_height=height,
+            image_width=width,
+        )
+
 
 class ComicInfo(PascalModel, InfoModel):
     title: str | None = None
@@ -210,10 +232,10 @@ class ComicInfo(PascalModel, InfoModel):
         return date(self.year, self.month or 1, self.day or 1)
 
     @cover_date.setter
-    def cover_date(self: ComicInfo, value: date) -> None:
-        self.year = value.year
-        self.month = value.month
-        self.day = value.day
+    def cover_date(self: ComicInfo, value: date | None) -> None:
+        self.year = value.year if value else None
+        self.month = value.month if value else None
+        self.day = value.day if value else None
 
     @property
     def credits(self: ComicInfo) -> dict[str, list[str]]:
@@ -294,10 +316,10 @@ class ComicInfo(PascalModel, InfoModel):
     def story_arc_list(self: ComicInfo, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    @staticmethod
-    def from_bytes(content: bytes) -> ComicInfo:
-        xml_content = xmltodict.parse(content, force_list=list(ComicInfo.list_fields.values()))
-        return ComicInfo(**xml_content["ComicInfo"])
+    @classmethod
+    def from_bytes(cls: type[ComicInfo], content: bytes) -> ComicInfo:
+        xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
+        return cls(**xml_content["ComicInfo"])
 
     def to_file(self: ComicInfo, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)
