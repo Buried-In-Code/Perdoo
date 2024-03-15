@@ -90,14 +90,14 @@ class PascalModel(
 
 
 class InfoModel(ABC):
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def from_bytes(content: bytes) -> InfoModel: ...
+    def from_bytes(cls: type[InfoModel], content: bytes) -> InfoModel: ...
 
-    @staticmethod
-    def from_file(file: Path) -> InfoModel:
+    @classmethod
+    def from_file(cls: type[InfoModel], file: Path) -> InfoModel:
         with file.open("rb") as stream:
-            return InfoModel.from_bytes(content=stream)
+            return cls.from_bytes(content=stream.read())
 
     @abstractmethod
     def to_file(self: InfoModel, file: Path) -> None: ...

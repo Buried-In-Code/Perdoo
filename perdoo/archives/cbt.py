@@ -33,8 +33,20 @@ class CBTArchive(BaseArchive):
 
     def extract_files(self: CBTArchive, destination: Path) -> bool:
         try:
-            with tarfile.open(self.archive_file, "r") as tar:
-                tar.extractall(path=destination)  # noqa: S202
+            with tarfile.open(self.path, "r") as tar:
+                for member in tar.getmembers():
+                    # Check for path traversal attack
+                    if (
+                        member.islnk()
+                        or member.issym()
+                        or ".." in member.name
+                        or member.name.startswith("/")
+                    ):
+                        LOGGER.warning(
+                            "Potential path traversal attack detected in %s", self.path.name
+                        )
+                        return False
+                    tar.extract(member, path=destination)
             return True
         except tarfile.ReadError:
             LOGGER.exception("")

@@ -77,6 +77,7 @@ class DatePrompt(PromptBase[date]):
     validate_error_message = (
         "[prompt.invalid]Please enter a valid date in the format of 'yyyy-mm-dd'"
     )
+    prompt_suffix = "[yyyy-mm-dd]: "
 
     def process_response(self: DatePrompt, value: str) -> date:
         try:

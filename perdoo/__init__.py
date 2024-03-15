@@ -71,4 +71,4 @@ def setup_logging(debug: bool = False) -> None:
         handlers=[console_handler, file_handler],
     )
 
-    logging.getLogger("PIL.TiffImagePlugin").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.WARNING)

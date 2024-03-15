@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import xmltodict
+from PIL import Image
 from pydantic import Field
 
 from perdoo.models._base import InfoModel, PascalModel
@@ -382,6 +383,27 @@ class Page(PascalModel):
     def __hash__(self: Page) -> int:
         return hash((type(self), self.image))
 
+    @staticmethod
+    def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
+        if page:
+            page_type = page.type_
+        elif index == 0:
+            page_type = PageType.FRONT_COVER
+        elif is_final_page:
+            page_type = PageType.BACK_COVER
+        else:
+            page_type = PageType.STORY
+        with Image.open(file) as img:
+            width, height = img.size
+        return Page(
+            image=index,
+            type_=page_type,
+            double_page=width >= height,
+            image_size=file.stat().st_size,
+            image_height=height,
+            image_width=width,
+        )
+
 
 class MetronInfo(PascalModel, InfoModel):
     id: Source | None = Field(alias="ID", default=None)
@@ -442,10 +464,10 @@ class MetronInfo(PascalModel, InfoModel):
         self.to_xml_text(mappings=MetronInfo.text_fields, content=data)
         super().__init__(**data)
 
-    @staticmethod
-    def from_bytes(content: bytes) -> MetronInfo:
-        xml_content = xmltodict.parse(content, force_list=list(MetronInfo.list_fields.values()))
-        return MetronInfo(**xml_content["MetronInfo"])
+    @classmethod
+    def from_bytes(cls: type[MetronInfo], content: bytes) -> MetronInfo:
+        xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
+        return cls(**xml_content["MetronInfo"])
 
     def to_file(self: MetronInfo, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)
