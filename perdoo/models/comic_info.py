@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 import xmltodict
 from natsort import humansorted, ns
 from PIL import Image
-from pydantic import Field
+from pydantic import Field, HttpUrl
 
 from perdoo.models._base import InfoModel, PascalModel
 
@@ -134,7 +134,7 @@ class PageType(Enum):
 
 class Page(PascalModel):
     image: int = Field(alias="@Image")
-    type_: PageType = Field(alias="@Type", default=PageType.STORY)
+    type: PageType = Field(alias="@Type", default=PageType.STORY)
     double_page: bool = Field(alias="@DoublePage", default=False)
     image_size: int = Field(alias="@ImageSize", default=0)
     key: str | None = Field(alias="@Key", default=None)
@@ -158,7 +158,7 @@ class Page(PascalModel):
     @staticmethod
     def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
         if page:
-            page_type = page.type_
+            page_type = page.type
         elif index == 0:
             page_type = PageType.FRONT_COVER
         elif is_final_page:
@@ -169,7 +169,7 @@ class Page(PascalModel):
             width, height = img.size
         return Page(
             image=index,
-            type_=page_type,
+            type=page_type,
             double_page=width >= height,
             image_size=file.stat().st_size,
             image_height=height,
@@ -201,10 +201,10 @@ class ComicInfo(PascalModel, InfoModel):
     publisher: str | None = None
     imprint: str | None = None
     genre: str | None = None
-    web: str | None = None
+    web: HttpUrl | None = None
     page_count: int = 0
     language_iso: str | None = Field(alias="LanguageISO", default=None)
-    format_: str | None = Field(alias="Format", default=None)
+    format: str | None = None
     black_and_white: YesNo = YesNo.UNKNOWN
     manga: Manga = Manga.UNKNOWN
     characters: str | None = None

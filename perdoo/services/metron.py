@@ -5,9 +5,9 @@ __all__ = ["Metron"]
 import logging
 
 from mokkari.exceptions import ApiError
-from mokkari.issue import Issue
-from mokkari.publisher import Publisher
-from mokkari.series import Series
+from mokkari.schemas.issue import Issue
+from mokkari.schemas.publisher import Publisher
+from mokkari.schemas.series import Series
 from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
 from rich.prompt import Confirm, Prompt
@@ -73,26 +73,32 @@ def add_series_to_metron_info(series: Series, metron_info: MetronInfo) -> None:
     metron_info.series.name = series.name
     metron_info.series.sort_name = series.sort_name
     metron_info.series.volume = series.volume
-    metron_info.series.format_ = Format.load(value=series.series_type.name)
+    metron_info.series.format = Format.load(value=series.series_type.name)
 
 
 def add_series_to_comic_info(series: Series, comic_info: ComicInfo) -> None:
     comic_info.series = series.name
     comic_info.volume = series.volume
     comic_info.genre_list = [x.name for x in series.genres]
-    comic_info.format_ = series.series_type.name
+    comic_info.format = series.series_type.name
 
 
 def add_issue_to_metadata(issue: Issue, metadata: Metadata) -> None:
-    from perdoo.models.metadata import Credit, Format, Resource, TitledResource
+    from perdoo.models.metadata import Credit, Format, Resource, StoryArc, TitledResource
 
     resources = set(metadata.issue.resources)
     if issue.cv_id:
         resources.add(Resource(source=Source.COMICVINE, value=issue.cv_id))
     resources.add(Resource(source=Source.METRON, value=issue.id))
     metadata.issue.resources = list(resources)
-    metadata.issue.story_arcs = []  # TODO
-    metadata.issue.characters = []  # TODO
+    metadata.issue.story_arcs = [
+        StoryArc(resources=[Resource(source=Source.METRON, value=x.id)], title=x.name)
+        for x in issue.arcs
+    ]
+    metadata.issue.characters = [
+        TitledResource(resources=[Resource(source=Source.METRON, value=x.id)], title=x.name)
+        for x in issue.characters
+    ]
     metadata.issue.title = issue.collection_title if issue.collection_title else None
     metadata.issue.cover_date = issue.cover_date
     metadata.issue.credits = [
@@ -109,24 +115,37 @@ def add_issue_to_metadata(issue: Issue, metadata: Metadata) -> None:
     ]
     metadata.issue.summary = issue.desc
     metadata.issue.number = issue.number
-    metadata.issue.page_count = issue.page_count
+    metadata.issue.page_count = issue.page_count or metadata.issue.page_count
     try:
-        metadata.issue.format_ = Format.load(value=issue.series.series_type.name)
+        metadata.issue.format = Format.load(value=issue.series.series_type.name)
     except ValueError:
-        metadata.issue.format_ = Format.COMIC
+        metadata.issue.format = Format.COMIC
     metadata.issue.store_date = issue.store_date
-    metadata.issue.teams = []  # TODO
+    metadata.issue.teams = [
+        TitledResource(resources=[Resource(source=Source.METRON, value=x.id)], title=x.name)
+        for x in issue.teams
+    ]
 
 
 def add_issue_to_metron_info(issue: Issue, metron_info: MetronInfo) -> None:
-    from perdoo.models.metron_info import GTIN, AgeRating, Credit, Price, Role, RoleResource, Source
+    from perdoo.models.metron_info import (
+        GTIN,
+        AgeRating,
+        Arc,
+        Credit,
+        Price,
+        Resource,
+        Role,
+        RoleResource,
+        Source,
+    )
 
     if not metron_info.id or metron_info.id.source == InformationSource.METRON:
         metron_info.id = Source(source=InformationSource.METRON, value=issue.id)
     if not metron_info.id or metron_info.id.source == InformationSource.COMIC_VINE:
         metron_info.id = Source(source=InformationSource.COMIC_VINE, value=issue.cv_id)
-    metron_info.arcs = []  # TODO
-    metron_info.characters = []  # TODO
+    metron_info.arcs = [Arc(id=x.id, name=x.name) for x in issue.arcs]
+    metron_info.characters = [Resource(id=x.id, value=x.name) for x in issue.characters]
     metron_info.collection_title = issue.collection_title if issue.collection_title else None
     metron_info.cover_date = issue.cover_date
     credits_ = []
@@ -137,18 +156,18 @@ def add_issue_to_metron_info(issue: Issue, metron_info: MetronInfo) -> None:
                 roles.append(RoleResource(id=r.id, value=Role.load(value=r.name)))
             except ValueError:  # noqa: PERF203
                 roles.append(RoleResource(id=r.id, value=Role.OTHER))
-        credits_.append(Credit(creator=Resource(id=x.id, value=x.name), roles=roles))
+        credits_.append(Credit(creator=Resource(id=x.id, value=x.creator), roles=roles))
     metron_info.credits = credits_
     metron_info.summary = issue.desc
     metron_info.number = issue.number
-    metron_info.page_count = issue.page_count
-    metron_info.prices = [Price(country="US", value=issue.price)]
-    metron_info.rating = AgeRating.load(value=issue.rating.name)
-    metron_info.reprints = []  # TODO
-    metron_info.url = issue.resource_url
+    metron_info.page_count = issue.page_count or metron_info.page_count
+    metron_info.prices = [Price(country="US", value=issue.price)] if issue.price else []
+    metron_info.age_rating = AgeRating.load(value=issue.rating.name)
+    metron_info.reprints = [Resource(id=x.id, value=x.issue) for x in issue.reprints]
+    metron_info.url = str(issue.resource_url)
     metron_info.store_date = issue.store_date
-    metron_info.stories = []  # TODO
-    metron_info.teams = []  # TODO
+    metron_info.stories = [Resource(value=x) for x in issue.story_titles]
+    metron_info.teams = [Resource(id=x.id, value=x.name) for x in issue.teams]
     metron_info.gtin = GTIN(upc=issue.upc) if issue.upc else None
 
 
@@ -160,7 +179,7 @@ def add_issue_to_comic_info(issue: Issue, comic_info: ComicInfo) -> None:
     comic_info.credits = {x.creator: [r.name for r in x.role] for x in issue.credits}
     comic_info.summary = issue.desc
     comic_info.number = issue.number
-    comic_info.page_count = issue.page_count
+    comic_info.page_count = issue.page_count or comic_info.page_count
     comic_info.web = issue.resource_url
     comic_info.team_list = [x.name for x in issue.teams]
 
@@ -345,12 +364,10 @@ class Metron(BaseService[Publisher, Series, Issue]):
     def _search_issues(self: Metron, series_id: int, number: str | None) -> int | None:
         try:
             options = sorted(
-                self.session.issues_list(
-                    {"filter": f"series_id:{series_id},number:{number}"}
-                    if number
-                    else {"filter": f"series_id:{series_id}"}
-                ),
-                key=lambda x: (x.issue),
+                self.session.issues_list(params={"series_id": series_id, "number": number})
+                if number
+                else self.session.issues_list(params={"series_id": series_id}),
+                key=lambda x: (x.number, x.issue_name),
             )
             if not options:
                 LOGGER.warning(
@@ -359,7 +376,7 @@ class Metron(BaseService[Publisher, Series, Issue]):
                     number,
                 )
             index = create_menu(
-                options=[f"{x.id} | {x.issue}" for x in options],
+                options=[f"{x.id} | {x.issue_name}" for x in options],
                 title="Metron Issue",
                 default="None of the Above",
             )
