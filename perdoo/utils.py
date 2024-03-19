@@ -70,7 +70,7 @@ def metron_to_metadata(metron_info: MetronInfo) -> Metadata:
         LOGGER.warning(err)
         source = None
     try:
-        format_ = Format.load(value=metron_info.series.format_.value)
+        format_ = Format.load(value=metron_info.series.format.value)
     except ValueError as err:
         LOGGER.warning(err)
         format_ = Format.COMIC
@@ -78,7 +78,7 @@ def metron_to_metadata(metron_info: MetronInfo) -> Metadata:
     pages = []
     for x in metron_info.pages:
         try:
-            type_ = PageType.load(value=x.type_.value)
+            type_ = PageType.load(value=x.type.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -197,7 +197,7 @@ def comic_to_metadata(comic_info: ComicInfo) -> Metadata:
     )
 
     try:
-        format_ = Format.load(value=comic_info.format_) if comic_info.format_ else Format.COMIC
+        format_ = Format.load(value=comic_info.format) if comic_info.format else Format.COMIC
     except ValueError as err:
         LOGGER.warning(err)
         format_ = Format.COMIC
@@ -205,7 +205,7 @@ def comic_to_metadata(comic_info: ComicInfo) -> Metadata:
     pages = []
     for x in comic_info.pages:
         try:
-            type_ = PageType.load(value=x.type_.value)
+            type_ = PageType.load(value=x.type.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -319,7 +319,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
     )
 
     try:
-        format_ = Format.load(value=metadata.issue.format_.value)
+        format_ = Format.load(value=metadata.issue.format.value)
     except ValueError as err:
         LOGGER.warning(err)
         format_ = None
@@ -367,7 +367,7 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
     pages = []
     for page in metadata.pages:
         try:
-            type_ = PageType.load(value=page.type_.value)
+            type_ = PageType.load(value=page.type.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -417,7 +417,8 @@ def metadata_to_metron(metadata: Metadata) -> MetronInfo:
         number=metadata.issue.number,
         summary=metadata.issue.summary,
         notes=metadata.notes,
-        cover_date=metadata.issue.cover_date or DatePrompt.ask("Cover date", default=date.today()),
+        cover_date=metadata.issue.cover_date
+        or DatePrompt.ask("Cover date", default=date.today(), console=CONSOLE),
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         genres=genres,
@@ -462,7 +463,7 @@ def metadata_to_comic(metadata: Metadata) -> ComicInfo:
     pages = []
     for page in metadata.pages:
         try:
-            type_ = PageType.load(value=page.type_.value)
+            type_ = PageType.load(value=page.type.value)
         except ValueError as err:
             LOGGER.warning(err)
             type_ = PageType.OTHER
@@ -487,7 +488,7 @@ def metadata_to_comic(metadata: Metadata) -> ComicInfo:
         publisher=metadata.issue.series.publisher.title,
         page_count=metadata.issue.page_count,
         language_iso=metadata.issue.language,
-        format_=metadata.issue.format_.value,
+        format_=metadata.issue.format.value,
         pages=pages,
     )
     output.cover_date = metadata.issue.cover_date or metadata.issue.store_date

@@ -8,6 +8,7 @@ from himon.league_of_comic_geeks import LeagueofComicGeeks as Himon
 from himon.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_dir
+from perdoo.models import ComicInfo, Metadata, MetronInfo
 from perdoo.settings import LeagueofComicGeeks as LeagueSettings
 
 LOGGER = logging.getLogger(__name__)
@@ -25,3 +26,11 @@ class League:
         if not settings.access_token:
             LOGGER.info("Generating new access token")
             self.himon.access_token = settings.access_token = self.himon.generate_access_token()
+
+    def fetch(
+        self: League,
+        metadata: Metadata,  # noqa: ARG002
+        metron_info: MetronInfo,  # noqa: ARG002
+        comic_info: ComicInfo,  # noqa: ARG002
+    ) -> bool:
+        return False

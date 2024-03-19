@@ -184,7 +184,7 @@ class Issue(PascalModel):
     characters: list[TitledResource] = Field(default_factory=list)
     cover_date: date | None = None
     credits: list[Credit] = Field(default_factory=list)
-    format_: Format = Field(alias="Format", default=Format.COMIC)
+    format: Format = Format.COMIC
     language: str = Field(alias="@language", default="en")
     locations: list[TitledResource] = Field(default_factory=list)
     number: str | None = None
@@ -280,7 +280,7 @@ class Page(PascalModel):
     height: int = Field(alias="@height")
     index: int = Field(alias="@index")
     size: int = Field(alias="@size")
-    type_: PageType = Field(alias="@type", default=PageType.STORY)
+    type: PageType = Field(alias="@type", default=PageType.STORY)
     width: int = Field(alias="@width")
 
     def __lt__(self: Page, other) -> int:  # noqa: ANN001
@@ -299,7 +299,7 @@ class Page(PascalModel):
     @staticmethod
     def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
         if page:
-            page_type = page.type_
+            page_type = page.type
         elif index == 0:
             page_type = PageType.FRONT_COVER
         elif is_final_page:
@@ -314,7 +314,7 @@ class Page(PascalModel):
             height=height,
             index=index,
             size=file.stat().st_size,
-            type_=page_type,
+            type=page_type,
             width=width,
         )
 

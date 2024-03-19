@@ -27,7 +27,7 @@ from typing import Any, ClassVar
 
 import xmltodict
 from PIL import Image
-from pydantic import Field
+from pydantic import Field, HttpUrl
 
 from perdoo.models._base import InfoModel, PascalModel
 
@@ -91,6 +91,14 @@ class Format(Enum):
         for entry in Format:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
+        # region Manual matches
+        if value.casefold() == "Limited Series".casefold():
+            return Format.LIMITED
+        if value.casefold() == "Cancelled Series".casefold():
+            return Format.SERIES
+        if value.casefold() == "Hard Cover".casefold():
+            return Format.SERIES
+        # endregion
         raise ValueError(f"'{value}' isnt a valid metron_info.Format")
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
@@ -108,7 +116,7 @@ class Series(PascalModel):
     name: str
     sort_name: str | None = None
     volume: int | None = None
-    format_: Format | None = Field(alias="Format", default=None)
+    format: Format | None = None
 
 
 class Price(PascalModel):
@@ -362,7 +370,7 @@ class PageType(Enum):
 
 class Page(PascalModel):
     image: int = Field(alias="@Image")
-    type_: PageType = Field(alias="@Type", default=PageType.STORY)
+    type: PageType = Field(alias="@Type", default=PageType.STORY)
     double_page: bool = Field(alias="@DoublePage", default=False)
     image_size: int = Field(alias="@ImageSize", default=0)
     key: str | None = Field(alias="@Key", default=None)
@@ -386,7 +394,7 @@ class Page(PascalModel):
     @staticmethod
     def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
         if page:
-            page_type = page.type_
+            page_type = page.type
         elif index == 0:
             page_type = PageType.FRONT_COVER
         elif is_final_page:
@@ -397,7 +405,7 @@ class Page(PascalModel):
             width, height = img.size
         return Page(
             image=index,
-            type_=page_type,
+            type=page_type,
             double_page=width >= height,
             image_size=file.stat().st_size,
             image_height=height,
@@ -428,7 +436,7 @@ class MetronInfo(PascalModel, InfoModel):
     gtin: GTIN | None = Field(alias="GTIN", default=None)
     age_rating: AgeRating = Field(default=AgeRating.UNKNOWN)
     reprints: list[Resource] = Field(default_factory=list)
-    url: str | None = Field(alias="URL", default=None)
+    url: HttpUrl | None = Field(alias="URL", default=None)
     credits: list[Credit] = Field(default_factory=list)
     pages: list[Page] = Field(default_factory=list)
 
@@ -481,7 +489,6 @@ class MetronInfo(PascalModel, InfoModel):
         with file.open("wb") as stream:
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content)}},
-                # {"MetronInfo": content},
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,

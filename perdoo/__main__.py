@@ -8,6 +8,8 @@ from pathlib import Path
 from platform import python_version
 from tempfile import TemporaryDirectory
 
+from pydantic import ValidationError
+
 from perdoo import ARCHIVE_EXTENSIONS, IMAGE_EXTENSIONS, __version__, setup_logging
 from perdoo.archives import BaseArchive, CB7Archive, CBTArchive, CBZArchive, get_archive
 from perdoo.console import CONSOLE
@@ -53,14 +55,33 @@ def convert_collection(path: Path, output: OutputFormat) -> None:
 def read_archive(archive: BaseArchive) -> tuple[Metadata, MetronInfo, ComicInfo]:
     filenames = archive.list_filenames()
     metadata = None
-    if "Metadata.xml" in filenames:
-        metadata = Metadata.from_bytes(content=archive.read_file(filename="Metadata.xml"))
+    try:
+        if "/Metadata.xml" in filenames:
+            metadata = Metadata.from_bytes(content=archive.read_file(filename="/Metadata.xml"))
+        elif "Metadata.xml" in filenames:
+            metadata = Metadata.from_bytes(content=archive.read_file(filename="Metadata.xml"))
+    except ValidationError:
+        LOGGER.error("%s contains an invalid Metadata file", archive.path.name)  # noqa: TRY400
     metron_info = None
-    if "MetronInfo.xml" in filenames:
-        metron_info = MetronInfo.from_bytes(content=archive.read_file(filename="MetronInfo.xml"))
+    try:
+        if "/MetronInfo.xml" in filenames:
+            metron_info = MetronInfo.from_bytes(
+                content=archive.read_file(filename="/MetronInfo.xml")
+            )
+        elif "MetronInfo.xml" in filenames:
+            metron_info = MetronInfo.from_bytes(
+                content=archive.read_file(filename="MetronInfo.xml")
+            )
+    except ValidationError:
+        LOGGER.error("%s contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
     comic_info = None
-    if "ComicInfo.xml" in filenames:
-        comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="ComicInfo.xml"))
+    try:
+        if "/ComicInfo.xml" in filenames:
+            comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="/ComicInfo.xml"))
+        elif "ComicInfo.xml" in filenames:
+            comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="ComicInfo.xml"))
+    except ValidationError:
+        LOGGER.error("%s contains an invalid ComicInfo file", archive.path.name)  # noqa: TRY400
 
     if not metadata:
         if metron_info:
@@ -80,7 +101,7 @@ def fetch_from_services(
     settings: Settings, metainfo: tuple[Metadata, MetronInfo, ComicInfo]
 ) -> None:
     marvel = None
-    if settings.marvel and settings.marvel.public_key and settings.marve.private_key:
+    if settings.marvel and settings.marvel.public_key and settings.marvel.private_key:
         marvel = Marvel(settings=settings.marvel)
     metron = None
     if settings.metron and settings.metron.username and settings.metron.password:
@@ -115,7 +136,7 @@ def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
     )
 
     number_str = (
-        f"_#{metadata.issue.number.zfill(3 if metadata.issue.format_ == Format.COMIC else 2)}"
+        f"_#{metadata.issue.number.zfill(3 if metadata.issue.format == Format.COMIC else 2)}"
         if metadata.issue.number
         else ""
     )
@@ -125,10 +146,10 @@ def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
         Format.GRAPHIC_NOVEL: "_GN",
         Format.HARDCOVER: "_HC",
         Format.TRADE_PAPERBACK: "_TP",
-    }.get(metadata.issue.format_, "")
-    if metadata.issue.format_ in {Format.ANNUAL, Format.DIGITAL_CHAPTER}:
+    }.get(metadata.issue.format, "")
+    if metadata.issue.format in {Format.ANNUAL, Format.DIGITAL_CHAPTER}:
         issue_filename = sanitize(value=series_filename) + format_str + number_str
-    elif metadata.issue.format_ in {Format.GRAPHIC_NOVEL, Format.HARDCOVER, Format.TRADE_PAPERBACK}:
+    elif metadata.issue.format in {Format.GRAPHIC_NOVEL, Format.HARDCOVER, Format.TRADE_PAPERBACK}:
         issue_filename = sanitize(value=series_filename) + number_str + format_str
     else:
         issue_filename = sanitize(value=series_filename) + number_str
@@ -145,7 +166,7 @@ def rename_images(folder: Path, filename: str) -> None:
     image_list = list_files(folder, *IMAGE_EXTENSIONS)
     pad_count = len(str(len(image_list)))
     for index, img_file in enumerate(image_list):
-        new_filename = f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}"
+        new_filename = f"{filename}_{str(index).zfill(pad_count)}{img_file.suffix}"
         if img_file.name != new_filename:
             LOGGER.info("Renamed %s to %s", img_file.name, new_filename)
             img_file.rename(folder / f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}")
