@@ -9,23 +9,17 @@ from platform import python_version
 from tempfile import TemporaryDirectory
 
 from pydantic import ValidationError
+from rich.prompt import Prompt
 
 from perdoo import ARCHIVE_EXTENSIONS, IMAGE_EXTENSIONS, __version__, setup_logging
 from perdoo.archives import BaseArchive, CB7Archive, CBTArchive, CBZArchive, get_archive
 from perdoo.console import CONSOLE
 from perdoo.models import ComicInfo, Metadata, MetronInfo
-from perdoo.models.metadata import Format, Meta, Tool
+from perdoo.models.metadata import Format, Meta, Source, Tool
+from perdoo.models.metron_info import InformationSource
 from perdoo.services import Comicvine, League, Marvel, Metron
 from perdoo.settings import OutputFormat, Settings
-from perdoo.utils import (
-    comic_to_metadata,
-    create_metadata,
-    list_files,
-    metadata_to_comic,
-    metadata_to_metron,
-    metron_to_metadata,
-    sanitize,
-)
+from perdoo.utils import Details, Identifications, list_files, sanitize
 
 LOGGER = logging.getLogger("perdoo")
 
@@ -52,18 +46,81 @@ def convert_collection(path: Path, output: OutputFormat) -> None:
         archive_type.convert(old_archive=archive)
 
 
-def read_archive(archive: BaseArchive) -> tuple[Metadata, MetronInfo, ComicInfo]:
+def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
     filenames = archive.list_filenames()
-    metadata = None
     try:
+        metadata = None
         if "/Metadata.xml" in filenames:
             metadata = Metadata.from_bytes(content=archive.read_file(filename="/Metadata.xml"))
         elif "Metadata.xml" in filenames:
             metadata = Metadata.from_bytes(content=archive.read_file(filename="Metadata.xml"))
+        if metadata:
+            meta = metadata.meta
+            details = Details(
+                series=Identifications(
+                    comicvine=next(
+                        (
+                            x.value
+                            for x in metadata.issue.series.resources
+                            if x.source == Source.COMICVINE
+                        ),
+                        None,
+                    ),
+                    league=next(
+                        (
+                            x.value
+                            for x in metadata.issue.series.resources
+                            if x.source == Source.LEAGUE_OF_COMIC_GEEKS
+                        ),
+                        None,
+                    ),
+                    marvel=next(
+                        (
+                            x.value
+                            for x in metadata.issue.series.resources
+                            if x.source == Source.MARVEL
+                        ),
+                        None,
+                    ),
+                    metron=next(
+                        (
+                            x.value
+                            for x in metadata.issue.series.resources
+                            if x.source == Source.METRON
+                        ),
+                        None,
+                    ),
+                    search=metadata.issue.series.title,
+                ),
+                issue=Identifications(
+                    comicvine=next(
+                        (x.value for x in metadata.issue.resources if x.source == Source.COMICVINE),
+                        None,
+                    ),
+                    league=next(
+                        (
+                            x.value
+                            for x in metadata.issue.resources
+                            if x.source == Source.LEAGUE_OF_COMIC_GEEKS
+                        ),
+                        None,
+                    ),
+                    marvel=next(
+                        (x.value for x in metadata.issue.resources if x.source == Source.MARVEL),
+                        None,
+                    ),
+                    metron=next(
+                        (x.value for x in metadata.issue.resources if x.source == Source.METRON),
+                        None,
+                    ),
+                    search=metadata.issue.number,
+                ),
+            )
+            return meta, details
     except ValidationError:
         LOGGER.error("%s contains an invalid Metadata file", archive.path.name)  # noqa: TRY400
-    metron_info = None
     try:
+        metron_info = None
         if "/MetronInfo.xml" in filenames:
             metron_info = MetronInfo.from_bytes(
                 content=archive.read_file(filename="/MetronInfo.xml")
@@ -72,34 +129,92 @@ def read_archive(archive: BaseArchive) -> tuple[Metadata, MetronInfo, ComicInfo]
             metron_info = MetronInfo.from_bytes(
                 content=archive.read_file(filename="MetronInfo.xml")
             )
+        if metron_info:
+            details = {
+                "series": {
+                    "comicvine": metron_info.series.id
+                    if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    "league": metron_info.series.id
+                    if metron_info.id
+                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    "marvel": metron_info.series.id
+                    if metron_info.id and metron_info.id.source == InformationSource.MARVEL
+                    else None,
+                    "metron": metron_info.series.id
+                    if metron_info.id and metron_info.id.source == InformationSource.METRON
+                    else None,
+                    "search": metron_info.series.name,
+                },
+                "issue": {
+                    "comicvine": metron_info.id.value
+                    if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    "league": metron_info.id.value
+                    if metron_info.id
+                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    "marvel": metron_info.id.value
+                    if metron_info.id and metron_info.id.source == InformationSource.MARVEL
+                    else None,
+                    "metron": metron_info.id.value
+                    if metron_info.id and metron_info.id.source == InformationSource.METRON
+                    else None,
+                    "search": metron_info.number,
+                },
+            }
+            return Meta(date_=date.today(), tool=Tool(value="MetronInfo")), details
     except ValidationError:
         LOGGER.error("%s contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
-    comic_info = None
     try:
+        comic_info = None
         if "/ComicInfo.xml" in filenames:
             comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="/ComicInfo.xml"))
         elif "ComicInfo.xml" in filenames:
             comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="ComicInfo.xml"))
+        if comic_info:
+            details = {
+                "series": {
+                    "comicvine": None,
+                    "league": None,
+                    "marvel": None,
+                    "metron": None,
+                    "search": comic_info.series,
+                },
+                "issue": {
+                    "comicvine": None,
+                    "league": None,
+                    "marvel": None,
+                    "metron": None,
+                    "search": comic_info.number,
+                },
+            }
+            return Meta(date_=date.today(), tool=Tool(value="ComicInfo")), details
     except ValidationError:
         LOGGER.error("%s contains an invalid ComicInfo file", archive.path.name)  # noqa: TRY400
 
-    if not metadata:
-        if metron_info:
-            metadata = metron_to_metadata(metron_info=metron_info)
-        elif comic_info:
-            metadata = comic_to_metadata(comic_info=comic_info)
-        else:
-            metadata = create_metadata(archive=archive)
-    if not metron_info:
-        metron_info = metadata_to_metron(metadata=metadata)
-    if not comic_info:
-        comic_info = metadata_to_comic(metadata=metadata)
-    return metadata, metron_info, comic_info
+    return Meta(date_=date.today(), tool=Tool(value="Manual")), {
+        "series": {
+            "comicvine": None,
+            "league": None,
+            "marvel": None,
+            "metron": None,
+            "search": Prompt.ask("Series title", console=CONSOLE),
+        },
+        "issue": {
+            "comicvine": None,
+            "league": None,
+            "marvel": None,
+            "metron": None,
+            "search": Prompt.ask("Issue number", console=CONSOLE),
+        },
+    }
 
 
 def fetch_from_services(
-    settings: Settings, metainfo: tuple[Metadata, MetronInfo, ComicInfo]
-) -> None:
+    settings: Settings, details: Details
+) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
     marvel = None
     if settings.marvel and settings.marvel.public_key and settings.marvel.private_key:
         marvel = Marvel(settings=settings.marvel)
@@ -118,13 +233,14 @@ def fetch_from_services(
         league = League(settings.league_of_comic_geeks)
     if not marvel and not metron and not comicvine and not league:
         LOGGER.warning("No external services configured")
-        return
+        return None, None, None
 
-    success = any(
-        service and service.fetch(*metainfo) for service in (marvel, metron, comicvine, league)
-    )
-    if not success:
-        LOGGER.warning("Unable to fetch information fron any service")
+    metadata, metron_info, comic_info = None, None, None
+    for service in (league, comicvine, metron, marvel):
+        metadata, metron_info, comic_info = service.fetch(
+            details=details, metadata=metadata, metron_info=metron_info, comic_info=comic_info
+        )
+    return metadata, metron_info, comic_info
 
 
 def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
@@ -210,16 +326,16 @@ def start(settings: Settings, force: bool = False) -> None:
     convert_collection(path=settings.collection_folder, output=settings.output.format)
     for file in list_files(settings.collection_folder, f".{settings.output.format}"):
         archive = get_archive(path=file)
-        metadata, metron_info, comic_info = read_archive(archive=archive)
+        meta, details = read_meta(archive=archive)
 
         if not force:
-            difference = abs(date.today() - metadata.meta.date_)
-            if metadata.meta.tool == Tool() and difference.days < 28:
+            difference = abs(date.today() - meta.date_)
+            if meta.tool == Tool() and difference.days < 28:
                 continue
 
         CONSOLE.rule(file.stem)
-        LOGGER.info("Processing %s", file.name)
-        fetch_from_services(settings=settings, metainfo=(metadata, metron_info, comic_info))
+        LOGGER.info("Processing %s", file.stem)
+        metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
             root=settings.collection_folder,
             extension=settings.output.format.value,

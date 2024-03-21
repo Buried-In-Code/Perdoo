@@ -188,7 +188,7 @@ class Issue(PascalModel):
     language: str = Field(alias="@language", default="en")
     locations: list[TitledResource] = Field(default_factory=list)
     number: str | None = None
-    page_count: int
+    page_count: int = 0
     resources: list[Resource] = Field(default_factory=list)
     series: Series
     store_date: date | None = None
