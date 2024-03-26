@@ -270,6 +270,13 @@ class Comicvine(BaseService[Volume, Issue]):
         metron_info: MetronInfo | None,
         comic_info: ComicInfo | None,
     ) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
+        if not details.series.comicvine and details.issue.comicvine:
+            try:
+                temp = self.session.get_issue(issue_id=details.issue.comicvine)
+                details.series.comicvine = temp.volume.id
+            except ServiceError:
+                pass
+
         series = self.fetch_series(details=details)
         if not series:
             return metadata, metron_info, comic_info

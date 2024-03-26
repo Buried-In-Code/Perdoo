@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__all__ = ["list_files", "sanitize", "Details"]
+__all__ = ["list_files", "sanitize", "Details", "Identifications", "get_metadata_id"]
 
 import logging
 import re
@@ -9,16 +9,18 @@ from pathlib import Path
 
 from natsort import humansorted, ns
 
+from perdoo.models.metadata import Resource, Source
+
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
 class Identifications:
-    comicvine: int | None
-    league: int | None
-    marvel: int | None
-    metron: int | None
     search: str | None
+    comicvine: int | None = None
+    league: int | None = None
+    marvel: int | None = None
+    metron: int | None = None
 
 
 @dataclass
@@ -46,3 +48,7 @@ def sanitize(value: str | None) -> str | None:
     value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace("-", " "))
     value = " ".join(value.split())
     return value.replace(" ", "-")
+
+
+def get_metadata_id(resources: list[Resource], source: Source) -> int | None:
+    return next((x.value for x in resources if x.source == source), None)

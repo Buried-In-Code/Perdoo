@@ -21,7 +21,7 @@ LOGGER = logging.getLogger(__name__)
 class League(BaseService[Series, Comic]):
     def __init__(self: League, settings: LeagueSettings):
         cache = SQLiteCache(path=get_cache_dir() / "himon.sqlite", expiry=14)
-        self.himon = Himon(
+        self.session = Himon(
             client_id=settings.client_id,
             client_secret=settings.client_secret,
             access_token=settings.access_token,
@@ -29,7 +29,7 @@ class League(BaseService[Series, Comic]):
         )
         if not settings.access_token:
             LOGGER.info("Generating new access token")
-            self.himon.access_token = settings.access_token = self.himon.generate_access_token()
+            self.session.access_token = settings.access_token = self.session.generate_access_token()
 
     def _get_series_id(self: League, title: str) -> int | None:
         pass

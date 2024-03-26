@@ -21,7 +21,7 @@ LOGGER = logging.getLogger(__name__)
 class Marvel(BaseService[Series, Comic]):
     def __init__(self: Marvel, settings: MarvelSettings):
         cache = SqliteCache(db_name=str(get_cache_dir() / "mokkari.sqlite"), expire=14)
-        self.esak = Esak(
+        self.session = Esak(
             public_key=settings.public_key, private_key=settings.private_key, cache=cache
         )
 

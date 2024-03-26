@@ -252,7 +252,9 @@ class Metron(BaseService[Series, Issue]):
 
         if not metron_info.id or metron_info.id.source == InformationSource.METRON:
             metron_info.id = Source(source=InformationSource.METRON, value=issue.id)
-        if not metron_info.id or metron_info.id.source == InformationSource.COMIC_VINE:
+        if issue.cv_id and (
+            not metron_info.id or metron_info.id.source == InformationSource.COMIC_VINE
+        ):
             metron_info.id = Source(source=InformationSource.COMIC_VINE, value=issue.cv_id)
         metron_info.arcs = [Arc(id=x.id, name=x.name) for x in issue.arcs]
         metron_info.characters = [Resource(id=x.id, value=x.name) for x in issue.characters]
@@ -314,6 +316,13 @@ class Metron(BaseService[Series, Issue]):
         metron_info: MetronInfo | None,
         comic_info: ComicInfo | None,
     ) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
+        if not details.series.metron and details.issue.metron:
+            try:
+                temp = self.session.issue(_id=details.issue.metron)
+                details.series.metron = temp.series.id
+            except ApiError:
+                pass
+
         series = self.fetch_series(details=details)
         if not series:
             return metadata, metron_info, comic_info
