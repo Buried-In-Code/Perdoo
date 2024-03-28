@@ -231,7 +231,7 @@ def rename_images(folder: Path, filename: str) -> None:
         new_filename = f"{filename}_{str(index).zfill(pad_count)}{img_file.suffix}"
         if img_file.name != new_filename:
             LOGGER.info("Renamed %s to %s", img_file.name, new_filename)
-            img_file.rename(folder / f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}")
+            shutil.move(img_file, folder / new_filename)
 
 
 def process_pages(
