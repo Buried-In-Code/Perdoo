@@ -4,7 +4,17 @@ updates:
     directory: /
     schedule:
       interval: daily
+    groups:
+      workflows:
+        patterns:
+          - "*"
+
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: daily
+    groups:
+      dev-deps:
+        dependency-type: "development"
+      prod-deps:
+        dependency-type: "production"

@@ -50,7 +50,12 @@ class Metron(BaseService[Series, Issue]):
             if not options:
                 LOGGER.warning("Unable to find any Series with the title: '%s'", title)
             index = create_menu(
-                options=[f"{x.id} | {x.display_name}" for x in options],
+                options=[
+                    f"{x.id} | {x.display_name} v{x.volume}"
+                    if x.volume > 1
+                    else f"{x.id} | {x.display_name}"
+                    for x in options
+                ],
                 title="Metron Series",
                 default="None of the Above",
             )
