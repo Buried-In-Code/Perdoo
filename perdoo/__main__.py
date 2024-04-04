@@ -154,7 +154,7 @@ def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
 
     return Meta(date_=date.today(), tool=Tool(value="Manual")), Details(
         series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
-        issue=Identifications(search=Prompt.ask("Issue number", console=CONSOLE)),
+        issue=Identifications(),
     )
 
 
@@ -272,6 +272,8 @@ def start(settings: Settings, force: bool = False) -> None:
     convert_collection(path=settings.collection_folder, output=settings.output.format)
     for file in list_files(settings.collection_folder, f".{settings.output.format}"):
         archive = get_archive(path=file)
+        CONSOLE.rule(file.stem)
+        LOGGER.info("Processing %s", file.stem)
         meta, details = read_meta(archive=archive)
 
         if not force:
@@ -279,8 +281,6 @@ def start(settings: Settings, force: bool = False) -> None:
             if meta.tool == Tool() and difference.days < 28:
                 continue
 
-        CONSOLE.rule(file.stem)
-        LOGGER.info("Processing %s", file.stem)
         metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
             root=settings.collection_folder,

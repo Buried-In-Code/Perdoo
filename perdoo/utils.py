@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class Identifications:
-    search: str | None
+    search: str | None = None
     comicvine: int | None = None
     league: int | None = None
     marvel: int | None = None
