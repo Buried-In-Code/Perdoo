@@ -146,7 +146,7 @@ class Metron(BaseService[Series, Issue]):
     def _process_metadata(
         self: Metron, metadata: Metadata | None, series: Series, issue: Issue
     ) -> Metadata | None:
-        from perdoo.models.metadata import Credit, Format, Meta, Resource, StoryArc, TitledResource
+        from perdoo.models.metadata import Credit, Format, Meta, Resource, StoryArc, TitledResource, Issue, Series
 
         metadata = metadata or Metadata(
             issue=Issue(
@@ -234,6 +234,7 @@ class Metron(BaseService[Series, Issue]):
             Role,
             RoleResource,
             Source,
+            Series,
         )
 
         metron_info = metron_info or MetronInfo(

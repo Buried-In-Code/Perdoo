@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 import xmltodict
 from natsort import humansorted, ns
 from PIL import Image
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, NonNegativeFloat
 
 from perdoo.models._base import InfoModel, PascalModel
 
@@ -37,7 +37,7 @@ class YesNo(Enum):
         for entry in YesNo:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid comic_info.YesNo")
+        raise ValueError(f"`{value}` isn't a valid comic_info.YesNo")
 
     def __lt__(self: YesNo, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -59,7 +59,7 @@ class Manga(Enum):
         for entry in Manga:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid comic_info.Manga")
+        raise ValueError(f"`{value}` isn't a valid comic_info.Manga")
 
     def __lt__(self: Manga, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -92,7 +92,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid comic_info.AgeRating")
+        raise ValueError(f"`{value}` isn't a valid comic_info.AgeRating")
 
     def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -121,7 +121,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid comic_info.PageType")
+        raise ValueError(f"`{value}` isn't a valid comic_info.PageType")
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -215,14 +215,14 @@ class ComicInfo(PascalModel, InfoModel):
     series_group: str | None = None
     age_rating: AgeRating = AgeRating.UNKNOWN
     pages: list[Page] = Field(default_factory=list)
-    community_rating: float | None = Field(default=None, ge=0, le=5)
+    community_rating: NonNegativeFloat | None = Field(default=None, le=5)
     main_character_or_team: str | None = None
     review: str | None = None
 
     list_fields: ClassVar[dict[str, str]] = {"Pages": "Page"}
 
     def __init__(self: ComicInfo, **data: Any):
-        self.unwrap_list(mappings=ComicInfo.list_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     @property

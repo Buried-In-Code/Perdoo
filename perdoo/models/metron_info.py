@@ -21,13 +21,14 @@ __all__ = [
 ]
 
 from datetime import date
+from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar
 
 import xmltodict
 from PIL import Image
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, PositiveInt, PositiveFloat
 
 from perdoo.models._base import InfoModel, PascalModel
 
@@ -44,7 +45,7 @@ class InformationSource(Enum):
         for entry in InformationSource:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.InformationSource")
+        raise ValueError(f"`{value}` isn't a valid metron_info.InformationSource")
 
     def __lt__(self: InformationSource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -57,11 +58,11 @@ class InformationSource(Enum):
 
 class Source(PascalModel):
     source: InformationSource = Field(alias="@source")
-    value: int = Field(alias="#text", gt=0)
+    value: PositiveInt = Field(alias="#text")
 
 
 class Resource(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     value: str = Field(alias="#text")
 
     def __lt__(self: Resource, other) -> int:  # noqa: ANN001
@@ -98,7 +99,7 @@ class Format(Enum):
         if value.casefold() == "Cancelled Series".casefold():
             return Format.SERIES
         # endregion
-        raise ValueError(f"'{value}' isnt a valid metron_info.Format")
+        raise ValueError(f"`{value}` isn't a valid metron_info.Format")
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -110,7 +111,7 @@ class Format(Enum):
 
 
 class Series(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     lang: str = Field(alias="@lang", default="en")
     name: str
     sort_name: str | None = None
@@ -120,7 +121,7 @@ class Series(PascalModel):
 
 class Price(PascalModel):
     country: str = Field(alias="@country")
-    value: float = Field(alias="#text")
+    value: Decimal = Field(alias="#text")
 
     def __lt__(self: Price, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -158,7 +159,7 @@ class Genre(Enum):
         for entry in Genre:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.Genre")
+        raise ValueError(f"`{value}` isn't a valid metron_info.Genre")
 
     def __lt__(self: Genre, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -170,7 +171,7 @@ class Genre(Enum):
 
 
 class GenreResource(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     value: Genre = Field(alias="#text")
 
     def __lt__(self: GenreResource, other) -> int:  # noqa: ANN001
@@ -188,9 +189,9 @@ class GenreResource(PascalModel):
 
 
 class Arc(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     name: str
-    number: int | None = Field(default=None, gt=0)
+    number: PositiveInt | None = None
 
     def __lt__(self: Arc, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -242,7 +243,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.AgeRating")
+        raise ValueError(f"`{value}` isn't a valid metron_info.AgeRating")
 
     def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -302,7 +303,7 @@ class Role(Enum):
         for entry in Role:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.Role")
+        raise ValueError(f"`{value}` isn't a valid metron_info.Role")
 
     def __lt__(self: Role, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -314,7 +315,7 @@ class Role(Enum):
 
 
 class RoleResource(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     value: Role = Field(alias="#text")
 
     def __lt__(self: RoleResource, other) -> int:  # noqa: ANN001
@@ -339,8 +340,8 @@ class Credit(PascalModel):
     text_fields: ClassVar[list[str]] = ["Creator", "Roles"]
 
     def __init__(self: Credit, **data: Any):
-        self.unwrap_list(mappings=Credit.list_fields, content=data)
-        self.to_xml_text(mappings=Credit.text_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
+        self.to_xml_text(mappings=self.text_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: Credit, other) -> int:  # noqa: ANN001
@@ -375,7 +376,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.PageType")
+        raise ValueError(f"`{value}` isn't a valid metron_info.PageType")
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -488,8 +489,8 @@ class MetronInfo(PascalModel, InfoModel):
     ]
 
     def __init__(self: MetronInfo, **data: Any):
-        self.unwrap_list(mappings=MetronInfo.list_fields, content=data)
-        self.to_xml_text(mappings=MetronInfo.text_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
+        self.to_xml_text(mappings=self.text_fields, content=data)
         super().__init__(**data)
 
     @classmethod
