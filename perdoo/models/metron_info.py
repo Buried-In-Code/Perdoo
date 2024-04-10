@@ -85,6 +85,7 @@ class Format(Enum):
     ONE_SHOT = "One-Shot"
     SERIES = "Series"
     TRADE_PAPERBACK = "Trade Paperback"
+    HARDCOVER = "Hardcover"
 
     @staticmethod
     def load(value: str) -> Format:
@@ -95,8 +96,6 @@ class Format(Enum):
         if value.casefold() == "Limited Series".casefold():
             return Format.LIMITED
         if value.casefold() == "Cancelled Series".casefold():
-            return Format.SERIES
-        if value.casefold() == "Hard Cover".casefold():
             return Format.SERIES
         # endregion
         raise ValueError(f"'{value}' isnt a valid metron_info.Format")
@@ -204,6 +203,25 @@ class Arc(PascalModel):
         return self.name == other.name
 
     def __hash__(self: Arc) -> int:
+        return hash((type(self), self.name))
+
+
+class Universe(PascalModel):
+    id: int | None = Field(alias="@id", default=None, gt=0)
+    name: str
+    designation: str | None = None
+
+    def __lt__(self: Universe, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.name < other.name
+
+    def __eq__(self: Universe, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.name == other.name
+
+    def __hash__(self: Universe) -> int:
         return hash((type(self), self.name))
 
 
@@ -431,6 +449,7 @@ class MetronInfo(PascalModel, InfoModel):
     arcs: list[Arc] = Field(default_factory=list)
     characters: list[Resource] = Field(default_factory=list)
     teams: list[Resource] = Field(default_factory=list)
+    universes: list[Universe] = Field(default_factory=list)
     locations: list[Resource] = Field(default_factory=list)
     black_and_white: bool = False
     gtin: GTIN | None = Field(alias="GTIN", default=None)
@@ -449,6 +468,7 @@ class MetronInfo(PascalModel, InfoModel):
         "Arcs": "Arc",
         "Characters": "Character",
         "Teams": "Team",
+        "Universes": "Universe",
         "Locations": "Location",
         "Reprints": "Reprint",
         "Credits": "Credit",
