@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: daily
     groups:
-      workflows:
+      github_actions:
         patterns:
           - "*"
 
@@ -14,7 +14,6 @@ updates:
     schedule:
       interval: daily
     groups:
-      dev-deps:
-        dependency-type: "development"
-      prod-deps:
-        dependency-type: "production"
+      python:
+        patterns:
+          - "*"

@@ -14,7 +14,7 @@ from simyan.schemas.volume import Volume
 from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_dir
-from perdoo.console import CONSOLE, DatePrompt, create_menu
+from perdoo.console import CONSOLE, create_menu
 from perdoo.models import ComicInfo, Metadata, MetronInfo
 from perdoo.models.metadata import Source
 from perdoo.models.metron_info import InformationSource
@@ -118,9 +118,7 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.exception("")
             return None
 
-    def _process_metadata(
-        self: Comicvine, metadata: Metadata | None, series: Volume, issue: Issue
-    ) -> Metadata | None:
+    def _process_metadata(self: Comicvine, series: Volume, issue: Issue) -> Metadata | None:
         from perdoo.models.metadata import (
             Credit,
             Issue,
@@ -131,66 +129,69 @@ class Comicvine(BaseService[Volume, Issue]):
             TitledResource,
         )
 
-        metadata = metadata or Metadata(
+        return Metadata(
             issue=Issue(
-                series=Series(
-                    publisher=TitledResource(title=series.publisher.name), title=series.name
-                ),
+                characters=[
+                    TitledResource(
+                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
+                    )
+                    for x in issue.characters
+                ],
+                cover_date=issue.cover_date,
+                credits=[
+                    Credit(
+                        creator=TitledResource(
+                            resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
+                        ),
+                        roles=[
+                            TitledResource(title=r.strip()) for r in re.split(r"[~\r\n,]+", x.roles)
+                        ],
+                    )
+                    for x in issue.creators
+                ],
+                locations=[
+                    TitledResource(
+                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
+                    )
+                    for x in issue.locations
+                ],
                 number=issue.number,
+                resources=[Resource(source=Source.COMICVINE, value=issue.id)],
+                series=Series(
+                    publisher=TitledResource(
+                        resources=[Resource(source=Source.COMICVINE, value=series.publisher.id)],
+                        title=series.publisher.name,
+                    ),
+                    resources=[Resource(source=Source.COMICVINE, value=series.id)],
+                    start_year=series.start_year,
+                    title=series.name,
+                ),
+                store_date=issue.store_date,
+                story_arcs=[
+                    StoryArc(
+                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
+                    )
+                    for x in issue.story_arcs
+                ],
+                summary=issue.summary,
+                teams=[
+                    TitledResource(
+                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
+                    )
+                    for x in issue.teams
+                ],
+                title=issue.name,
             ),
             meta=Meta(date_=date.today()),
         )
 
-        resources = set(metadata.issue.series.publisher.resources)
-        resources.add(Resource(source=Source.COMICVINE, value=series.publisher.id))
-        metadata.issue.series.publisher.resources = list(resources)
-        metadata.issue.series.publisher.title = series.publisher.name
+    def _process_metron_info(self: BaseService, series: Volume, issue: Issue) -> MetronInfo | None:
+        def load_role(value: str) -> Role:
+            try:
+                return Role.load(value=value.strip())
+            except ValueError:
+                return Role.OTHER
 
-        resources = set(metadata.issue.series.resources)
-        resources.add(Resource(source=Source.COMICVINE, value=series.id))
-        metadata.issue.series.resources = list(resources)
-        metadata.issue.series.start_year = series.start_year
-        metadata.issue.series.title = series.name
-
-        resources = set(metadata.issue.resources)
-        resources.add(Resource(source=Source.COMICVINE, value=issue.id))
-        metadata.issue.resources = list(resources)
-        metadata.issue.characters = [
-            TitledResource(resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name)
-            for x in issue.characters
-        ]
-        metadata.issue.cover_date = issue.cover_date
-        metadata.issue.credits = [
-            Credit(
-                creator=TitledResource(
-                    resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
-                ),
-                roles=[TitledResource(title=r.strip()) for r in re.split(r"[~\r\n,]+", x.roles)],
-            )
-            for x in issue.creators
-        ]
-        metadata.issue.locations = [
-            TitledResource(resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name)
-            for x in issue.locations
-        ]
-        metadata.issue.number = issue.number
-        metadata.issue.store_date = issue.store_date
-        metadata.issue.story_arcs = [
-            StoryArc(resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name)
-            for x in issue.story_arcs
-        ]
-        metadata.issue.summary = issue.summary
-        metadata.issue.teams = [
-            TitledResource(resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name)
-            for x in issue.teams
-        ]
-        metadata.issue.title = issue.name
-
-        return metadata
-
-    def _process_metron_info(
-        self: BaseService, metron_info: MetronInfo | None, series: Volume, issue: Issue
-    ) -> MetronInfo | None:
         from perdoo.models.metron_info import (
             Arc,
             Credit,
@@ -199,63 +200,49 @@ class Comicvine(BaseService[Volume, Issue]):
             RoleResource,
             Series,
             Source,
+            Sources,
         )
 
-        metron_info = metron_info or MetronInfo(
-            publisher=Resource(value=series.publisher.name),
-            series=Series(name=series.name),
-            cover_date=issue.cover_date or DatePrompt.ask("Cover date", console=CONSOLE),
-            genres=[],
+        return MetronInfo(
+            id=Sources(primary=Source(source=InformationSource.COMIC_VINE, value=issue.id)),
+            publisher=Resource(id=series.publisher.id, value=series.publisher.name),
+            series=Series(id=series.id, name=series.name),
+            collection_title=issue.name,
+            number=issue.number,
+            summary=issue.summary,
+            cover_date=issue.cover_date,
+            store_date=issue.store_date,
+            arcs=[Arc(id=x.id, name=x.name) for x in issue.story_arcs],
+            characters=[Resource(id=x.id, value=x.name) for x in issue.characters],
+            teams=[Resource(id=x.id, value=x.name) for x in issue.teams],
+            locations=[Resource(id=x.id, value=x.name) for x in issue.locations],
+            url=issue.site_url,
+            credits=[
+                Credit(
+                    creator=Resource(id=x.id, value=x.name),
+                    roles=[
+                        RoleResource(value=load_role(value=r))
+                        for r in re.split(r"[~\r\n,]+", x.roles)
+                    ],
+                )
+                for x in issue.creators
+            ],
         )
 
-        if not metron_info.id or metron_info.id.source == InformationSource.COMIC_VINE:
-            metron_info.publisher.id = series.publisher.id
-        metron_info.publisher.value = series.publisher.name
+    def _process_comic_info(self: BaseService, series: Volume, issue: Issue) -> ComicInfo | None:
+        comic_info = ComicInfo(
+            title=issue.name,
+            series=series.name,
+            number=issue.number,
+            summary=issue.summary,
+            publisher=series.publisher.name if series.publisher else None,
+            web=issue.site_url,
+        )
 
-        if not metron_info.id or metron_info.id.source == InformationSource.COMIC_VINE:
-            metron_info.series.id = series.id
-        metron_info.series.name = series.name
-
-        if not metron_info.id or metron_info.id.source == InformationSource.COMIC_VINE:
-            metron_info.id = Source(source=InformationSource.COMIC_VINE, value=issue.id)
-        metron_info.collection_title = issue.name
-        metron_info.number = issue.number
-        metron_info.summary = issue.summary
-        metron_info.cover_date = issue.cover_date or metron_info.cover_date
-        metron_info.store_date = issue.store_date
-        metron_info.arcs = [Arc(id=x.id, name=x.name) for x in issue.story_arcs]
-        metron_info.characters = [Resource(id=x.id, value=x.name) for x in issue.characters]
-        metron_info.teams = [Resource(id=x.id, value=x.name) for x in issue.teams]
-        metron_info.locations = [Resource(id=x.id, value=x.name) for x in issue.locations]
-        metron_info.url = issue.site_url
-        credits = []  # noqa: A001
-        for x in issue.creators:
-            roles = []
-            for r in re.split(r"[~\r\n,]+", x.roles):
-                try:
-                    roles.append(RoleResource(value=Role.load(value=r.strip())))
-                except ValueError:  # noqa: PERF203
-                    roles.append(RoleResource(value=Role.OTHER))
-            credits.append(Credit(creator=Resource(id=x.id, value=x.name), roles=roles))
-        metron_info.credits = credits
-
-        return metron_info
-
-    def _process_comic_info(
-        self: BaseService, comic_info: ComicInfo | None, series: Volume, issue: Issue
-    ) -> ComicInfo | None:
-        comic_info = comic_info or ComicInfo()
-
-        comic_info.title = issue.name
-        comic_info.series = series.name
-        comic_info.number = issue.number
-        comic_info.summary = issue.summary
         comic_info.cover_date = issue.cover_date
         comic_info.credits = {
             x.name: [r.strip() for r in re.split(r"[~\r\n,]+", x.roles)] for x in issue.creators
         }
-        comic_info.publisher = series.publisher.name if series.publisher else None
-        comic_info.web = issue.site_url
         comic_info.character_list = [x.name for x in issue.characters]
         comic_info.team_list = [x.name for x in issue.teams]
         comic_info.location_list = [x.name for x in issue.locations]
@@ -264,11 +251,7 @@ class Comicvine(BaseService[Volume, Issue]):
         return comic_info
 
     def fetch(
-        self: Comicvine,
-        details: Details,
-        metadata: Metadata | None,
-        metron_info: MetronInfo | None,
-        comic_info: ComicInfo | None,
+        self: Comicvine, details: Details
     ) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
         if not details.series.comicvine and details.issue.comicvine:
             try:
@@ -279,14 +262,14 @@ class Comicvine(BaseService[Volume, Issue]):
 
         series = self.fetch_series(details=details)
         if not series:
-            return metadata, metron_info, comic_info
+            return None, None, None
 
         issue = self.fetch_issue(series_id=series.id, details=details)
         if not issue:
-            return metadata, metron_info, comic_info
+            return None, None, None
 
-        metadata = self._process_metadata(metadata=metadata, series=series, issue=issue)
-        metron_info = self._process_metron_info(metron_info=metron_info, series=series, issue=issue)
-        comic_info = self._process_comic_info(comic_info=comic_info, series=series, issue=issue)
+        metadata = self._process_metadata(series=series, issue=issue)
+        metron_info = self._process_metron_info(series=series, issue=issue)
+        comic_info = self._process_comic_info(series=series, issue=issue)
 
         return metadata, metron_info, comic_info

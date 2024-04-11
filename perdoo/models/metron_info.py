@@ -1,34 +1,33 @@
 from __future__ import annotations
 
 __all__ = [
-    "InformationSource",
-    "Source",
-    "Resource",
-    "Format",
-    "Series",
-    "Price",
-    "Genre",
-    "GenreResource",
-    "Arc",
     "GTIN",
     "AgeRating",
+    "Arc",
+    "Credit",
+    "Format",
+    "Genre",
+    "GenreResource",
+    "InformationSource",
+    "MetronInfo",
+    "Price",
+    "Resource",
     "Role",
     "RoleResource",
-    "Credit",
-    "PageType",
-    "Page",
-    "MetronInfo",
+    "Series",
+    "Source",
+    "Sources",
+    "Universe",
 ]
 
 from datetime import date
-from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar
 
 import xmltodict
 from PIL import Image
-from pydantic import Field, HttpUrl, PositiveInt, PositiveFloat
+from pydantic import Field, HttpUrl, PositiveInt
 
 from perdoo.models._base import InfoModel, PascalModel
 
@@ -60,6 +59,24 @@ class Source(PascalModel):
     source: InformationSource = Field(alias="@source")
     value: PositiveInt = Field(alias="#text")
 
+    def __lt__(self: Source, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.source < other.source
+
+    def __eq__(self: Source, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.source == other.source
+
+    def __hash__(self: Source) -> int:
+        return hash((type(self), self.source))
+
+
+class Sources(PascalModel):
+    primary: Source
+    alternative: list[Source] = Field(default_factory=list)
+
 
 class Resource(PascalModel):
     id: PositiveInt | None = Field(alias="@id", default=None)
@@ -82,7 +99,7 @@ class Resource(PascalModel):
 class Format(Enum):
     ANNUAL = "Annual"
     GRAPHIC_NOVEL = "Graphic Novel"
-    LIMITED = "Limited"
+    LIMITED_SERIES = "Limited Series"
     ONE_SHOT = "One-Shot"
     SERIES = "Series"
     TRADE_PAPERBACK = "Trade Paperback"
@@ -94,9 +111,7 @@ class Format(Enum):
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         # region Manual matches
-        if value.casefold() == "Limited Series".casefold():
-            return Format.LIMITED
-        if value.casefold() == "Cancelled Series".casefold():
+        if value.casefold() in ["Cancelled Series".casefold(), "Ongoing Series".casefold()]:
             return Format.SERIES
         # endregion
         raise ValueError(f"`{value}` isn't a valid metron_info.Format")
@@ -121,7 +136,7 @@ class Series(PascalModel):
 
 class Price(PascalModel):
     country: str = Field(alias="@country")
-    value: Decimal = Field(alias="#text")
+    value: float = Field(alias="#text")
 
     def __lt__(self: Price, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -433,7 +448,7 @@ class Page(PascalModel):
 
 
 class MetronInfo(PascalModel, InfoModel):
-    id: Source | None = Field(alias="ID", default=None)
+    id: Sources | None = Field(alias="ID", default=None)
     publisher: Resource
     series: Series
     collection_title: str | None = None
@@ -442,17 +457,16 @@ class MetronInfo(PascalModel, InfoModel):
     summary: str | None = None
     notes: str | None = None
     prices: list[Price] = Field(default_factory=list)
-    cover_date: date
+    cover_date: date | None = None
     store_date: date | None = None
     page_count: int = 0
-    genres: list[GenreResource] = Field(default_list=list)
+    genres: list[GenreResource] = Field(default_factory=list)
     tags: list[Resource] = Field(default_factory=list)
     arcs: list[Arc] = Field(default_factory=list)
     characters: list[Resource] = Field(default_factory=list)
     teams: list[Resource] = Field(default_factory=list)
     universes: list[Universe] = Field(default_factory=list)
     locations: list[Resource] = Field(default_factory=list)
-    black_and_white: bool = False
     gtin: GTIN | None = Field(alias="GTIN", default=None)
     age_rating: AgeRating = Field(default=AgeRating.UNKNOWN)
     reprints: list[Resource] = Field(default_factory=list)

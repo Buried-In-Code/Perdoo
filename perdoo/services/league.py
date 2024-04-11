@@ -43,26 +43,17 @@ class League(BaseService[Series, Comic]):
     def fetch_issue(self: League, series_id: int, details: Details) -> Comic | None:
         pass
 
-    def _process_metadata(
-        self: League, metadata: Metadata | None, series: Series, issue: Comic
-    ) -> Metadata | None:
+    def _process_metadata(self: League, series: Series, issue: Comic) -> Metadata | None:
         pass
 
-    def _process_metron_info(
-        self: League, metron_info: MetronInfo | None, series: Series, issue: Comic
-    ) -> MetronInfo | None:
+    def _process_metron_info(self: League, series: Series, issue: Comic) -> MetronInfo | None:
         pass
 
-    def _process_comic_info(
-        self: League, comic_info: ComicInfo | None, series: Series, issue: Comic
-    ) -> ComicInfo | None:
+    def _process_comic_info(self: League, series: Series, issue: Comic) -> ComicInfo | None:
         pass
 
     def fetch(
         self: League,
         details: Details,  # noqa: ARG002
-        metadata: Metadata | None,
-        metron_info: MetronInfo | None,
-        comic_info: ComicInfo | None,
     ) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
-        return metadata, metron_info, comic_info
+        return None, None, None

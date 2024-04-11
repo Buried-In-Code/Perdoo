@@ -181,12 +181,11 @@ def fetch_from_services(
         LOGGER.warning("No external services configured")
         return None, None, None
 
-    metadata, metron_info, comic_info = None, None, None
-    for service in (league, comicvine, metron, marvel):
-        metadata, metron_info, comic_info = service.fetch(
-            details=details, metadata=metadata, metron_info=metron_info, comic_info=comic_info
-        )
-    return metadata, metron_info, comic_info
+    for service in (marvel, metron, comicvine, league):
+        metadata, metron_info, comic_info = service.fetch(details=details)
+        if metadata and metron_info and comic_info:
+            return metadata, metron_info, comic_info
+    return None, None, None
 
 
 def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
@@ -291,6 +290,7 @@ def start(settings: Settings, force: bool = False) -> None:
             temp_folder = Path(temp_str)
             if not archive.extract_files(destination=temp_folder):
                 return
+            LOGGER.info("Processing %s pages", file.stem)
             process_pages(
                 folder=temp_folder,
                 metadata=metadata,
