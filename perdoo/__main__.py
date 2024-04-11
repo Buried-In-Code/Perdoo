@@ -9,23 +9,18 @@ from platform import python_version
 from tempfile import TemporaryDirectory
 
 from pydantic import ValidationError
+from rich.prompt import Prompt
 
 from perdoo import ARCHIVE_EXTENSIONS, IMAGE_EXTENSIONS, __version__, setup_logging
 from perdoo.archives import BaseArchive, CB7Archive, CBTArchive, CBZArchive, get_archive
 from perdoo.console import CONSOLE
 from perdoo.models import ComicInfo, Metadata, MetronInfo
-from perdoo.models.metadata import Format, Meta, Tool
+from perdoo.models._base import InfoModel
+from perdoo.models.metadata import Format, Meta, Source, Tool
+from perdoo.models.metron_info import InformationSource
 from perdoo.services import Comicvine, League, Marvel, Metron
 from perdoo.settings import OutputFormat, Settings
-from perdoo.utils import (
-    comic_to_metadata,
-    create_metadata,
-    list_files,
-    metadata_to_comic,
-    metadata_to_metron,
-    metron_to_metadata,
-    sanitize,
-)
+from perdoo.utils import Details, Identifications, get_metadata_id, list_files, sanitize
 
 LOGGER = logging.getLogger("perdoo")
 
@@ -52,54 +47,120 @@ def convert_collection(path: Path, output: OutputFormat) -> None:
         archive_type.convert(old_archive=archive)
 
 
-def read_archive(archive: BaseArchive) -> tuple[Metadata, MetronInfo, ComicInfo]:
+def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
     filenames = archive.list_filenames()
-    metadata = None
+
+    def read_meta_file(cls: type[InfoModel], filename: str) -> InfoModel | None:
+        if filename in filenames:
+            return cls.from_bytes(content=archive.read_file(filename=filename))
+        return None
+
     try:
-        if "/Metadata.xml" in filenames:
-            metadata = Metadata.from_bytes(content=archive.read_file(filename="/Metadata.xml"))
-        elif "Metadata.xml" in filenames:
-            metadata = Metadata.from_bytes(content=archive.read_file(filename="Metadata.xml"))
+        metadata = read_meta_file(cls=Metadata, filename="/Metadata.xml") or read_meta_file(
+            cls=Metadata, filename="Metadata.xml"
+        )
+        if metadata:
+            meta = metadata.meta
+            details = Details(
+                series=Identifications(
+                    search=metadata.issue.series.title,
+                    comicvine=get_metadata_id(
+                        resources=metadata.issue.series.resources, source=Source.COMICVINE
+                    ),
+                    league=get_metadata_id(
+                        resources=metadata.issue.series.resources,
+                        source=Source.LEAGUE_OF_COMIC_GEEKS,
+                    ),
+                    marvel=get_metadata_id(
+                        resources=metadata.issue.series.resources, source=Source.MARVEL
+                    ),
+                    metron=get_metadata_id(
+                        resources=metadata.issue.series.resources, source=Source.METRON
+                    ),
+                ),
+                issue=Identifications(
+                    search=metadata.issue.number,
+                    comicvine=get_metadata_id(
+                        resources=metadata.issue.resources, source=Source.COMICVINE
+                    ),
+                    league=get_metadata_id(
+                        resources=metadata.issue.resources, source=Source.LEAGUE_OF_COMIC_GEEKS
+                    ),
+                    marvel=get_metadata_id(
+                        resources=metadata.issue.resources, source=Source.MARVEL
+                    ),
+                    metron=get_metadata_id(
+                        resources=metadata.issue.resources, source=Source.METRON
+                    ),
+                ),
+            )
+            return meta, details
     except ValidationError:
         LOGGER.error("%s contains an invalid Metadata file", archive.path.name)  # noqa: TRY400
-    metron_info = None
     try:
-        if "/MetronInfo.xml" in filenames:
-            metron_info = MetronInfo.from_bytes(
-                content=archive.read_file(filename="/MetronInfo.xml")
+        metron_info = read_meta_file(cls=MetronInfo, filename="/MetronInfo.xml") or read_meta_file(
+            cls=MetronInfo, filename="MetronInfo.xml"
+        )
+        if metron_info:
+            details = Details(
+                series=Identifications(
+                    search=metron_info.series.name,
+                    comicvine=metron_info.series.id
+                    if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    league=metron_info.series.id
+                    if metron_info.id
+                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    marvel=metron_info.series.id
+                    if metron_info.id and metron_info.id.source == InformationSource.MARVEL
+                    else None,
+                    metron=metron_info.series.id
+                    if metron_info.id and metron_info.id.source == InformationSource.METRON
+                    else None,
+                ),
+                issue=Identifications(
+                    search=metron_info.number,
+                    comicvine=metron_info.id.value
+                    if metron_info.id and metron_info.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    league=metron_info.id.value
+                    if metron_info.id
+                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    marvel=metron_info.id.value
+                    if metron_info.id and metron_info.id.source == InformationSource.MARVEL
+                    else None,
+                    metron=metron_info.id.value
+                    if metron_info.id and metron_info.id.source == InformationSource.METRON
+                    else None,
+                ),
             )
-        elif "MetronInfo.xml" in filenames:
-            metron_info = MetronInfo.from_bytes(
-                content=archive.read_file(filename="MetronInfo.xml")
-            )
+            return Meta(date_=date.today(), tool=Tool(value="MetronInfo")), details
     except ValidationError:
         LOGGER.error("%s contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
-    comic_info = None
     try:
-        if "/ComicInfo.xml" in filenames:
-            comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="/ComicInfo.xml"))
-        elif "ComicInfo.xml" in filenames:
-            comic_info = ComicInfo.from_bytes(content=archive.read_file(filename="ComicInfo.xml"))
+        comic_info = read_meta_file(cls=ComicInfo, filename="/ComicInfo.xml") or read_meta_file(
+            cls=ComicInfo, filename="ComicInfo.xml"
+        )
+        if comic_info:
+            details = Details(
+                series=Identifications(search=comic_info.series),
+                issue=Identifications(search=comic_info.number),
+            )
+            return Meta(date_=date.today(), tool=Tool(value="ComicInfo")), details
     except ValidationError:
         LOGGER.error("%s contains an invalid ComicInfo file", archive.path.name)  # noqa: TRY400
 
-    if not metadata:
-        if metron_info:
-            metadata = metron_to_metadata(metron_info=metron_info)
-        elif comic_info:
-            metadata = comic_to_metadata(comic_info=comic_info)
-        else:
-            metadata = create_metadata(archive=archive)
-    if not metron_info:
-        metron_info = metadata_to_metron(metadata=metadata)
-    if not comic_info:
-        comic_info = metadata_to_comic(metadata=metadata)
-    return metadata, metron_info, comic_info
+    return Meta(date_=date.today(), tool=Tool(value="Manual")), Details(
+        series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
+        issue=Identifications(),
+    )
 
 
 def fetch_from_services(
-    settings: Settings, metainfo: tuple[Metadata, MetronInfo, ComicInfo]
-) -> None:
+    settings: Settings, details: Details
+) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
     marvel = None
     if settings.marvel and settings.marvel.public_key and settings.marvel.private_key:
         marvel = Marvel(settings=settings.marvel)
@@ -118,13 +179,13 @@ def fetch_from_services(
         league = League(settings.league_of_comic_geeks)
     if not marvel and not metron and not comicvine and not league:
         LOGGER.warning("No external services configured")
-        return
+        return None, None, None
 
-    success = any(
-        service and service.fetch(*metainfo) for service in (marvel, metron, comicvine, league)
-    )
-    if not success:
-        LOGGER.warning("Unable to fetch information fron any service")
+    for service in (marvel, metron, comicvine, league):
+        metadata, metron_info, comic_info = service.fetch(details=details)
+        if metadata and metron_info and comic_info:
+            return metadata, metron_info, comic_info
+    return None, None, None
 
 
 def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
@@ -169,7 +230,7 @@ def rename_images(folder: Path, filename: str) -> None:
         new_filename = f"{filename}_{str(index).zfill(pad_count)}{img_file.suffix}"
         if img_file.name != new_filename:
             LOGGER.info("Renamed %s to %s", img_file.name, new_filename)
-            img_file.rename(folder / f"{filename}-{str(index).zfill(pad_count)}{img_file.suffix}")
+            shutil.move(img_file, folder / new_filename)
 
 
 def process_pages(
@@ -210,16 +271,16 @@ def start(settings: Settings, force: bool = False) -> None:
     convert_collection(path=settings.collection_folder, output=settings.output.format)
     for file in list_files(settings.collection_folder, f".{settings.output.format}"):
         archive = get_archive(path=file)
-        metadata, metron_info, comic_info = read_archive(archive=archive)
+        CONSOLE.rule(file.stem)
+        LOGGER.info("Processing %s", file.stem)
+        meta, details = read_meta(archive=archive)
 
         if not force:
-            difference = abs(date.today() - metadata.meta.date_)
-            if metadata.meta.tool == Tool() and difference.days < 28:
+            difference = abs(date.today() - meta.date_)
+            if meta.tool == Tool() and difference.days < 28:
                 continue
 
-        CONSOLE.rule(file.stem)
-        LOGGER.info("Processing %s", file.name)
-        fetch_from_services(settings=settings, metainfo=(metadata, metron_info, comic_info))
+        metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
             root=settings.collection_folder,
             extension=settings.output.format.value,
@@ -229,6 +290,7 @@ def start(settings: Settings, force: bool = False) -> None:
             temp_folder = Path(temp_str)
             if not archive.extract_files(destination=temp_folder):
                 return
+            LOGGER.info("Processing %s pages", file.stem)
             process_pages(
                 folder=temp_folder,
                 metadata=metadata,
