@@ -66,7 +66,7 @@ class OutputFormat(Enum):
         for entry in OutputFormat:
             if entry.value.casefold() == value.casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid OutputFormat")
+        raise ValueError(f"`{value}` isn't a valid OutputFormat")
 
     def __lt__(self: OutputFormat, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):

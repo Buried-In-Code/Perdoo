@@ -23,7 +23,7 @@ from typing import Any, ClassVar
 
 import xmltodict
 from PIL import Image
-from pydantic import Field
+from pydantic import Field, PositiveInt
 
 from perdoo import __version__
 from perdoo.models._base import InfoModel, PascalModel
@@ -41,7 +41,7 @@ class Source(Enum):
         for entry in Source:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metadata.Source")
+        raise ValueError(f"`{value}` isn't a valid metadata.Source")
 
     def __lt__(self: Source, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -77,7 +77,7 @@ class TitledResource(PascalModel):
     list_fields: ClassVar[dict[str, str]] = {"Resources": "Resource"}
 
     def __init__(self: TitledResource, **data: Any):
-        self.unwrap_list(mappings=TitledResource.list_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: TitledResource, other) -> int:  # noqa: ANN001
@@ -101,13 +101,13 @@ class Credit(PascalModel):
     list_fields: ClassVar[dict[str, str]] = {"Roles": "Role"}
 
     def __init__(self: Credit, **data: Any):
-        self.unwrap_list(mappings=Credit.list_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: Credit, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             raise NotImplementedError
-        return self.creator < other.crestor
+        return self.creator < other.creator
 
     def __eq__(self: Credit, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -131,7 +131,7 @@ class Format(Enum):
         for entry in Format:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metadata.Format")
+        raise ValueError(f"`{value}` isn't a valid metadata.Format")
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -146,18 +146,18 @@ class Series(TitledResource):
     genres: list[TitledResource] = Field(default_factory=list)
     publisher: TitledResource
     start_year: int | None = None
-    volume: int = Field(default=1)
+    volume: PositiveInt = Field(default=1)
 
     list_fields: ClassVar[dict[str, str]] = {**TitledResource.list_fields, "Genres": "Genre"}
 
     def __init__(self: Series, **data: Any):
-        self.unwrap_list(mappings=Series.list_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: Series, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             raise NotImplementedError
-        if self.publisher != other.publusher:
+        if self.publisher != other.publisher:
             return self.publisher < other.publisher
         if self.title.casefold() != other.title.casefold():
             return self.title.casefold() < other.title.casefold()
@@ -188,7 +188,7 @@ class Issue(PascalModel):
     language: str = Field(alias="@language", default="en")
     locations: list[TitledResource] = Field(default_factory=list)
     number: str | None = None
-    page_count: int
+    page_count: int = 0
     resources: list[Resource] = Field(default_factory=list)
     series: Series
     store_date: date | None = None
@@ -211,7 +211,7 @@ class Issue(PascalModel):
     }
 
     def __init__(self: Issue, **data: Any):
-        self.unwrap_list(mappings=Issue.list_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: Issue, other) -> int:  # noqa: ANN001
@@ -263,7 +263,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metadata.PageType")
+        raise ValueError(f"`{value}` isn't a valid metadata.PageType")
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -328,7 +328,7 @@ class Metadata(PascalModel, InfoModel):
     list_fields: ClassVar[dict[str, str]] = {**Issue.list_fields, "Pages": "Page"}
 
     def __init__(self: Metadata, **data: Any):
-        self.unwrap_list(mappings=Metadata.list_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: Metadata, other) -> int:  # noqa: ANN001

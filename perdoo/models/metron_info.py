@@ -1,23 +1,23 @@
 from __future__ import annotations
 
 __all__ = [
-    "InformationSource",
-    "Source",
-    "Resource",
-    "Format",
-    "Series",
-    "Price",
-    "Genre",
-    "GenreResource",
-    "Arc",
     "GTIN",
     "AgeRating",
+    "Arc",
+    "Credit",
+    "Format",
+    "Genre",
+    "GenreResource",
+    "InformationSource",
+    "MetronInfo",
+    "Price",
+    "Resource",
     "Role",
     "RoleResource",
-    "Credit",
-    "PageType",
-    "Page",
-    "MetronInfo",
+    "Series",
+    "Source",
+    "Sources",
+    "Universe",
 ]
 
 from datetime import date
@@ -27,7 +27,7 @@ from typing import Any, ClassVar
 
 import xmltodict
 from PIL import Image
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, PositiveInt
 
 from perdoo.models._base import InfoModel, PascalModel
 
@@ -44,7 +44,7 @@ class InformationSource(Enum):
         for entry in InformationSource:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.InformationSource")
+        raise ValueError(f"`{value}` isn't a valid metron_info.InformationSource")
 
     def __lt__(self: InformationSource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -57,11 +57,29 @@ class InformationSource(Enum):
 
 class Source(PascalModel):
     source: InformationSource = Field(alias="@source")
-    value: int = Field(alias="#text", gt=0)
+    value: PositiveInt = Field(alias="#text")
+
+    def __lt__(self: Source, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.source < other.source
+
+    def __eq__(self: Source, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.source == other.source
+
+    def __hash__(self: Source) -> int:
+        return hash((type(self), self.source))
+
+
+class Sources(PascalModel):
+    primary: Source
+    alternative: list[Source] = Field(default_factory=list)
 
 
 class Resource(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     value: str = Field(alias="#text")
 
     def __lt__(self: Resource, other) -> int:  # noqa: ANN001
@@ -81,10 +99,11 @@ class Resource(PascalModel):
 class Format(Enum):
     ANNUAL = "Annual"
     GRAPHIC_NOVEL = "Graphic Novel"
-    LIMITED = "Limited"
+    LIMITED_SERIES = "Limited Series"
     ONE_SHOT = "One-Shot"
     SERIES = "Series"
     TRADE_PAPERBACK = "Trade Paperback"
+    HARDCOVER = "Hardcover"
 
     @staticmethod
     def load(value: str) -> Format:
@@ -92,14 +111,10 @@ class Format(Enum):
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         # region Manual matches
-        if value.casefold() == "Limited Series".casefold():
-            return Format.LIMITED
-        if value.casefold() == "Cancelled Series".casefold():
-            return Format.SERIES
-        if value.casefold() == "Hard Cover".casefold():
+        if value.casefold() in ["Cancelled Series".casefold(), "Ongoing Series".casefold()]:
             return Format.SERIES
         # endregion
-        raise ValueError(f"'{value}' isnt a valid metron_info.Format")
+        raise ValueError(f"`{value}` isn't a valid metron_info.Format")
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -111,7 +126,7 @@ class Format(Enum):
 
 
 class Series(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     lang: str = Field(alias="@lang", default="en")
     name: str
     sort_name: str | None = None
@@ -159,7 +174,7 @@ class Genre(Enum):
         for entry in Genre:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.Genre")
+        raise ValueError(f"`{value}` isn't a valid metron_info.Genre")
 
     def __lt__(self: Genre, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -171,7 +186,7 @@ class Genre(Enum):
 
 
 class GenreResource(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     value: Genre = Field(alias="#text")
 
     def __lt__(self: GenreResource, other) -> int:  # noqa: ANN001
@@ -189,9 +204,9 @@ class GenreResource(PascalModel):
 
 
 class Arc(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     name: str
-    number: int | None = Field(default=None, gt=0)
+    number: PositiveInt | None = None
 
     def __lt__(self: Arc, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -204,6 +219,25 @@ class Arc(PascalModel):
         return self.name == other.name
 
     def __hash__(self: Arc) -> int:
+        return hash((type(self), self.name))
+
+
+class Universe(PascalModel):
+    id: int | None = Field(alias="@id", default=None, gt=0)
+    name: str
+    designation: str | None = None
+
+    def __lt__(self: Universe, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.name < other.name
+
+    def __eq__(self: Universe, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.name == other.name
+
+    def __hash__(self: Universe) -> int:
         return hash((type(self), self.name))
 
 
@@ -224,7 +258,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.AgeRating")
+        raise ValueError(f"`{value}` isn't a valid metron_info.AgeRating")
 
     def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -284,7 +318,7 @@ class Role(Enum):
         for entry in Role:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.Role")
+        raise ValueError(f"`{value}` isn't a valid metron_info.Role")
 
     def __lt__(self: Role, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -296,7 +330,7 @@ class Role(Enum):
 
 
 class RoleResource(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
+    id: PositiveInt | None = Field(alias="@id", default=None)
     value: Role = Field(alias="#text")
 
     def __lt__(self: RoleResource, other) -> int:  # noqa: ANN001
@@ -321,8 +355,8 @@ class Credit(PascalModel):
     text_fields: ClassVar[list[str]] = ["Creator", "Roles"]
 
     def __init__(self: Credit, **data: Any):
-        self.unwrap_list(mappings=Credit.list_fields, content=data)
-        self.to_xml_text(mappings=Credit.text_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
+        self.to_xml_text(mappings=self.text_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self: Credit, other) -> int:  # noqa: ANN001
@@ -357,7 +391,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isnt a valid metron_info.PageType")
+        raise ValueError(f"`{value}` isn't a valid metron_info.PageType")
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -414,7 +448,7 @@ class Page(PascalModel):
 
 
 class MetronInfo(PascalModel, InfoModel):
-    id: Source | None = Field(alias="ID", default=None)
+    id: Sources | None = Field(alias="ID", default=None)
     publisher: Resource
     series: Series
     collection_title: str | None = None
@@ -423,16 +457,16 @@ class MetronInfo(PascalModel, InfoModel):
     summary: str | None = None
     notes: str | None = None
     prices: list[Price] = Field(default_factory=list)
-    cover_date: date
+    cover_date: date | None = None
     store_date: date | None = None
     page_count: int = 0
-    genres: list[GenreResource] = Field(default_list=list)
+    genres: list[GenreResource] = Field(default_factory=list)
     tags: list[Resource] = Field(default_factory=list)
     arcs: list[Arc] = Field(default_factory=list)
     characters: list[Resource] = Field(default_factory=list)
     teams: list[Resource] = Field(default_factory=list)
+    universes: list[Universe] = Field(default_factory=list)
     locations: list[Resource] = Field(default_factory=list)
-    black_and_white: bool = False
     gtin: GTIN | None = Field(alias="GTIN", default=None)
     age_rating: AgeRating = Field(default=AgeRating.UNKNOWN)
     reprints: list[Resource] = Field(default_factory=list)
@@ -449,6 +483,7 @@ class MetronInfo(PascalModel, InfoModel):
         "Arcs": "Arc",
         "Characters": "Character",
         "Teams": "Team",
+        "Universes": "Universe",
         "Locations": "Location",
         "Reprints": "Reprint",
         "Credits": "Credit",
@@ -468,8 +503,8 @@ class MetronInfo(PascalModel, InfoModel):
     ]
 
     def __init__(self: MetronInfo, **data: Any):
-        self.unwrap_list(mappings=MetronInfo.list_fields, content=data)
-        self.to_xml_text(mappings=MetronInfo.text_fields, content=data)
+        self.unwrap_list(mappings=self.list_fields, content=data)
+        self.to_xml_text(mappings=self.text_fields, content=data)
         super().__init__(**data)
 
     @classmethod

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-__all__ = ["CONSOLE", "create_menu", "DatePrompt"]
+__all__ = ["CONSOLE", "create_menu"]
 
 import logging
-from datetime import date, datetime
 
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import IntPrompt, InvalidResponse, PromptBase
+from rich.prompt import IntPrompt
 from rich.theme import Theme
 
 LOGGER = logging.getLogger(__name__)
@@ -70,17 +69,3 @@ def create_menu(
             options=options, title=title, subtitle=subtitle, prompt=prompt, default=default
         )
     return selected
-
-
-class DatePrompt(PromptBase[date]):
-    response_type = date
-    validate_error_message = (
-        "[prompt.invalid]Please enter a valid date in the format of 'yyyy-mm-dd'"
-    )
-    prompt_suffix = "[yyyy-mm-dd]: "
-
-    def process_response(self: DatePrompt, value: str) -> date:
-        try:
-            return datetime.strptime(value.strip(), "%Y-%m-%d").date()
-        except ValueError as err:
-            raise InvalidResponse(self.validate_error_message) from err
