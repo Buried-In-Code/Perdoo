@@ -184,7 +184,7 @@ def fetch_from_services(
     for service in (marvel, metron, comicvine, league):
         if not service:
             continue
-        LOGGER.info(f"Fetching details from {type(service).__name__}")
+        LOGGER.info("Fetching details from %s", type(service).__name__)
         metadata, metron_info, comic_info = service.fetch(details=details)
         if metadata and metron_info and comic_info:
             return metadata, metron_info, comic_info
