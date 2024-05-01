@@ -6,6 +6,7 @@ import logging
 import re
 from datetime import date
 
+from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 from simyan.comicvine import Comicvine as Simyan
 from simyan.exceptions import ServiceError
@@ -144,7 +145,9 @@ class Comicvine(BaseService[Volume, Issue]):
                             resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
                         ),
                         roles=[
-                            TitledResource(title=r.strip()) for r in re.split(r"[~\r\n,]+", x.roles)
+                            TitledResource(title=r.strip())
+                            for r in re.split(r"[~\r\n,]+", x.roles)
+                            if r.strip()
                         ],
                     )
                     for x in issue.creators
@@ -195,16 +198,18 @@ class Comicvine(BaseService[Volume, Issue]):
         from perdoo.models.metron_info import (
             Arc,
             Credit,
+            InformationList,
             Resource,
             Role,
             RoleResource,
             Series,
             Source,
-            Sources,
         )
 
         return MetronInfo(
-            id=Sources(primary=Source(source=InformationSource.COMIC_VINE, value=issue.id)),
+            id=InformationList[Source](
+                primary=Source(source=InformationSource.COMIC_VINE, value=issue.id)
+            ),
             publisher=Resource(id=series.publisher.id, value=series.publisher.name),
             series=Series(id=series.id, name=series.name),
             collection_title=issue.name,
@@ -216,13 +221,14 @@ class Comicvine(BaseService[Volume, Issue]):
             characters=[Resource(id=x.id, value=x.name) for x in issue.characters],
             teams=[Resource(id=x.id, value=x.name) for x in issue.teams],
             locations=[Resource(id=x.id, value=x.name) for x in issue.locations],
-            url=issue.site_url,
+            url=InformationList[HttpUrl](primary=issue.site_url),
             credits=[
                 Credit(
                     creator=Resource(id=x.id, value=x.name),
                     roles=[
-                        RoleResource(value=load_role(value=r))
+                        RoleResource(value=load_role(value=r.strip()))
                         for r in re.split(r"[~\r\n,]+", x.roles)
+                        if r.strip()
                     ],
                 )
                 for x in issue.creators
@@ -241,7 +247,8 @@ class Comicvine(BaseService[Volume, Issue]):
 
         comic_info.cover_date = issue.cover_date
         comic_info.credits = {
-            x.name: [r.strip() for r in re.split(r"[~\r\n,]+", x.roles)] for x in issue.creators
+            x.name: [r.strip() for r in re.split(r"[~\r\n,]+", x.roles) if r.strip()]
+            for x in issue.creators
         }
         comic_info.character_list = [x.name for x in issue.characters]
         comic_info.team_list = [x.name for x in issue.teams]

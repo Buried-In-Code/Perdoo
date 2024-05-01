@@ -21,7 +21,9 @@ class BaseArchive(ABC):
 
     @classmethod
     @abstractmethod
-    def archive_files(cls: type[BaseArchive], src: Path, filename: str) -> Path: ...
+    def archive_files(
+        cls: type[BaseArchive], src: Path, output_name: str, files: list[Path] | None = None
+    ) -> Path | None: ...
 
     @staticmethod
     @abstractmethod

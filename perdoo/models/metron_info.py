@@ -8,6 +8,7 @@ __all__ = [
     "Format",
     "Genre",
     "GenreResource",
+    "InformationList",
     "InformationSource",
     "MetronInfo",
     "Price",
@@ -16,20 +17,21 @@ __all__ = [
     "RoleResource",
     "Series",
     "Source",
-    "Sources",
     "Universe",
 ]
 
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 import xmltodict
 from PIL import Image
 from pydantic import Field, HttpUrl, PositiveInt
 
 from perdoo.models._base import InfoModel, PascalModel
+
+T = TypeVar("T")
 
 
 class InformationSource(Enum):
@@ -73,9 +75,9 @@ class Source(PascalModel):
         return hash((type(self), self.source))
 
 
-class Sources(PascalModel):
-    primary: Source
-    alternative: list[Source] = Field(default_factory=list)
+class InformationList(PascalModel, Generic[T]):
+    primary: T
+    alternative: list[T] = Field(default_factory=list)
 
 
 class Resource(PascalModel):
@@ -448,7 +450,7 @@ class Page(PascalModel):
 
 
 class MetronInfo(PascalModel, InfoModel):
-    id: Sources | None = Field(alias="ID", default=None)
+    id: InformationList[Source] | None = Field(alias="ID", default=None)
     publisher: Resource
     series: Series
     collection_title: str | None = None
@@ -470,7 +472,7 @@ class MetronInfo(PascalModel, InfoModel):
     gtin: GTIN | None = Field(alias="GTIN", default=None)
     age_rating: AgeRating = Field(default=AgeRating.UNKNOWN)
     reprints: list[Resource] = Field(default_factory=list)
-    url: HttpUrl | None = Field(alias="URL", default=None)
+    url: InformationList[HttpUrl] | None = Field(alias="URL", default=None)
     credits: list[Credit] = Field(default_factory=list)
     pages: list[Page] = Field(default_factory=list)
 
