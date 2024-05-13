@@ -301,6 +301,14 @@ class Metron(BaseService[Series, Issue]):
         )
 
     def _process_comic_info(self: Metron, series: Series, issue: Issue) -> ComicInfo | None:
+        def load_age_rating(value: str) -> AgeRating:
+            try:
+                return AgeRating.load(value=value.strip())
+            except ValueError:
+                return AgeRating.UNKNOWN
+
+        from perdoo.models.comic_info import AgeRating
+
         comic_info = ComicInfo(
             title=issue.collection_title,
             series=series.name,
@@ -311,6 +319,7 @@ class Metron(BaseService[Series, Issue]):
             web=issue.resource_url,
             page_count=issue.page_count or 0,
             format=series.series_type.name,
+            age_rating=load_age_rating(value=issue.rating.name),
         )
 
         comic_info.cover_date = issue.cover_date
