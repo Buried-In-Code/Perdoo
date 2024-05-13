@@ -10,6 +10,7 @@ from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
 from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
+from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_dir
@@ -244,18 +245,18 @@ class Metron(BaseService[Series, Issue]):
             Format,
             Genre,
             GenreResource,
+            InformationList,
             Price,
             Resource,
             Role,
             RoleResource,
             Series,
             Source,
-            Sources,
             Universe,
         )
 
         return MetronInfo(
-            id=Sources(
+            id=InformationList[Source](
                 primary=Source(source=InformationSource.METRON, value=issue.id),
                 alternative=[Source(source=InformationSource.COMIC_VINE, value=issue.cv_id)]
                 if issue.cv_id
@@ -289,7 +290,7 @@ class Metron(BaseService[Series, Issue]):
             else None,
             age_rating=AgeRating.load(value=issue.rating.name),
             reprints=[Resource(id=x.id, value=x.issue) for x in issue.reprints],
-            url=issue.resource_url,
+            url=InformationList[HttpUrl](primary=issue.resource_url),
             credits=[
                 Credit(
                     creator=Resource(id=x.id, value=x.creator),
@@ -300,6 +301,14 @@ class Metron(BaseService[Series, Issue]):
         )
 
     def _process_comic_info(self: Metron, series: Series, issue: Issue) -> ComicInfo | None:
+        def load_age_rating(value: str) -> AgeRating:
+            try:
+                return AgeRating.load(value=value.strip())
+            except ValueError:
+                return AgeRating.UNKNOWN
+
+        from perdoo.models.comic_info import AgeRating
+
         comic_info = ComicInfo(
             title=issue.collection_title,
             series=series.name,
@@ -310,6 +319,7 @@ class Metron(BaseService[Series, Issue]):
             web=issue.resource_url,
             page_count=issue.page_count or 0,
             format=series.series_type.name,
+            age_rating=load_age_rating(value=issue.rating.name),
         )
 
         comic_info.cover_date = issue.cover_date

@@ -52,14 +52,17 @@ class CB7Archive(BaseArchive):
             return False
 
     @classmethod
-    def archive_files(cls: type[CB7Archive], src: Path, filename: str) -> Path | None:
+    def archive_files(
+        cls: type[CB7Archive], src: Path, output_name: str, files: list[Path] | None = None
+    ) -> Path | None:
         if not py7zr_loaded:
             raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
 
-        output_file = src.parent / f"{filename}.cb7"
+        files = files or list_files(path=src)
+        output_file = src.parent / f"{output_name}.cb7"
         try:
             with py7zr.SevenZipFile(output_file, "w") as archive:
-                for file in list_files(path=src):
+                for file in files:
                     archive.write(file, arcname=str(file.relative_to(src)))
             return output_file
         except py7zr.Bad7zFile:

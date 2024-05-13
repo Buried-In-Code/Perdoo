@@ -182,6 +182,9 @@ def fetch_from_services(
         return None, None, None
 
     for service in (marvel, metron, comicvine, league):
+        if not service:
+            continue
+        LOGGER.info("Fetching details from %s", type(service).__name__)
         metadata, metron_info, comic_info = service.fetch(details=details)
         if metadata and metron_info and comic_info:
             return metadata, metron_info, comic_info
@@ -299,13 +302,22 @@ def start(settings: Settings, force: bool = False) -> None:
                 filename=new_file.stem,
             )
             metadata.meta = Meta(date_=date.today())
+            files = list_files(temp_folder, *IMAGE_EXTENSIONS)
             if settings.output.create_metadata:
-                metadata.to_file(file=temp_folder / "Metadata.xml")
+                metadata_file = temp_folder / "Metadata.xml"
+                metadata.to_file(file=metadata_file)
+                files.append(metadata_file)
             if settings.output.create_metron_info:
-                metron_info.to_file(file=temp_folder / "MetronInfo.xml")
+                metron_info_file = temp_folder / "MetronInfo.xml"
+                metron_info.to_file(file=metron_info_file)
+                files.append(metron_info_file)
             if settings.output.create_comic_info:
-                comic_info.to_file(file=temp_folder / "ComicInfo.xml")
-            archive_file = archive.archive_files(src=temp_folder, filename=archive.path.stem)
+                comic_info_file = temp_folder / "ComicInfo.xml"
+                comic_info.to_file(file=comic_info_file)
+                files.append(comic_info_file)
+            archive_file = archive.archive_files(
+                src=temp_folder, output_name=archive.path.stem, files=files
+            )
             if not archive_file:
                 LOGGER.critical("Unable to re-archive images")
                 continue

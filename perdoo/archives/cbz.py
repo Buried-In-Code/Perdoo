@@ -41,11 +41,14 @@ class CBZArchive(BaseArchive):
             return False
 
     @classmethod
-    def archive_files(cls: type[CBZArchive], src: Path, filename: str) -> Path | None:
-        output_file = src.parent / f"{filename}.cbz"
+    def archive_files(
+        cls: type[CBZArchive], src: Path, output_name: str, files: list[Path] | None = None
+    ) -> Path | None:
+        files = files or list_files(path=src)
+        output_file = src.parent / f"{output_name}.cbz"
         try:
             with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                for file in list_files(path=src):
+                for file in files:
                     zip_file.write(file, arcname=file.relative_to(src))
             return output_file
         except zipfile.BadZipFile:

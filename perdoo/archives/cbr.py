@@ -39,7 +39,9 @@ class CBRArchive(BaseArchive):
             return False
 
     @classmethod
-    def archive_files(cls: type[CBRArchive], src: Path, filename: str) -> Path | None:
+    def archive_files(
+        cls: type[CBRArchive], src: Path, output_name: str, files: list[Path] | None = None
+    ) -> Path | None:
         raise NotImplementedError("Unable to create archive in CBR format")
 
     @staticmethod

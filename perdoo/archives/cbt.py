@@ -53,11 +53,14 @@ class CBTArchive(BaseArchive):
             return False
 
     @classmethod
-    def archive_files(cls: type[CBTArchive], src: Path, filename: str) -> Path | None:
-        output_file = src.parent / f"{filename}.cbt"
+    def archive_files(
+        cls: type[CBTArchive], src: Path, output_name: str, files: list[Path] | None = None
+    ) -> Path | None:
+        files = files or list_files(path=src)
+        output_file = src.parent / f"{output_name}.cbt"
         try:
             with tarfile.open(output_file, "w:gz") as tar:
-                for file in list_files(path=src):
+                for file in files:
                     tar.add(file, arcname=file.relative_to(src))
             return output_file
         except tarfile.CompressionError:

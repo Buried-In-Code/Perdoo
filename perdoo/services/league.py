@@ -31,7 +31,7 @@ class League(BaseService[Series, Comic]):
             LOGGER.info("Generating new access token")
             self.session.access_token = settings.access_token = self.session.generate_access_token()
 
-    def _get_series_id(self: League, title: str) -> int | None:
+    def _get_series_id(self: League, title: str | None) -> int | None:
         pass
 
     def fetch_series(self: League, details: Details) -> Series | None:
