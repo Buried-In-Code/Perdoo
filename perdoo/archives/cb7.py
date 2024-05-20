@@ -78,7 +78,9 @@ class CB7Archive(BaseArchive):
             temp_folder = Path(temp_str)
             if not old_archive.extract_files(destination=temp_folder):
                 return None
-            archive_file = CB7Archive.archive_files(src=temp_folder, filename=old_archive.path.stem)
+            archive_file = CB7Archive.archive_files(
+                src=temp_folder, output_name=old_archive.path.stem
+            )
             if not archive_file:
                 return None
             new_filepath = old_archive.path.parent / f"{old_archive.path.stem}.cb7"

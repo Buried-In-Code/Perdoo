@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Marvel(BaseService[Series, Comic]):
     def __init__(self: Marvel, settings: MarvelSettings):
-        cache = SqliteCache(db_name=str(get_cache_dir() / "mokkari.sqlite"), expire=14)
+        cache = SqliteCache(db_name=str(get_cache_dir() / "esak.sqlite"), expire=14)
         self.session = Esak(
             public_key=settings.public_key, private_key=settings.private_key, cache=cache
         )
@@ -40,7 +40,7 @@ class Marvel(BaseService[Series, Comic]):
             if not options:
                 LOGGER.warning("Unable to find any Series with the title: '%s'", title)
             index = create_menu(
-                options=[f"{x.id} | {x.title} ({x.start_year})" for x in options],
+                options=[f"{x.id} | {x.title}" for x in options],
                 title="Marvel Series",
                 default="None of the Above",
             )

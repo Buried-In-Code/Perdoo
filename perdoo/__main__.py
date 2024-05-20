@@ -19,7 +19,7 @@ from perdoo.models._base import InfoModel
 from perdoo.models.metadata import Format, Meta, Source, Tool
 from perdoo.models.metron_info import InformationSource
 from perdoo.services import Comicvine, League, Marvel, Metron
-from perdoo.settings import OutputFormat, Settings
+from perdoo.settings import OutputFormat, Service, Settings
 from perdoo.utils import Details, Identifications, get_metadata_id, list_files, sanitize
 
 LOGGER = logging.getLogger("perdoo")
@@ -47,7 +47,7 @@ def convert_collection(path: Path, output: OutputFormat) -> None:
         archive_type.convert(old_archive=archive)
 
 
-def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
+def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
     filenames = archive.list_filenames()
 
     def read_meta_file(cls: type[InfoModel], filename: str) -> InfoModel | None:
@@ -55,6 +55,7 @@ def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
             return cls.from_bytes(content=archive.read_file(filename=filename))
         return None
 
+    # region Read Metadata
     try:
         metadata = read_meta_file(cls=Metadata, filename="/Metadata.xml") or read_meta_file(
             cls=Metadata, filename="Metadata.xml"
@@ -97,6 +98,9 @@ def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
             return meta, details
     except ValidationError:
         LOGGER.error("%s contains an invalid Metadata file", archive.path.name)  # noqa: TRY400
+    # endregion
+
+    # region Read MetronInfo
     try:
         metron_info = read_meta_file(cls=MetronInfo, filename="/MetronInfo.xml") or read_meta_file(
             cls=MetronInfo, filename="MetronInfo.xml"
@@ -139,6 +143,9 @@ def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
             return Meta(date_=date.today(), tool=Tool(value="MetronInfo")), details
     except ValidationError:
         LOGGER.error("%s contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
+    # endregion
+
+    # region Read ComicInfo
     try:
         comic_info = read_meta_file(cls=ComicInfo, filename="/ComicInfo.xml") or read_meta_file(
             cls=ComicInfo, filename="ComicInfo.xml"
@@ -151,11 +158,28 @@ def read_meta(archive: BaseArchive) -> tuple[Meta, Details]:
             return Meta(date_=date.today(), tool=Tool(value="ComicInfo")), details
     except ValidationError:
         LOGGER.error("%s contains an invalid ComicInfo file", archive.path.name)  # noqa: TRY400
+    # endregion
 
-    return Meta(date_=date.today(), tool=Tool(value="Manual")), Details(
-        series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
-        issue=Identifications(),
-    )
+    return None, None
+
+
+def load_archives(
+    path: Path, output: OutputFormat, force: bool = False
+) -> list[tuple[Path, BaseArchive, Details | None]]:
+    archives = []
+    with CONSOLE.status(f"Searching for {output} files"):
+        for file in list_files(path, f".{output}"):
+            archive = get_archive(path=file)
+            LOGGER.debug("Reading %s", file.stem)
+            meta, details = read_meta(archive=archive)
+            if not meta or not details:
+                archives.append((file, archive, details))
+                continue
+            difference = abs(date.today() - meta.date_)
+            if force or meta.tool != Tool() or difference.days >= 28:
+                archives.append((file, archive, details))
+                continue
+    return archives
 
 
 def fetch_from_services(
@@ -181,7 +205,15 @@ def fetch_from_services(
         LOGGER.warning("No external services configured")
         return None, None, None
 
-    for service in (marvel, metron, comicvine, league):
+    services = {
+        Service.COMICVINE: comicvine,
+        Service.LEAGUE_OF_COMIC_GEEKS: league,
+        Service.MARVEL: marvel,
+        Service.METRON: metron,
+    }
+
+    for service_name in settings.service_order:
+        service = services[service_name]
         if not service:
             continue
         LOGGER.info("Fetching details from %s", type(service).__name__)
@@ -243,6 +275,7 @@ def process_pages(
     from perdoo.models.metadata import Page as MetadataPage
     from perdoo.models.metron_info import Page as MetronPage
 
+    LOGGER.info("Processing pages")
     rename_images(folder=folder, filename=filename)
     image_list = list_files(folder, *IMAGE_EXTENSIONS)
     metadata_pages = set()
@@ -272,16 +305,17 @@ def process_pages(
 def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
     convert_collection(path=settings.collection_folder, output=settings.output.format)
-    for file in list_files(settings.collection_folder, f".{settings.output.format}"):
-        archive = get_archive(path=file)
+    archives = load_archives(
+        path=settings.collection_folder, output=settings.output.format, force=force
+    )
+
+    for file, archive, details in archives:
         CONSOLE.rule(file.stem)
         LOGGER.info("Processing %s", file.stem)
-        meta, details = read_meta(archive=archive)
-
-        if not force:
-            difference = abs(date.today() - meta.date_)
-            if meta.tool == Tool() and difference.days < 28:
-                continue
+        details = details or Details(  # noqa: PLW2901
+            series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
+            issue=Identifications(),
+        )
 
         metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
@@ -293,7 +327,6 @@ def start(settings: Settings, force: bool = False) -> None:
             temp_folder = Path(temp_str)
             if not archive.extract_files(destination=temp_folder):
                 return
-            LOGGER.info("Processing %s pages", file.stem)
             process_pages(
                 folder=temp_folder,
                 metadata=metadata,

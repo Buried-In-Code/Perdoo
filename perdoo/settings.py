@@ -77,6 +77,28 @@ class OutputFormat(Enum):
         return self.value
 
 
+class Service(Enum):
+    COMICVINE = "Comicvine"
+    LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
+    MARVEL = "Marvel"
+    METRON = "Metron"
+
+    @staticmethod
+    def load(value: str) -> Service:
+        for entry in Service:
+            if entry.value.casefold() == value.casefold():
+                return entry
+        raise ValueError(f"`{value}` isn't a valid Service")
+
+    def __lt__(self: Service, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            raise NotImplementedError
+        return self.value < other.value
+
+    def __str__(self: Service) -> str:
+        return self.value
+
+
 class Output(SettingsModel):
     create_comic_info: bool = True
     create_metron_info: bool = True
@@ -99,6 +121,12 @@ class Settings(SettingsModel):
     league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
     marvel: Marvel = Marvel()
     metron: Metron = Metron()
+    service_order: list[Service] = [
+        Service.METRON,
+        Service.MARVEL,
+        Service.COMICVINE,
+        Service.LEAGUE_OF_COMIC_GEEKS,
+    ]
     output: Output = Output()
 
     @classmethod
@@ -113,6 +141,7 @@ class Settings(SettingsModel):
         with self._filename.open("wb") as stream:
             content = self.dict(by_alias=False)
             content["collection_folder"] = str(content["collection_folder"])
+            content["service_order"] = [str(x) for x in content["service_order"]]
             content["output"]["format"] = str(content["output"]["format"])
             tomlwriter.dump(content, stream)
         return self
