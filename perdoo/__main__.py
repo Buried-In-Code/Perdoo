@@ -366,6 +366,13 @@ def start(settings: Settings, force: bool = False) -> None:
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(file, new_file)
 
+    for folder in sorted(
+        settings.collection_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
+    ):
+        if folder.is_dir() and not any(folder.iterdir()):
+            folder.rmdir()
+            LOGGER.info("Deleted empty folder: %s", folder)
+
 
 def main() -> None:
     try:

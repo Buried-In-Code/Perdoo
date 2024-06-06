@@ -31,7 +31,7 @@ dependencies = [
   "mokkari@git+https://github.com/Buried-In-Code/mokkari ; python_version < \"3.10\"",
   "natsort >= 8.4.0",
   "pillow >= 10.3.0",
-  "pydantic >= 2.7.1",
+  "pydantic >= 2.7.3",
   "rarfile >= 4.2",
   "rich >= 13.7.1",
   "simyan >= 1.2.1",
@@ -50,9 +50,6 @@ requires-python = ">= 3.8"
 [project.optional-dependencies]
 cb7 = [
   "py7zr >= 0.21.0"
-]
-dev = [
-  "pre-commit >= 3.5.0"
 ]
 
 [project.scripts]
@@ -127,3 +124,8 @@ convention = "google"
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
+
+[tool.rye]
+dev-dependencies = [
+  "pre-commit >= 3.5.0"
+]
