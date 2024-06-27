@@ -96,7 +96,6 @@ ignore = [
   "TRY003",
   "TRY300"
 ]
-ignore-init-module-imports = true
 select = ["ALL"]
 
 [tool.ruff.lint.flake8-annotations]
