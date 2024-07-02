@@ -5,9 +5,9 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
 [![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![Rye](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/rye/main/artwork/badge.json?style=flat-square)](https://rye.astral.sh)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json?style=flat-square)](https://github.com/astral-sh/ruff)
+[![Rye](https://img.shields.io/badge/Rye-informational?style=flat-square&logo=rye&labelColor=grey)](https://rye.astral.sh)
+[![Pre-Commit](https://img.shields.io/badge/Pre--Commit-informational?style=flat-square&logo=pre-commit&labelColor=grey)](https://github.com/pre-commit/pre-commit)
+[![Ruff](https://img.shields.io/badge/Ruff-informational?style=flat-square&logo=ruff&labelColor=grey)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/ComicCorps/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/ComicCorps/Perdoo/graphs/contributors)
 
