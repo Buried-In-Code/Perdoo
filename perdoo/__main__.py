@@ -315,7 +315,7 @@ def start(settings: Settings, force: bool = False) -> None:
     for file, archive, details in archives:
         CONSOLE.rule(file.stem)
         LOGGER.info("Processing %s", file.stem)
-        details = details or Details(  # noqa: PLW2901
+        details = details or Details(
             series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
             issue=Identifications(),
         )

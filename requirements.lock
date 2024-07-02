@@ -20,10 +20,11 @@ charset-normalizer==3.3.2
 esak==1.3.2
     # via perdoo
 eval-type-backport==0.2.0
+    # via himon
     # via mokkari
     # via perdoo
     # via simyan
-himon==0.5.0
+himon==0.6.1
     # via perdoo
 idna==3.7
     # via requests
@@ -35,7 +36,7 @@ marshmallow==3.21.3
     # via esak
 mdurl==0.1.2
     # via markdown-it-py
-mokkari @ git+https://github.com/Buried-In-Code/mokkari@44658ea65af15a672f52bd8b9572ee43ce41238b
+mokkari @ git+https://github.com/Buried-In-Code/mokkari@e55697cb7eb0d52d206cd5df5af300752d86dd38
     # via perdoo
 multivolumefile==0.2.3
     # via py7zr
@@ -43,22 +44,22 @@ natsort==8.4.0
     # via perdoo
 packaging==24.1
     # via marshmallow
-pillow==10.3.0
+pillow==10.4.0
     # via perdoo
 psutil==6.0.0
     # via py7zr
-py7zr==0.21.0
+py7zr==0.21.1
     # via perdoo
 pybcj==1.0.2
     # via py7zr
 pycryptodomex==3.20.0
     # via py7zr
-pydantic==2.7.4
+pydantic==2.8.0
     # via himon
     # via mokkari
     # via perdoo
     # via simyan
-pydantic-core==2.18.4
+pydantic-core==2.20.0
     # via pydantic
 pygments==2.18.0
     # via rich
@@ -79,7 +80,7 @@ requests==2.32.3
     # via simyan
 rich==13.7.1
     # via perdoo
-simyan==1.2.1
+simyan==1.2.2
     # via perdoo
 texttable==1.7.0
     # via py7zr

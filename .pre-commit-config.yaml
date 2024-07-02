@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.10
+    rev: v0.5.0
     hooks:
       - id: ruff-format
       - id: ruff
@@ -22,6 +22,8 @@ repos:
       - id: check-case-conflict
       - id: check-docstring-first
       - id: check-merge-conflict
+        args:
+          - --assume-in-merge
       - id: check-toml
       - id: check-yaml
         args:
@@ -30,9 +32,12 @@ repos:
         exclude_types:
           - json
           - xml
+      - id: fix-byte-order-marker
+      - id: forbid-submodules
       - id: mixed-line-ending
         args:
           - --fix=auto
+#      - id: name-tests-test
       - id: trailing-whitespace
         args:
           - --markdown-linebreak-ext=md

@@ -26,15 +26,15 @@ classifiers = [
 dependencies = [
   "esak >= 1.3.2",
   "eval-type-backport >= 0.2.0 ; python_version < \"3.10\"",
-  "himon >= 0.5.0",
+  "himon >= 0.6.1",
   "mokkari >= 3.1.0 ; python_version >= \"3.10\"",
   "mokkari@git+https://github.com/Buried-In-Code/mokkari ; python_version < \"3.10\"",
   "natsort >= 8.4.0",
-  "pillow >= 10.3.0",
-  "pydantic >= 2.7.3",
+  "pillow >= 10.4.0",
+  "pydantic >= 2.8.0",
   "rarfile >= 4.2",
   "rich >= 13.7.1",
-  "simyan >= 1.2.1",
+  "simyan >= 1.2.2",
   "tomli >= 2.0.1 ; python_version < \"3.11\"",
   "tomli-w >= 1.0.0",
   "xmltodict >= 0.13.0"
@@ -49,7 +49,7 @@ requires-python = ">= 3.8"
 
 [project.optional-dependencies]
 cb7 = [
-  "py7zr >= 0.21.0"
+  "py7zr >= 0.21.1"
 ]
 
 [project.scripts]
@@ -81,17 +81,17 @@ skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 ignore = [
-  "C90",
+  "C901",
   "COM812",
   "D",
+  "D107",
   "DTZ",
-  "EM",
-  "ERA001",
+  "EM101",
+  "EM102",
   "EXE",
   "FBT",
-  "PLR0912",
-  "PLR0915",
   "PLR2004",
+  "PLW2901",
   "TCH",
   "TRY003",
   "TRY300"
@@ -116,7 +116,6 @@ split-on-trailing-comma = false
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
 
 [tool.ruff.lint.per-file-ignores]
-"perdoo/models/_base.py" = ["PLW2901"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
