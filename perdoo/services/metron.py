@@ -46,7 +46,8 @@ class Metron(BaseService[Series, Issue]):
         title = title or Prompt.ask("Series title", console=CONSOLE)
         try:
             options = sorted(
-                self.session.series_list(params={"name": title}), key=lambda x: x.display_name
+                self.session.series_list(params={"name": title}),
+                key=lambda x: (x.display_name, x.volume),
             )
             if not options:
                 LOGGER.warning("Unable to find any Series with the title: '%s'", title)

@@ -114,7 +114,7 @@ def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
                     else None,
                     league=metron_info.series.id
                     if metron_info.id
-                       and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
                     else None,
                     marvel=metron_info.series.id
                     if metron_info.id and metron_info.id.source == InformationSource.MARVEL
@@ -130,7 +130,7 @@ def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
                     else None,
                     league=metron_info.id.value
                     if metron_info.id
-                       and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
                     else None,
                     marvel=metron_info.id.value
                     if metron_info.id and metron_info.id.source == InformationSource.MARVEL
@@ -167,18 +167,17 @@ def load_archives(
     path: Path, output: OutputFormat, force: bool = False
 ) -> list[tuple[Path, BaseArchive, Details | None]]:
     archives = []
-    with CONSOLE.status(f"Searching for {output} files"):
-        for file in list_files(path, f".{output}"):
-            archive = get_archive(path=file)
-            LOGGER.debug("Reading %s", file.stem)
-            meta, details = read_meta(archive=archive)
-            if not meta or not details:
-                archives.append((file, archive, details))
-                continue
-            difference = abs(date.today() - meta.date_)
-            if force or meta.tool != Tool() or difference.days >= 28:
-                archives.append((file, archive, details))
-                continue
+    for file in list_files(path, f".{output}"):
+        archive = get_archive(path=file)
+        LOGGER.debug("Reading %s", file.stem)
+        meta, details = read_meta(archive=archive)
+        if not meta or not details:
+            archives.append((file, archive, details))
+            continue
+        difference = abs(date.today() - meta.date_)
+        if force or meta.tool != Tool() or difference.days >= 28:
+            archives.append((file, archive, details))
+            continue
     return archives
 
 
@@ -312,7 +311,7 @@ def start(settings: Settings, force: bool = False) -> None:
     for file, archive, details in archives:
         CONSOLE.rule(file.stem)
         LOGGER.info("Processing %s", file.stem)
-        details = details or Details(  # noqa: PLW2901
+        details = details or Details(
             series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
             issue=Identifications(),
         )
