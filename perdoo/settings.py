@@ -18,7 +18,7 @@ from typing import ClassVar
 import tomli_w as tomlwriter
 from pydantic import BaseModel, field_validator
 
-from perdoo import get_config_dir, get_data_dir
+from perdoo import get_config_dir, get_input_dir
 
 try:
     import tomllib as tomlreader  # Python >= 3.11
@@ -116,7 +116,8 @@ class Output(SettingsModel):
 
 class Settings(SettingsModel):
     _filename: ClassVar[Path] = get_config_dir() / "settings.toml"
-    collection_folder: Path = get_data_dir()
+    input_folder: Path = get_input_dir()
+    output_folder: Path = get_input_dir()
     comicvine: Comicvine = Comicvine()
     league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
     marvel: Marvel = Marvel()
@@ -140,7 +141,8 @@ class Settings(SettingsModel):
     def save(self: Settings) -> Settings:
         with self._filename.open("wb") as stream:
             content = self.dict(by_alias=False)
-            content["collection_folder"] = str(content["collection_folder"])
+            content["input_folder"] = str(content["input_folder"])
+            content["output_folder"] = str(content["output_folder"])
             content["service_order"] = [str(x) for x in content["service_order"]]
             content["output"]["format"] = str(content["output"]["format"])
             tomlwriter.dump(content, stream)

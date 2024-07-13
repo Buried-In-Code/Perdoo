@@ -114,7 +114,7 @@ def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
                     else None,
                     league=metron_info.series.id
                     if metron_info.id
-                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                       and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
                     else None,
                     marvel=metron_info.series.id
                     if metron_info.id and metron_info.id.source == InformationSource.MARVEL
@@ -130,7 +130,7 @@ def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
                     else None,
                     league=metron_info.id.value
                     if metron_info.id
-                    and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                       and metron_info.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
                     else None,
                     marvel=metron_info.id.value
                     if metron_info.id and metron_info.id.source == InformationSource.MARVEL
@@ -304,9 +304,9 @@ def process_pages(
 
 def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
-    convert_collection(path=settings.collection_folder, output=settings.output.format)
+    convert_collection(path=settings.input_folder, output=settings.output.format)
     archives = load_archives(
-        path=settings.collection_folder, output=settings.output.format, force=force
+        path=settings.input_folder, output=settings.output.format, force=force
     )
 
     for file, archive, details in archives:
@@ -319,7 +319,7 @@ def start(settings: Settings, force: bool = False) -> None:
 
         metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
-            root=settings.collection_folder,
+            root=settings.output_folder,
             extension=settings.output.format.value,
             metadata=metadata,
         )
@@ -356,18 +356,18 @@ def start(settings: Settings, force: bool = False) -> None:
                 continue
             archive.path.unlink(missing_ok=True)
             shutil.move(archive_file, archive.path)
-        if file.relative_to(settings.collection_folder) != new_file.relative_to(
-            settings.collection_folder
+        if file.relative_to(settings.input_folder) != new_file.relative_to(
+            settings.output_folder
         ):
             LOGGER.info(
                 "Organizing comic, moving file to %s",
-                new_file.relative_to(settings.collection_folder),
+                new_file.relative_to(settings.output_folder),
             )
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(file, new_file)
 
     for folder in sorted(
-        settings.collection_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
+        settings.input_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
     ):
         if folder.is_dir() and not any(folder.iterdir()):
             folder.rmdir()
