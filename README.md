@@ -114,4 +114,4 @@ Collection Root
 
 ## Socials
 
-[![Social - Matrix](https://img.shields.io/matrix/The-Dev-Environment:matrix.org?label=The%20Dev%20Environment&logo=matrix&style=for-the-badge)](https://matrix.to/#/#The-Dev-Environment:matrix.org)
+[![Social - Matrix](https://img.shields.io/matrix/The-Dev-Environment:matrix.org?label=The-Dev-Environment&logo=matrix&style=for-the-badge)](https://matrix.to/#/#The-Dev-Environment:matrix.org)

@@ -31,7 +31,7 @@ dependencies = [
   "mokkari@git+https://github.com/Buried-In-Code/mokkari ; python_version < \"3.10\"",
   "natsort >= 8.4.0",
   "pillow >= 10.4.0",
-  "pydantic >= 2.8.0",
+  "pydantic >= 2.8.2",
   "rarfile >= 4.2",
   "rich >= 13.7.1",
   "simyan >= 1.2.2",
@@ -56,10 +56,9 @@ cb7 = [
 Perdoo = "perdoo.__main__:main"
 
 [project.urls]
-Documentation = "https://github.com/ComicCorps/Perdoo#readme"
 Homepage = "https://pypi.org/project/Perdoo"
-Issues = "https://github.com/ComicCorps/Perdoo/issues"
-Source = "https://github.com/ComicCorps/Perdoo"
+Issues = "https://github.com/Buried-In-Code/Perdoo/issues"
+Source = "https://github.com/Buried-In-Code/Perdoo"
 
 [tool.hatch.metadata]
 allow-direct-references = true

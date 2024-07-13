@@ -7,13 +7,14 @@
 #   all-features: true
 #   with-sources: false
 #   generate-hashes: false
+#   universal: false
 
 -e file:.
 annotated-types==0.7.0
     # via pydantic
 brotli==1.1.0
     # via py7zr
-certifi==2024.6.2
+certifi==2024.7.4
     # via requests
 cfgv==3.4.0
     # via pre-commit
@@ -32,7 +33,7 @@ filelock==3.15.4
     # via virtualenv
 himon==0.6.1
     # via perdoo
-identify==2.5.36
+identify==2.6.0
     # via pre-commit
 idna==3.7
     # via requests
@@ -67,12 +68,12 @@ pybcj==1.0.2
     # via py7zr
 pycryptodomex==3.20.0
     # via py7zr
-pydantic==2.8.0
+pydantic==2.8.2
     # via himon
     # via mokkari
     # via perdoo
     # via simyan
-pydantic-core==2.20.0
+pydantic-core==2.20.1
     # via pydantic
 pygments==2.18.0
     # via rich
