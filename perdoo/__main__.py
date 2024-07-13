@@ -303,10 +303,14 @@ def process_pages(
 
 def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
-    convert_collection(path=settings.input_folder, output=settings.output.format)
-    archives = load_archives(
-        path=settings.input_folder, output=settings.output.format, force=force
-    )
+
+    with CONSOLE.status(f"Searching for non-{settings.output.format} files"):
+        convert_collection(path=settings.input_folder, output=settings.output.format)
+
+    with CONSOLE.status(f"Searching for {settings.output.format} files"):
+        archives = load_archives(
+            path=settings.input_folder, output=settings.output.format, force=force
+        )
 
     for file, archive, details in archives:
         CONSOLE.rule(file.stem)

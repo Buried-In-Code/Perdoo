@@ -30,7 +30,6 @@ class Details:
 
 
 def list_files(path: Path, *extensions: str) -> list[Path]:
-    LOGGER.debug(f"Listing {path}")
     files = []
     for file in path.iterdir():
         if file.is_file():
