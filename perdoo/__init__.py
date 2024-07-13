@@ -4,7 +4,7 @@ __all__ = [
     "IMAGE_EXTENSIONS",
     "get_cache_dir",
     "get_config_dir",
-    "get_input_dir",
+    "get_data_dir",
     "setup_logging",
 ]
 __version__ = "0.2.0"
@@ -36,7 +36,7 @@ def get_config_dir() -> Path:
     return folder
 
 
-def get_input_dir() -> Path:
+def get_data_dir() -> Path:
     data_home = os.getenv("XDG_DATA_HOME", default=str(Path.home() / ".local" / "share"))
     folder = Path(data_home).resolve() / "perdoo"
     folder.mkdir(exist_ok=True, parents=True)
