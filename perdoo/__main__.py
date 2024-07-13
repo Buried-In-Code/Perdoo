@@ -167,18 +167,17 @@ def load_archives(
     path: Path, output: OutputFormat, force: bool = False
 ) -> list[tuple[Path, BaseArchive, Details | None]]:
     archives = []
-    with CONSOLE.status(f"Searching for {output} files"):
-        for file in list_files(path, f".{output}"):
-            archive = get_archive(path=file)
-            LOGGER.debug("Reading %s", file.stem)
-            meta, details = read_meta(archive=archive)
-            if not meta or not details:
-                archives.append((file, archive, details))
-                continue
-            difference = abs(date.today() - meta.date_)
-            if force or meta.tool != Tool() or difference.days >= 28:
-                archives.append((file, archive, details))
-                continue
+    for file in list_files(path, f".{output}"):
+        archive = get_archive(path=file)
+        LOGGER.debug("Reading %s", file.stem)
+        meta, details = read_meta(archive=archive)
+        if not meta or not details:
+            archives.append((file, archive, details))
+            continue
+        difference = abs(date.today() - meta.date_)
+        if force or meta.tool != Tool() or difference.days >= 28:
+            archives.append((file, archive, details))
+            continue
     return archives
 
 
@@ -304,15 +303,19 @@ def process_pages(
 
 def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
-    convert_collection(path=settings.collection_folder, output=settings.output.format)
-    archives = load_archives(
-        path=settings.collection_folder, output=settings.output.format, force=force
-    )
+
+    with CONSOLE.status(f"Searching for non-{settings.output.format} files"):
+        convert_collection(path=settings.collection_folder, output=settings.output.format)
+
+    with CONSOLE.status(f"Searching for {settings.output.format} files"):
+        archives = load_archives(
+            path=settings.collection_folder, output=settings.output.format, force=force
+        )
 
     for file, archive, details in archives:
         CONSOLE.rule(file.stem)
         LOGGER.info("Processing %s", file.stem)
-        details = details or Details(  # noqa: PLW2901
+        details = details or Details(
             series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
             issue=Identifications(),
         )
