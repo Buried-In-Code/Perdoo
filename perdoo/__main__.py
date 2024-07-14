@@ -305,11 +305,11 @@ def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
 
     with CONSOLE.status(f"Searching for non-{settings.output.format} files"):
-        convert_collection(path=settings.collection_folder, output=settings.output.format)
+        convert_collection(path=settings.input_folder, output=settings.output.format)
 
     with CONSOLE.status(f"Searching for {settings.output.format} files"):
         archives = load_archives(
-            path=settings.collection_folder, output=settings.output.format, force=force
+            path=settings.input_folder, output=settings.output.format, force=force
         )
 
     for file, archive, details in archives:
@@ -322,7 +322,7 @@ def start(settings: Settings, force: bool = False) -> None:
 
         metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
-            root=settings.collection_folder,
+            root=settings.output_folder,
             extension=settings.output.format.value,
             metadata=metadata,
         )
@@ -359,18 +359,18 @@ def start(settings: Settings, force: bool = False) -> None:
                 continue
             archive.path.unlink(missing_ok=True)
             shutil.move(archive_file, archive.path)
-        if file.relative_to(settings.collection_folder) != new_file.relative_to(
-            settings.collection_folder
+        if file.relative_to(settings.input_folder) != new_file.relative_to(
+            settings.output_folder
         ):
             LOGGER.info(
                 "Organizing comic, moving file to %s",
-                new_file.relative_to(settings.collection_folder),
+                new_file.relative_to(settings.output_folder),
             )
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(file, new_file)
 
     for folder in sorted(
-        settings.collection_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
+        settings.input_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
     ):
         if folder.is_dir() and not any(folder.iterdir()):
             folder.rmdir()
