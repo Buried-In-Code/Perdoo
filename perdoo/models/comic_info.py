@@ -41,7 +41,7 @@ class YesNo(Enum):
 
     def __lt__(self: YesNo, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: YesNo) -> str:
@@ -63,7 +63,7 @@ class Manga(Enum):
 
     def __lt__(self: Manga, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Manga) -> str:
@@ -96,7 +96,7 @@ class AgeRating(Enum):
 
     def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: AgeRating) -> str:
@@ -125,7 +125,7 @@ class PageType(Enum):
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: PageType) -> str:
@@ -144,12 +144,12 @@ class Page(PascalModel):
 
     def __lt__(self: Page, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.image < other.image
 
     def __eq__(self: Page, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.image == other.image
 
     def __hash__(self: Page) -> int:

@@ -51,7 +51,7 @@ class InformationSource(Enum):
 
     def __lt__(self: InformationSource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: InformationSource) -> str:
@@ -64,12 +64,12 @@ class Source(PascalModel):
 
     def __lt__(self: Source, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.source < other.source
 
     def __eq__(self: Source, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.source == other.source
 
     def __hash__(self: Source) -> int:
@@ -87,12 +87,12 @@ class Resource(PascalModel):
 
     def __lt__(self: Resource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __eq__(self: Resource, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value == other.value
 
     def __hash__(self: Resource) -> int:
@@ -121,7 +121,7 @@ class Format(Enum):
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Format) -> str:
@@ -143,12 +143,12 @@ class Price(PascalModel):
 
     def __lt__(self: Price, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.country < other.country
 
     def __eq__(self: Price, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.country == other.country
 
     def __hash__(self: Price) -> int:
@@ -181,7 +181,7 @@ class Genre(Enum):
 
     def __lt__(self: Genre, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Genre) -> str:
@@ -194,12 +194,12 @@ class GenreResource(PascalModel):
 
     def __lt__(self: GenreResource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __eq__(self: GenreResource, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value == other.value
 
     def __hash__(self: GenreResource) -> int:
@@ -213,12 +213,12 @@ class Arc(PascalModel):
 
     def __lt__(self: Arc, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.name < other.name
 
     def __eq__(self: Arc, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.name == other.name
 
     def __hash__(self: Arc) -> int:
@@ -232,12 +232,12 @@ class Universe(PascalModel):
 
     def __lt__(self: Universe, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.name < other.name
 
     def __eq__(self: Universe, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.name == other.name
 
     def __hash__(self: Universe) -> int:
@@ -265,7 +265,7 @@ class AgeRating(Enum):
 
     def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: AgeRating) -> str:
@@ -325,7 +325,7 @@ class Role(Enum):
 
     def __lt__(self: Role, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Role) -> str:
@@ -338,12 +338,12 @@ class RoleResource(PascalModel):
 
     def __lt__(self: RoleResource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __eq__(self: RoleResource, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value == other.value
 
     def __hash__(self: RoleResource) -> int:
@@ -364,12 +364,12 @@ class Credit(PascalModel):
 
     def __lt__(self: Credit, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.creator < other.creator
 
     def __eq__(self: Credit, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.creator == other.creator
 
     def __hash__(self: Credit) -> int:
@@ -398,7 +398,7 @@ class PageType(Enum):
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: PageType) -> str:
@@ -417,12 +417,12 @@ class Page(PascalModel):
 
     def __lt__(self: Page, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.image < other.image
 
     def __eq__(self: Page, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.image == other.image
 
     def __hash__(self: Page) -> int:

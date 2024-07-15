@@ -71,7 +71,7 @@ class OutputFormat(Enum):
 
     def __lt__(self: OutputFormat, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: OutputFormat) -> str:
@@ -93,7 +93,7 @@ class Service(Enum):
 
     def __lt__(self: Service, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Service) -> str:

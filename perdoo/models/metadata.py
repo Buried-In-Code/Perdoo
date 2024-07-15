@@ -45,7 +45,7 @@ class Source(Enum):
 
     def __lt__(self: Source, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Source) -> str:
@@ -58,12 +58,12 @@ class Resource(PascalModel):
 
     def __lt__(self: Resource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.source < other.source
 
     def __eq__(self: Resource, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.source == other.source
 
     def __hash__(self: Resource) -> int:
@@ -82,12 +82,12 @@ class TitledResource(PascalModel):
 
     def __lt__(self: TitledResource, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.title.casefold() < other.title.casefold()
 
     def __eq__(self: TitledResource, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.title.casefold() == other.title.casefold()
 
     def __hash__(self: TitledResource) -> int:
@@ -106,12 +106,12 @@ class Credit(PascalModel):
 
     def __lt__(self: Credit, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.creator < other.creator
 
     def __eq__(self: Credit, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.creator == other.creator
 
     def __hash__(self: Credit) -> int:
@@ -135,7 +135,7 @@ class Format(Enum):
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: Format) -> str:
@@ -156,7 +156,7 @@ class Series(TitledResource):
 
     def __lt__(self: Series, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         if self.publisher != other.publisher:
             return self.publisher < other.publisher
         if self.title.casefold() != other.title.casefold():
@@ -165,7 +165,7 @@ class Series(TitledResource):
 
     def __eq__(self: Series, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return (self.publisher, self.title.casefold(), self.volume) == (
             other.publisher,
             other.title.casefold(),
@@ -216,7 +216,7 @@ class Issue(PascalModel):
 
     def __lt__(self: Issue, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         if self.series != other.series:
             return self.series < other.series
         if self.number.casefold() != other.number.casefold():
@@ -225,7 +225,7 @@ class Issue(PascalModel):
 
     def __eq__(self: Issue, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return (self.series, self.number.casefold(), self.format) == (
             other.series,
             other.number.casefold(),
@@ -267,7 +267,7 @@ class PageType(Enum):
 
     def __lt__(self: PageType, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.value < other.value
 
     def __str__(self: PageType) -> str:
@@ -285,12 +285,12 @@ class Page(PascalModel):
 
     def __lt__(self: Page, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.index < other.index
 
     def __eq__(self: Page, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.filename == other.filename
 
     def __hash__(self: Page) -> int:
@@ -333,12 +333,12 @@ class Metadata(PascalModel, InfoModel):
 
     def __lt__(self: Metadata, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.issue < other.issue
 
     def __eq__(self: Metadata, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
-            raise NotImplementedError
+            return NotImplemented
         return self.issue == other.issue
 
     def __hash__(self: Metadata) -> int:
