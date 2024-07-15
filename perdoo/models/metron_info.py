@@ -11,6 +11,7 @@ __all__ = [
     "InformationList",
     "InformationSource",
     "MetronInfo",
+    "Page",
     "Price",
     "Resource",
     "Role",

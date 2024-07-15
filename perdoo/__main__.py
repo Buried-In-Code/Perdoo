@@ -322,9 +322,7 @@ def start(settings: Settings, force: bool = False) -> None:
 
         metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
         new_file = generate_filename(
-            root=settings.output_folder,
-            extension=settings.output.format.value,
-            metadata=metadata,
+            root=settings.output_folder, extension=settings.output.format.value, metadata=metadata
         )
         with TemporaryDirectory(prefix=f"{new_file.stem}_") as temp_str:
             temp_folder = Path(temp_str)
@@ -359,12 +357,9 @@ def start(settings: Settings, force: bool = False) -> None:
                 continue
             archive.path.unlink(missing_ok=True)
             shutil.move(archive_file, archive.path)
-        if file.relative_to(settings.input_folder) != new_file.relative_to(
-            settings.output_folder
-        ):
+        if file.relative_to(settings.input_folder) != new_file.relative_to(settings.output_folder):
             LOGGER.info(
-                "Organizing comic, moving file to %s",
-                new_file.relative_to(settings.output_folder),
+                "Organizing comic, moving file to %s", new_file.relative_to(settings.output_folder)
             )
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(file, new_file)

@@ -7,6 +7,7 @@ __all__ = [
     "Metron",
     "OutputFormat",
     "Output",
+    "Service",
     "Settings",
 ]
 
