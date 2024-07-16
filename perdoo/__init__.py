@@ -2,12 +2,12 @@ __all__ = [
     "__version__",
     "ARCHIVE_EXTENSIONS",
     "IMAGE_EXTENSIONS",
-    "get_cache_dir",
-    "get_config_dir",
-    "get_data_dir",
+    "get_cache_root",
+    "get_config_root",
+    "get_data_root",
     "setup_logging",
 ]
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 import logging
 import os
@@ -22,34 +22,34 @@ ARCHIVE_EXTENSIONS = (".cb7", ".cbr", ".cbt", ".cbz")
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp")
 
 
-def get_cache_dir() -> Path:
+def get_cache_root() -> Path:
     cache_home = os.getenv("XDG_CACHE_HOME", default=str(Path.home() / ".cache"))
     folder = Path(cache_home).resolve() / "perdoo"
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
 
-def get_config_dir() -> Path:
+def get_config_root() -> Path:
     config_home = os.getenv("XDG_CONFIG_HOME", default=str(Path.home() / ".config"))
     folder = Path(config_home).resolve() / "perdoo"
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
 
-def get_data_dir() -> Path:
+def get_data_root() -> Path:
     data_home = os.getenv("XDG_DATA_HOME", default=str(Path.home() / ".local" / "share"))
     folder = Path(data_home).resolve() / "perdoo"
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
 
-def get_project_dir() -> Path:
+def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
 def setup_logging(debug: bool = False) -> None:
     install(show_locals=True, max_frames=6, console=CONSOLE)
-    log_folder = get_project_dir() / "logs"
+    log_folder = get_project_root() / "logs"
     log_folder.mkdir(parents=True, exist_ok=True)
 
     console_handler = RichHandler(

@@ -321,6 +321,9 @@ def start(settings: Settings, force: bool = False) -> None:
         )
 
         metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
+        if not metadata:
+            LOGGER.warning("Not enough information to organize and rename this comic, skipping")
+            continue
         new_file = generate_filename(
             root=settings.output_folder, extension=settings.output.format.value, metadata=metadata
         )
@@ -341,11 +344,11 @@ def start(settings: Settings, force: bool = False) -> None:
                 metadata_file = temp_folder / "Metadata.xml"
                 metadata.to_file(file=metadata_file)
                 files.append(metadata_file)
-            if settings.output.create_metron_info:
+            if metron_info and settings.output.create_metron_info:
                 metron_info_file = temp_folder / "MetronInfo.xml"
                 metron_info.to_file(file=metron_info_file)
                 files.append(metron_info_file)
-            if settings.output.create_comic_info:
+            if comic_info and settings.output.create_comic_info:
                 comic_info_file = temp_folder / "ComicInfo.xml"
                 comic_info.to_file(file=comic_info_file)
                 files.append(comic_info_file)

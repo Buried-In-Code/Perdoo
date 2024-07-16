@@ -14,7 +14,7 @@ from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 from simyan.sqlite_cache import SQLiteCache
 
-from perdoo import get_cache_dir
+from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
 from perdoo.models import ComicInfo, Metadata, MetronInfo
 from perdoo.models.metadata import Source
@@ -28,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Comicvine(BaseService[Volume, Issue]):
     def __init__(self: Comicvine, settings: ComicvineSettings):
-        cache = SQLiteCache(path=get_cache_dir() / "simyan.sqlite", expiry=14)
+        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite", expiry=14)
         self.session = Simyan(api_key=settings.api_key, cache=cache)
 
     def _get_series_id(self: Comicvine, title: str | None) -> int | None:

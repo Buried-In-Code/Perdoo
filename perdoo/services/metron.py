@@ -13,7 +13,7 @@ from mokkari.sqlite_cache import SqliteCache
 from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
-from perdoo import get_cache_dir
+from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
 from perdoo.models import ComicInfo, Metadata, MetronInfo
 from perdoo.models.metadata import Source
@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Metron(BaseService[Series, Issue]):
     def __init__(self: Metron, settings: MetronSettings):
-        cache = SqliteCache(db_name=str(get_cache_dir() / "mokkari.sqlite"), expire=14)
+        cache = SqliteCache(db_name=str(get_cache_root() / "mokkari.sqlite"), expire=14)
         self.session = Mokkari(username=settings.username, passwd=settings.password, cache=cache)
 
     def _get_series_via_comicvine(self: Metron, comicvine_id: int | None) -> int | None:

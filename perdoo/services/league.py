@@ -9,7 +9,7 @@ from himon.schemas.comic import Comic
 from himon.schemas.series import Series
 from himon.sqlite_cache import SQLiteCache
 
-from perdoo import get_cache_dir
+from perdoo import get_cache_root
 from perdoo.models import ComicInfo, Metadata, MetronInfo
 from perdoo.services._base import BaseService
 from perdoo.settings import LeagueofComicGeeks as LeagueSettings
@@ -20,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 class League(BaseService[Series, Comic]):
     def __init__(self: League, settings: LeagueSettings):
-        cache = SQLiteCache(path=get_cache_dir() / "himon.sqlite", expiry=14)
+        cache = SQLiteCache(path=get_cache_root() / "himon.sqlite", expiry=14)
         self.session = Himon(
             client_id=settings.client_id,
             client_secret=settings.client_secret,
