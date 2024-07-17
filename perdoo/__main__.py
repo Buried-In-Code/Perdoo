@@ -274,7 +274,6 @@ def process_pages(
     from perdoo.models.metadata import Page as MetadataPage
     from perdoo.models.metron_info import Page as MetronPage
 
-    LOGGER.info("Processing pages")
     rename_images(folder=folder, filename=filename)
     image_list = list_files(folder, *IMAGE_EXTENSIONS)
     metadata_pages = set()
@@ -304,16 +303,19 @@ def process_pages(
 def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
 
-    with CONSOLE.status(f"Searching for non-{settings.output.format} files"):
+    with CONSOLE.status(
+        f"Searching for non-{settings.output.format} files", spinner="simpleDotsScrolling"
+    ):
         convert_collection(path=settings.input_folder, output=settings.output.format)
 
-    with CONSOLE.status(f"Searching for {settings.output.format} files"):
+    with CONSOLE.status(
+        f"Searching for {settings.output.format} files", spinner="simpleDotsScrolling"
+    ):
         archives = load_archives(
             path=settings.input_folder, output=settings.output.format, force=force
         )
 
     for file, archive, details in archives:
-        CONSOLE.rule(file.stem)
         LOGGER.info("Processing %s", file.stem)
         details = details or Details(
             series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
@@ -327,10 +329,14 @@ def start(settings: Settings, force: bool = False) -> None:
         new_file = generate_filename(
             root=settings.output_folder, extension=settings.output.format.value, metadata=metadata
         )
-        with TemporaryDirectory(prefix=f"{new_file.stem}_") as temp_str:
+
+        with TemporaryDirectory(prefix=f"{new_file.stem}_") as temp_str, CONSOLE.status(
+            "Extracting files", spinner="simpleDotsScrolling"
+        ) as status:
             temp_folder = Path(temp_str)
             if not archive.extract_files(destination=temp_folder):
                 return
+            status.update("Processing pages", spinner="simpleDotsScrolling")
             process_pages(
                 folder=temp_folder,
                 metadata=metadata,
@@ -338,6 +344,7 @@ def start(settings: Settings, force: bool = False) -> None:
                 comic_info=comic_info,
                 filename=new_file.stem,
             )
+            status.update("Packaging archive", spinner="simpleDotsScrolling")
             metadata.meta = Meta(date_=date.today())
             files = list_files(temp_folder, *IMAGE_EXTENSIONS)
             if settings.output.create_metadata:
@@ -367,12 +374,13 @@ def start(settings: Settings, force: bool = False) -> None:
             new_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(file, new_file)
 
-    for folder in sorted(
-        settings.input_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
-    ):
-        if folder.is_dir() and not any(folder.iterdir()):
-            folder.rmdir()
-            LOGGER.info("Deleted empty folder: %s", folder)
+    with CONSOLE.status("Cleaning up empty folders", spinner="simpleDotsScrolling"):
+        for folder in sorted(
+            settings.input_folder.rglob("*"), key=lambda p: len(p.parts), reverse=True
+        ):
+            if folder.is_dir() and not any(folder.iterdir()):
+                folder.rmdir()
+                LOGGER.info("Deleted empty folder: %s", folder)
 
 
 def main() -> None:
