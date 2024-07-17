@@ -327,7 +327,7 @@ class ComicInfo(PascalModel, InfoModel):
         content = self.clean_contents(content)
         content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
         content["@xsi:noNamespaceSchemaLocation"] = (
-            "https://raw.githubusercontent.com/ComicCorps/Schemas/main/schemas/v2.0/ComicInfo.xsd"
+            "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/schemas/v2.0/ComicInfo.xsd"
         )
 
         with file.open("wb") as stream:

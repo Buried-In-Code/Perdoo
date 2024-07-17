@@ -13,7 +13,7 @@ from esak.sqlite_cache import SqliteCache
 from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
-from perdoo import get_cache_dir
+from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
 from perdoo.models import ComicInfo, Metadata, MetronInfo
 from perdoo.services._base import BaseService
@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Marvel(BaseService[Series, Comic]):
     def __init__(self: Marvel, settings: MarvelSettings):
-        cache = SqliteCache(db_name=str(get_cache_dir() / "esak.sqlite"), expire=14)
+        cache = SqliteCache(db_name=str(get_cache_root() / "esak.sqlite"), expire=14)
         self.session = Esak(
             public_key=settings.public_key, private_key=settings.private_key, cache=cache
         )

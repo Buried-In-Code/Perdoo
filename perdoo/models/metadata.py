@@ -355,7 +355,7 @@ class Metadata(PascalModel, InfoModel):
         content = self.clean_contents(content)
         content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
         content["@xsi:noNamespaceSchemaLocation"] = (
-            "https://raw.githubusercontent.com/ComicCorps/Schemas/main/drafts/v1.0/Metadata.xsd"
+            "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/drafts/v1.0/Metadata.xsd"
         )
 
         with file.open("wb") as stream:
