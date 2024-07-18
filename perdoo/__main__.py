@@ -42,9 +42,11 @@ def convert_collection(path: Path, output: OutputFormat) -> None:
     formats = list(ARCHIVE_EXTENSIONS)
     formats.remove(format_)
     for file in list_files(path, *formats):
-        LOGGER.info("Converting %s to %s format", file.name, output.name)
-        archive = get_archive(path=file)
-        archive_type.convert(old_archive=archive)
+        with CONSOLE.status(
+            f"Converting {file.name} to {output.name}", spinner="simpleDotsScrolling"
+        ):
+            archive = get_archive(path=file)
+            archive_type.convert(old_archive=archive)
 
 
 def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
@@ -303,10 +305,7 @@ def process_pages(
 def start(settings: Settings, force: bool = False) -> None:
     LOGGER.info("Starting Perdoo")
 
-    with CONSOLE.status(
-        f"Searching for non-{settings.output.format} files", spinner="simpleDotsScrolling"
-    ):
-        convert_collection(path=settings.input_folder, output=settings.output.format)
+    convert_collection(path=settings.input_folder, output=settings.output.format)
 
     with CONSOLE.status(
         f"Searching for {settings.output.format} files", spinner="simpleDotsScrolling"
@@ -331,12 +330,12 @@ def start(settings: Settings, force: bool = False) -> None:
         )
 
         with TemporaryDirectory(prefix=f"{new_file.stem}_") as temp_str, CONSOLE.status(
-            "Extracting files", spinner="simpleDotsScrolling"
+            f"Extracting {archive.path.stem} files", spinner="simpleDotsScrolling"
         ) as status:
             temp_folder = Path(temp_str)
             if not archive.extract_files(destination=temp_folder):
                 return
-            status.update("Processing pages", spinner="simpleDotsScrolling")
+            status.update("Processing files")
             process_pages(
                 folder=temp_folder,
                 metadata=metadata,
@@ -344,7 +343,6 @@ def start(settings: Settings, force: bool = False) -> None:
                 comic_info=comic_info,
                 filename=new_file.stem,
             )
-            status.update("Packaging archive", spinner="simpleDotsScrolling")
             metadata.meta = Meta(date_=date.today())
             files = list_files(temp_folder, *IMAGE_EXTENSIONS)
             if settings.output.create_metadata:
@@ -359,6 +357,7 @@ def start(settings: Settings, force: bool = False) -> None:
                 comic_info_file = temp_folder / "ComicInfo.xml"
                 comic_info.to_file(file=comic_info_file)
                 files.append(comic_info_file)
+            status.update(f"Archiving {new_file.stem}")
             archive_file = archive.archive_files(
                 src=temp_folder, output_name=archive.path.stem, files=files
             )
