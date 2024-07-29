@@ -84,6 +84,6 @@ class CB7Archive(BaseArchive):
             if not archive_file:
                 return None
             new_filepath = old_archive.path.parent / f"{old_archive.path.stem}.cb7"
-            shutil.move(archive_file, new_filepath)
             old_archive.path.unlink(missing_ok=True)
+            shutil.move(archive_file, new_filepath)
             return CB7Archive(path=new_filepath)

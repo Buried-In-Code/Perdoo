@@ -101,22 +101,20 @@ class Resource(PascalModel):
 
 class Format(Enum):
     ANNUAL = "Annual"
+    DIGITAL_CHAPTERS = "Digital Chapters"
     GRAPHIC_NOVEL = "Graphic Novel"
-    LIMITED_SERIES = "Limited Series"
-    ONE_SHOT = "One-Shot"
-    SERIES = "Series"
-    TRADE_PAPERBACK = "Trade Paperback"
     HARDCOVER = "Hardcover"
+    LIMITED_SERIES = "Limited Series"
+    OMNIBUS = "Omnibus"
+    ONE_SHOT = "One-Shot"
+    SINGLE_ISSUE = "Single Issue"
+    TRADE_PAPERBACK = "Trade Paperback"
 
     @staticmethod
     def load(value: str) -> Format:
         for entry in Format:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        # region Manual matches
-        if value.casefold() in ["Cancelled Series".casefold(), "Ongoing Series".casefold()]:
-            return Format.SERIES
-        # endregion
         raise ValueError(f"`{value}` isn't a valid metron_info.Format")
 
     def __lt__(self: Format, other) -> int:  # noqa: ANN001

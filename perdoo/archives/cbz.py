@@ -67,6 +67,6 @@ class CBZArchive(BaseArchive):
             if not archive_file:
                 return None
             new_filepath = old_archive.path.parent / f"{old_archive.path.stem}.cbz"
-            shutil.move(archive_file, new_filepath)
             old_archive.path.unlink(missing_ok=True)
+            shutil.move(archive_file, new_filepath)
             return CBZArchive(path=new_filepath)
