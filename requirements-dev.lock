@@ -81,7 +81,7 @@ pyppmd==1.1.0
     # via py7zr
 pyyaml==6.0.1
     # via pre-commit
-pyzstd==0.16.0
+pyzstd==0.16.1
     # via py7zr
 rarfile==4.2
     # via perdoo

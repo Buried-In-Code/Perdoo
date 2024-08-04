@@ -101,7 +101,7 @@ class Resource(PascalModel):
 
 class Format(Enum):
     ANNUAL = "Annual"
-    DIGITAL_CHAPTERS = "Digital Chapters"
+    DIGITAL_CHAPTER = "Digital Chapter"
     GRAPHIC_NOVEL = "Graphic Novel"
     HARDCOVER = "Hardcover"
     LIMITED_SERIES = "Limited Series"
