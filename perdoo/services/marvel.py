@@ -117,7 +117,7 @@ class Marvel(BaseService[Series, Comic]):
             try:
                 return Format.load(value=value.strip())
             except ValueError:
-                return Format.COMIC
+                return Format.SINGLE_ISSUE
 
         from perdoo.models.metadata import (
             Credit,
@@ -172,7 +172,7 @@ class Marvel(BaseService[Series, Comic]):
             try:
                 return Format.load(value=value.strip())
             except ValueError:
-                return Format.SERIES
+                return Format.SINGLE_ISSUE
 
         def load_age_rating(value: str) -> AgeRating:
             try:

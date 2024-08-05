@@ -37,7 +37,7 @@ marshmallow==3.21.3
     # via esak
 mdurl==0.1.2
     # via markdown-it-py
-mokkari @ git+https://github.com/Buried-In-Code/mokkari@e55697cb7eb0d52d206cd5df5af300752d86dd38
+mokkari @ git+https://github.com/Buried-In-Code/mokkari@7ce05cbde523969b4feb7b36698682711cef2d11
     # via perdoo
 multivolumefile==0.2.3
     # via py7zr
@@ -66,7 +66,7 @@ pygments==2.18.0
     # via rich
 pyppmd==1.1.0
     # via py7zr
-pyzstd==0.16.0
+pyzstd==0.16.1
     # via py7zr
 rarfile==4.2
     # via perdoo

@@ -150,7 +150,7 @@ class Metron(BaseService[Series, Issue]):
             try:
                 return Format.load(value=value.strip())
             except ValueError:
-                return Format.COMIC
+                return Format.SINGLE_ISSUE
 
         from perdoo.models.metadata import (
             Credit,

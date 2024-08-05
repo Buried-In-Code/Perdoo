@@ -119,12 +119,13 @@ class Credit(PascalModel):
 
 
 class Format(Enum):
-    COMIC = "Comic"
-    DIGITAL_CHAPTER = "Digital Chapter"
     ANNUAL = "Annual"
-    TRADE_PAPERBACK = "Trade Paperback"
-    HARDCOVER = "Hardcover"
+    DIGITAL_CHAPTER = "Digital Chapter"
     GRAPHIC_NOVEL = "Graphic Novel"
+    HARDCOVER = "Hardcover"
+    OMNIBUS = "Omnibus"
+    SINGLE_ISSUE = "Single Issue"
+    TRADE_PAPERBACK = "Trade Paperback"
 
     @staticmethod
     def load(value: str) -> Format:
@@ -184,7 +185,7 @@ class Issue(PascalModel):
     characters: list[TitledResource] = Field(default_factory=list)
     cover_date: date | None = None
     credits: list[Credit] = Field(default_factory=list)
-    format: Format = Format.COMIC
+    format: Format = Format.SINGLE_ISSUE
     language: str = Field(alias="@language", default="en")
     locations: list[TitledResource] = Field(default_factory=list)
     number: str | None = None

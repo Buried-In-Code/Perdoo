@@ -75,17 +75,17 @@ class AgeRating(Enum):
     ADULTS_ONLY = "Adults Only 18+"
     EARLY_CHILDHOOD = "Early Childhood"
     EVERYONE = "Everyone"
-    EVERYONE_18 = "Everyone 10+"
+    EVERYONE_10 = "Everyone 10+"
     G = "G"
     KIDS_TO_ADULTS = "Kids to Adults"
     M = "M"
-    MA = "MA15+"
-    MATURE = "Mature 17+"
+    MA15 = "MA15+"
+    MATURE_17 = "Mature 17+"
     PG = "PG"
-    R = "R18+"
+    R18 = "R18+"
     RATING_PENDING = "Rating Pending"
     TEEN = "Teen"
-    X = "X18+"
+    X18 = "X18+"
 
     @staticmethod
     def load(value: str) -> AgeRating:
