@@ -265,7 +265,7 @@ def process_pages(
         metron_info_pages.add(
             MetronPage.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
         )
-        page = next((x for x in metron_info.pages if x.image == index), None)
+        page = next((x for x in comic_info.pages if x.image == index), None)
         comic_info_pages.add(
             ComicPage.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
         )
