@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 __all__ = ["CB7Archive"]
 
 import logging
 import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Optional
 
 from perdoo.archives._base import BaseArchive
 from perdoo.utils import list_files
@@ -21,12 +20,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class CB7Archive(BaseArchive):
-    def __init__(self: CB7Archive, path: Path):
+    def __init__(self, path: Path):
         if not py7zr_loaded:
             raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
         super().__init__(path=path)
 
-    def list_filenames(self: CB7Archive) -> list[str]:
+    def list_filenames(self) -> list[str]:
         try:
             with py7zr.SevenZipFile(self.path, "r") as archive:
                 return archive.getnames()
@@ -34,7 +33,7 @@ class CB7Archive(BaseArchive):
             LOGGER.exception("Unable to read %s", self.path.name)
             return []
 
-    def read_file(self: CB7Archive, filename: str) -> bytes:
+    def read_file(self, filename: str) -> bytes:
         try:
             with py7zr.SevenZipFile(self.path, "r") as archive, archive.open(filename) as file:
                 return file.read()
@@ -42,7 +41,7 @@ class CB7Archive(BaseArchive):
             LOGGER.exception("Unable to read %s", self.path.name)
             return b""
 
-    def extract_files(self: CB7Archive, destination: Path) -> bool:
+    def extract_files(self, destination: Path) -> bool:
         try:
             with py7zr.SevenZipFile(self.path, "r") as archive:
                 archive.extractall(path=destination)
@@ -53,7 +52,7 @@ class CB7Archive(BaseArchive):
 
     @classmethod
     def archive_files(
-        cls: type[CB7Archive], src: Path, output_name: str, files: list[Path] | None = None
+        cls, src: Path, output_name: str, files: list[Path] | None = None
     ) -> Path | None:
         if not py7zr_loaded:
             raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
@@ -70,7 +69,7 @@ class CB7Archive(BaseArchive):
             return None
 
     @staticmethod
-    def convert(old_archive: BaseArchive) -> CB7Archive | None:
+    def convert(old_archive: BaseArchive) -> Optional["CB7Archive"]:
         if not py7zr_loaded:
             raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 __all__ = [
     "Comicvine",
     "LeagueofComicGeeks",
@@ -63,18 +61,18 @@ class OutputFormat(Enum):
     CBZ = "cbz"
 
     @staticmethod
-    def load(value: str) -> OutputFormat:
+    def load(value: str) -> "OutputFormat":
         for entry in OutputFormat:
             if entry.value.casefold() == value.casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid OutputFormat")
 
-    def __lt__(self: OutputFormat, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: OutputFormat) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
@@ -85,29 +83,28 @@ class Service(Enum):
     METRON = "Metron"
 
     @staticmethod
-    def load(value: str) -> Service:
+    def load(value: str) -> "Service":
         for entry in Service:
             if entry.value.casefold() == value.casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid Service")
 
-    def __lt__(self: Service, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: Service) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
 class Output(SettingsModel):
     create_comic_info: bool = True
     create_metron_info: bool = True
-    create_metadata: bool = True
     format: OutputFormat = OutputFormat.CBZ
 
     @field_validator("format", mode="before")
-    def validate_format(cls: type[Output], v: str) -> str:
+    def validate_format(cls, v: str) -> str:
         if v != "cb7":
             return v
         if find_spec("py7zr") is not None:
@@ -132,14 +129,14 @@ class Settings(SettingsModel):
     output: Output = Output()
 
     @classmethod
-    def load(cls: type[Settings]) -> Settings:
+    def load(cls) -> "Settings":
         if not cls._filename.exists():
             cls().save()
         with cls._filename.open("rb") as stream:
             content = tomlreader.load(stream)
         return cls(**content)
 
-    def save(self: Settings) -> Settings:
+    def save(self) -> "Settings":
         with self._filename.open("wb") as stream:
             content = self.model_dump(by_alias=False)
             content["input_folder"] = str(content["input_folder"])

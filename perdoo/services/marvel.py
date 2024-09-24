@@ -1,9 +1,7 @@
-from __future__ import annotations
-
 __all__ = ["Marvel"]
 
 import logging
-from datetime import date
+from datetime import datetime
 
 from esak.comic import Comic
 from esak.exceptions import ApiError
@@ -15,7 +13,7 @@ from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
-from perdoo.models import ComicInfo, Metadata, MetronInfo
+from perdoo.models import ComicInfo, MetronInfo
 from perdoo.services._base import BaseService
 from perdoo.settings import Marvel as MarvelSettings
 from perdoo.utils import Details
@@ -24,13 +22,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Marvel(BaseService[Series, Comic]):
-    def __init__(self: Marvel, settings: MarvelSettings):
+    def __init__(self, settings: MarvelSettings):
         cache = SqliteCache(db_name=str(get_cache_root() / "esak.sqlite"), expire=14)
         self.session = Esak(
             public_key=settings.public_key, private_key=settings.private_key, cache=cache
         )
 
-    def _get_series_id(self: Marvel, title: str | None) -> int | None:
+    def _get_series_id(self, title: str | None) -> int | None:
         title = title or Prompt.ask("Series title", console=CONSOLE)
         try:
             options = sorted(
@@ -53,7 +51,7 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.exception("")
             return None
 
-    def fetch_series(self: Marvel, details: Details) -> Series | None:
+    def fetch_series(self, details: Details) -> Series | None:
         series_id = details.series.marvel or self._get_series_id(title=details.series.search)
         if not series_id:
             return None
@@ -65,7 +63,7 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.exception("")
             return None
 
-    def _get_issue_id(self: Marvel, series_id: int, number: str | None) -> int | None:
+    def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
         try:
             options = sorted(
                 self.session.comics_list(
@@ -98,7 +96,7 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.exception("")
             return None
 
-    def fetch_issue(self: Marvel, series_id: int, details: Details) -> Comic | None:
+    def fetch_issue(self, series_id: int, details: Details) -> Comic | None:
         issue_id = details.issue.marvel or self._get_issue_id(
             series_id=series_id, number=details.issue.search
         )
@@ -112,62 +110,23 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.exception("")
             return None
 
-    def _process_metadata(self: Marvel, series: Series, issue: Comic) -> Metadata | None:
-        def load_format(value: str) -> Format:
-            try:
-                return Format.load(value=value.strip())
-            except ValueError:
-                return Format.SINGLE_ISSUE
-
-        from perdoo.models.metadata import (
+    def _process_metron_info(self, series: Series, issue: Comic) -> MetronInfo | None:
+        from perdoo.models.metron_info import (
+            GTIN,
+            AgeRating,
+            Arc,
             Credit,
             Format,
-            Issue,
-            Meta,
+            InformationList,
+            InformationSource,
+            Price,
+            Publisher,
             Resource,
+            Role,
+            Series,
             Source,
-            StoryArc,
-            TitledResource,
         )
 
-        return Metadata(
-            issue=Issue(
-                characters=[
-                    TitledResource(
-                        title=x.name, resources=[Resource(source=Source.MARVEL, value=x.id)]
-                    )
-                    for x in issue.characters
-                ],
-                credits=[
-                    Credit(
-                        creator=TitledResource(
-                            title=x.name, resources=[Resource(source=Source.MARVEL, value=x.id)]
-                        ),
-                        roles=[TitledResource(title=x.role.strip())],
-                    )
-                    for x in issue.creators
-                ],
-                format=load_format(value=issue.format),
-                number=issue.issue_number,
-                page_count=issue.page_count,
-                resources=[Resource(source=Source.MARVEL, value=issue.id)],
-                series=Series(
-                    publisher=TitledResource(title="Marvel"),
-                    resources=[Resource(source=Source.MARVEL, value=series.id)],
-                    start_year=series.start_year,
-                ),
-                store_date=issue.dates.on_sale,
-                story_arcs=[
-                    StoryArc(title=x.name, resources=[Resource(source=Source.MARVEL, value=x.id)])
-                    for x in issue.events
-                ],
-                summary=issue.description,
-                title=issue.title,
-            ),
-            meta=Meta(date_=date.today()),
-        )
-
-    def _process_metron_info(self: Marvel, series: Series, issue: Comic) -> MetronInfo | None:
         def load_format(value: str) -> Format:
             try:
                 return Format.load(value=value.strip())
@@ -186,57 +145,42 @@ class Marvel(BaseService[Series, Comic]):
             except ValueError:
                 return Role.OTHER
 
-        from perdoo.models.metron_info import (
-            GTIN,
-            AgeRating,
-            Arc,
-            Credit,
-            Format,
-            InformationList,
-            InformationSource,
-            Price,
-            Resource,
-            Role,
-            RoleResource,
-            Series,
-            Source,
-        )
-
         return MetronInfo(
             id=InformationList[Source](
                 primary=Source(source=InformationSource.MARVEL, value=issue.id)
             ),
-            publisher=Resource(value="Marvel"),
+            publisher=Publisher(name="Marvel"),
             series=Series(id=series.id, name=series.title, format=load_format(value=issue.format)),
             collection_title=issue.title,
             number=issue.issue_number,
-            stories=[Resource(id=x.id, value=x.name) for x in issue.stories],
+            stories=[Resource[str](id=x.id, value=x.name) for x in issue.stories],
             summary=issue.description,
             prices=[Price(country="US", value=issue.prices.print)] if issue.prices else [],
             store_date=issue.dates.on_sale,
             page_count=issue.page_count,
             arcs=[Arc(id=x.id, name=x.name) for x in issue.events],
-            characters=[Resource(id=x.id, value=x.name) for x in issue.characters],
+            characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
             gtin=GTIN(isbn=issue.isbn, upc=issue.upc) if issue.isbn and issue.upc else None,
             age_rating=load_age_rating(value=series.rating),
-            url=InformationList[HttpUrl](primary=issue.urls.detail),
+            urls=InformationList[HttpUrl](primary=issue.urls.detail),
             credits=[
                 Credit(
-                    creator=Resource(id=x.id, value=x.name),
-                    roles=[RoleResource(value=load_role(value=x.role))],
+                    creator=Resource[str](id=x.id, value=x.name),
+                    roles=[Resource[Role](value=load_role(value=x.role))],
                 )
                 for x in issue.creators
             ],
+            last_modified=datetime.now(),
         )
 
-    def _process_comic_info(self: Marvel, series: Series, issue: Comic) -> ComicInfo | None:
+    def _process_comic_info(self, series: Series, issue: Comic) -> ComicInfo | None:
+        from perdoo.models.comic_info import AgeRating
+
         def load_age_rating(value: str) -> AgeRating:
             try:
                 return AgeRating.load(value=value.strip())
             except ValueError:
                 return AgeRating.UNKNOWN
-
-        from perdoo.models.comic_info import AgeRating
 
         comic_info = ComicInfo(
             title=issue.title,
@@ -256,9 +200,7 @@ class Marvel(BaseService[Series, Comic]):
 
         return comic_info
 
-    def fetch(
-        self: Marvel, details: Details
-    ) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
+    def fetch(self, details: Details) -> tuple[MetronInfo | None, ComicInfo | None]:
         if not details.series.marvel and details.issue.marvel:
             try:
                 temp = self.session.comic(_id=details.issue.marvel)
@@ -268,14 +210,13 @@ class Marvel(BaseService[Series, Comic]):
 
         series = self.fetch_series(details=details)
         if not series:
-            return None, None, None
+            return None, None
 
         issue = self.fetch_issue(series_id=series.id, details=details)
         if not issue:
-            return None, None, None
+            return None, None
 
-        metadata = self._process_metadata(series=series, issue=issue)
         metron_info = self._process_metron_info(series=series, issue=issue)
         comic_info = self._process_comic_info(series=series, issue=issue)
 
-        return metadata, metron_info, comic_info
+        return metron_info, comic_info

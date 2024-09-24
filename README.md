@@ -5,7 +5,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
 [![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![Rye](https://img.shields.io/badge/Rye-informational?style=flat-square&logo=rye&labelColor=grey)](https://rye.astral.sh)
+[![pdm-managed](https://img.shields.io/badge/Pdm-informational?style=flat-square&logo=pdm&labelColor=grey)](https://pdm-project.org)
 [![Pre-Commit](https://img.shields.io/badge/Pre--Commit-informational?style=flat-square&logo=pre-commit&labelColor=grey)](https://github.com/pre-commit/pre-commit)
 [![Ruff](https://img.shields.io/badge/Ruff-informational?style=flat-square&logo=ruff&labelColor=grey)](https://github.com/astral-sh/ruff)
 
@@ -58,9 +58,8 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ### Metadata Files
 
-- [Metadata.xml](https://github.com/Buried-In-Code/Schemas)
 - [MetronInfo.xml](https://github.com/Metron-Project/metroninfo)
-- Perdoo supports a slightly modified [ComicInfo.xml](https://github.com/anansi-project/comicinfo) to ignore field ordering. _See [Buried-In-Code/Schemas](https://github.com/Buried-In-Code/Schemas) for details._
+- Perdoo supports a slightly modified [ComicInfo.xml](https://github.com/anansi-project/comicinfo) to ignore field ordering.
 
 ## Services
 
@@ -79,12 +78,13 @@ Series with a volume greater than 1 will display its volume in the title.
 
 The files are named based on the format of the comic:
 
-- **_Default/Comic_**: `{Series Title}_#{Issue Number}.cbz`
+- **_Default_**: `{Series Title}_#{Issue Number}.cbz`
 - Annual: `{Series Title}_Annual_#{Issue Number}.cbz`
 - Digital Chapter: `{Series Title}_Chapter_#{Issue Number}.cbz`
-- Hardcover: `{Series Title}_#{Issue Number}_HC.cbz`
-- Trade Paperback: `{Series Title}_#{Issue Number}_TP.cbz`
 - Graphic Novel: `{Series Title}_#{Issue Number}_GN.cbz`
+- Hardcover: `{Series Title}_#{Issue Number}_HC.cbz`
+- Omnibus: `{Series Title}_#{Issue Number}.cbz`
+- Trade Paperback: `{Series Title}_#{Issue Number}_TPB.cbz`
 
 ## Collection Folder Structure
 
@@ -95,16 +95,16 @@ Collection Root
 |  |  +-- Series_#001.cbz
 |  |  +-- Series_Annual_#01.cbz
 |  |  +-- Series_Chapter_#01.cbz
-|  |  +-- Series_#01_HC.cbz
-|  |  +-- Series_#01_TP.cbz
 |  |  +-- Series_#01_GN.cbz
+|  |  +-- Series_#01_HC.cbz
+|  |  +-- Series_#01_TPB.cbz
 |  +-- Series-v2
 |  |  +-- Series-v2_#001.cbz
 |  |  +-- Series-v2_Annual_#01.cbz
 |  |  +-- Series-v2_Chapter_#01.cbz
-|  |  +-- Series-v2_#01_HC.cbz
-|  |  +-- Series-v2_#01_TP.cbz
 |  |  +-- Series-v2_#01_GN.cbz
+|  |  +-- Series-v2_#01_HC.cbz
+|  |  +-- Series-v2_#01_TPB.cbz
 ```
 
 ## Socials

@@ -1,11 +1,8 @@
-from __future__ import annotations
-
 __all__ = ["PascalModel", "InfoModel"]
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 from pydantic import BaseModel
 
@@ -22,9 +19,15 @@ class PascalModel(
     validate_assignment=True,
     extra="ignore",
 ):
-    def unwrap_list(
-        self: PascalModel, mappings: dict[str, str], content: dict[str, Any]
-    ) -> dict[str, Any]:
+    list_fields: ClassVar[dict[str, str]] = {}
+    text_fields: ClassVar[list[str]] = []
+
+    def __init__(self, **data: Any):
+        self.unwrap_list(mappings=self.list_fields, content=data)
+        self.to_xml_text(mappings=self.text_fields, content=data)
+        super().__init__(**data)
+
+    def unwrap_list(self, mappings: dict[str, str], content: dict[str, Any]) -> dict[str, Any]:
         for key, value in mappings.items():
             if key in content and isinstance(content[key], dict) and value in content[key]:
                 content[key] = content[key][value]
@@ -32,52 +35,47 @@ class PascalModel(
                 content[key] = []
         return content
 
-    def clean_contents(self: PascalModel, content: dict[str, Any]) -> dict[str, Any]:
+    def clean_contents(self, content: dict[str, Any]) -> dict[str, Any]:
         cleaned_content = {}
         for key, value in content.items():
-            if isinstance(key, Enum):
-                key = str(key)
             if isinstance(value, bool):
                 value = "true" if value else "false"
-            elif isinstance(value, (Enum, int, float)):
-                value = str(value)
-            elif isinstance(value, dict):
-                if not value:
-                    continue
+            if not value:
+                continue
+            if isinstance(value, dict):
                 value = self.clean_contents(value)
             elif isinstance(value, list):
-                if not value:
-                    continue
-                cleaned_list = []
+                clean_list = []
                 for entry in value:
                     if isinstance(entry, bool):
-                        entry = "true" if entry else "false"
-                    elif isinstance(entry, (Enum, int, float)):
-                        entry = str(entry)
+                        clean_list.append("true" if entry else "false")
                     elif isinstance(entry, dict):
-                        entry = self.clean_contents(entry)
-                    cleaned_list.append(entry)
-                value = cleaned_list
+                        clean_list.append(self.clean_contents(entry))
+                    else:
+                        clean_list.append(str(entry))
+                value = clean_list
+            else:
+                value = str(value)
             cleaned_content[key] = value
         return cleaned_content
 
-    def wrap_list(
-        self: PascalModel, mappings: dict[str, str], content: dict[str, Any]
-    ) -> dict[str, Any]:
+    def wrap_list(self, mappings: dict[str, str], content: dict[str, Any]) -> dict[str, Any]:
         for key, value in content.copy().items():
+            if not value:
+                continue
             if isinstance(value, dict):
                 content[key] = self.wrap_list(mappings, value)
             elif isinstance(value, list):
                 for index, entry in enumerate(value):
+                    if not entry:
+                        continue
                     if isinstance(entry, dict):
                         content[key][index] = self.wrap_list(mappings, entry)
                 if key in mappings:
                     content[key] = {mappings[key]: content[key]}
         return content
 
-    def to_xml_text(
-        self: PascalModel, mappings: list[str], content: dict[str, Any]
-    ) -> dict[str, Any]:
+    def to_xml_text(self, mappings: list[str], content: dict[str, Any]) -> dict[str, Any]:
         for field in mappings:
             if field in content:
                 if isinstance(content[field], str):
@@ -92,12 +90,12 @@ class PascalModel(
 class InfoModel(ABC):
     @classmethod
     @abstractmethod
-    def from_bytes(cls: type[InfoModel], content: bytes) -> InfoModel: ...
+    def from_bytes(cls, content: bytes) -> "InfoModel": ...
 
     @classmethod
-    def from_file(cls: type[InfoModel], file: Path) -> InfoModel:
+    def from_file(cls, file: Path) -> "InfoModel":
         with file.open("rb") as stream:
             return cls.from_bytes(content=stream.read())
 
     @abstractmethod
-    def to_file(self: InfoModel, file: Path) -> None: ...
+    def to_file(self, file: Path) -> None: ...

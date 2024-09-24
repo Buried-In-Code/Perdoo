@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 __all__ = ["Comicvine"]
 
 import logging
 import re
-from datetime import date
+from datetime import datetime
 
 from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
@@ -16,8 +14,7 @@ from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
-from perdoo.models import ComicInfo, Metadata, MetronInfo
-from perdoo.models.metadata import Source
+from perdoo.models import ComicInfo, MetronInfo
 from perdoo.models.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Comicvine as ComicvineSettings
@@ -27,11 +24,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Comicvine(BaseService[Volume, Issue]):
-    def __init__(self: Comicvine, settings: ComicvineSettings):
+    def __init__(self, settings: ComicvineSettings):
         cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite", expiry=14)
         self.session = Simyan(api_key=settings.api_key, cache=cache)
 
-    def _get_series_id(self: Comicvine, title: str | None) -> int | None:
+    def _get_series_id(self, title: str | None) -> int | None:
         title = title or Prompt.ask("Series title", console=CONSOLE)
         try:
             options = sorted(
@@ -62,7 +59,7 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.exception("")
             return None
 
-    def fetch_series(self: Comicvine, details: Details) -> Volume | None:
+    def fetch_series(self, details: Details) -> Volume | None:
         series_id = details.series.comicvine or self._get_series_id(title=details.series.search)
         if not series_id:
             return None
@@ -74,7 +71,7 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.exception("")
             return None
 
-    def _get_issue_id(self: Comicvine, series_id: int, number: str | None) -> int | None:
+    def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
         try:
             options = sorted(
                 self.session.list_issues(
@@ -105,7 +102,7 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.exception("")
             return None
 
-    def fetch_issue(self: Comicvine, series_id: int, details: Details) -> Issue | None:
+    def fetch_issue(self, series_id: int, details: Details) -> Issue | None:
         issue_id = details.issue.comicvine or self._get_issue_id(
             series_id=series_id, number=details.issue.search
         )
@@ -119,98 +116,29 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.exception("")
             return None
 
-    def _process_metadata(self: Comicvine, series: Volume, issue: Issue) -> Metadata | None:
-        from perdoo.models.metadata import (
+    def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
+        from perdoo.models.metron_info import (
+            Arc,
             Credit,
-            Issue,
-            Meta,
+            InformationList,
+            Publisher,
             Resource,
+            Role,
             Series,
-            StoryArc,
-            TitledResource,
+            Source,
         )
 
-        return Metadata(
-            issue=Issue(
-                characters=[
-                    TitledResource(
-                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
-                    )
-                    for x in issue.characters
-                ],
-                cover_date=issue.cover_date,
-                credits=[
-                    Credit(
-                        creator=TitledResource(
-                            resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
-                        ),
-                        roles=[
-                            TitledResource(title=r.strip())
-                            for r in re.split(r"[~\r\n,]+", x.roles)
-                            if r.strip()
-                        ],
-                    )
-                    for x in issue.creators
-                ],
-                locations=[
-                    TitledResource(
-                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
-                    )
-                    for x in issue.locations
-                ],
-                number=issue.number,
-                resources=[Resource(source=Source.COMICVINE, value=issue.id)],
-                series=Series(
-                    publisher=TitledResource(
-                        resources=[Resource(source=Source.COMICVINE, value=series.publisher.id)],
-                        title=series.publisher.name,
-                    ),
-                    resources=[Resource(source=Source.COMICVINE, value=series.id)],
-                    start_year=series.start_year,
-                    title=series.name,
-                ),
-                store_date=issue.store_date,
-                story_arcs=[
-                    StoryArc(
-                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
-                    )
-                    for x in issue.story_arcs
-                ],
-                summary=issue.summary,
-                teams=[
-                    TitledResource(
-                        resources=[Resource(source=Source.COMICVINE, value=x.id)], title=x.name
-                    )
-                    for x in issue.teams
-                ],
-                title=issue.name,
-            ),
-            meta=Meta(date_=date.today()),
-        )
-
-    def _process_metron_info(self: BaseService, series: Volume, issue: Issue) -> MetronInfo | None:
         def load_role(value: str) -> Role:
             try:
                 return Role.load(value=value.strip())
             except ValueError:
                 return Role.OTHER
 
-        from perdoo.models.metron_info import (
-            Arc,
-            Credit,
-            InformationList,
-            Resource,
-            Role,
-            RoleResource,
-            Series,
-            Source,
-        )
-
         return MetronInfo(
             id=InformationList[Source](
                 primary=Source(source=InformationSource.COMIC_VINE, value=issue.id)
             ),
-            publisher=Resource(id=series.publisher.id, value=series.publisher.name),
+            publisher=Publisher(id=series.publisher.id, name=series.publisher.name),
             series=Series(id=series.id, name=series.name),
             collection_title=issue.name,
             number=issue.number,
@@ -218,24 +146,25 @@ class Comicvine(BaseService[Volume, Issue]):
             cover_date=issue.cover_date,
             store_date=issue.store_date,
             arcs=[Arc(id=x.id, name=x.name) for x in issue.story_arcs],
-            characters=[Resource(id=x.id, value=x.name) for x in issue.characters],
-            teams=[Resource(id=x.id, value=x.name) for x in issue.teams],
-            locations=[Resource(id=x.id, value=x.name) for x in issue.locations],
-            url=InformationList[HttpUrl](primary=issue.site_url),
+            characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
+            teams=[Resource[str](id=x.id, value=x.name) for x in issue.teams],
+            locations=[Resource[str](id=x.id, value=x.name) for x in issue.locations],
+            urls=InformationList[HttpUrl](primary=issue.site_url),
             credits=[
                 Credit(
-                    creator=Resource(id=x.id, value=x.name),
+                    creator=Resource[str](id=x.id, value=x.name),
                     roles=[
-                        RoleResource(value=load_role(value=r.strip()))
+                        Resource[Role](value=load_role(value=r.strip()))
                         for r in re.split(r"[~\r\n,]+", x.roles)
                         if r.strip()
                     ],
                 )
                 for x in issue.creators
             ],
+            last_modified=datetime.now(),
         )
 
-    def _process_comic_info(self: BaseService, series: Volume, issue: Issue) -> ComicInfo | None:
+    def _process_comic_info(self, series: Volume, issue: Issue) -> ComicInfo | None:
         comic_info = ComicInfo(
             title=issue.name,
             series=series.name,
@@ -257,9 +186,7 @@ class Comicvine(BaseService[Volume, Issue]):
 
         return comic_info
 
-    def fetch(
-        self: Comicvine, details: Details
-    ) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
+    def fetch(self, details: Details) -> tuple[MetronInfo | None, ComicInfo | None]:
         if not details.series.comicvine and details.issue.comicvine:
             try:
                 temp = self.session.get_issue(issue_id=details.issue.comicvine)
@@ -269,14 +196,13 @@ class Comicvine(BaseService[Volume, Issue]):
 
         series = self.fetch_series(details=details)
         if not series:
-            return None, None, None
+            return None, None
 
         issue = self.fetch_issue(series_id=series.id, details=details)
         if not issue:
-            return None, None, None
+            return None, None
 
-        metadata = self._process_metadata(series=series, issue=issue)
         metron_info = self._process_metron_info(series=series, issue=issue)
         comic_info = self._process_comic_info(series=series, issue=issue)
 
-        return metadata, metron_info, comic_info
+        return metron_info, comic_info

@@ -1,36 +1,34 @@
-from __future__ import annotations
-
 __all__ = [
     "GTIN",
     "AgeRating",
+    "AlternativeName",
     "Arc",
     "Credit",
     "Format",
     "Genre",
-    "GenreResource",
     "InformationList",
     "InformationSource",
     "MetronInfo",
-    "Page",
     "Price",
+    "Publisher",
     "Resource",
     "Role",
-    "RoleResource",
     "Series",
     "Source",
     "Universe",
 ]
 
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import ClassVar, Generic, TypeVar
 
 import xmltodict
-from PIL import Image
 from pydantic import Field, HttpUrl, PositiveInt
 
 from perdoo.models._base import InfoModel, PascalModel
+from perdoo.utils import sanitize
 
 T = TypeVar("T")
 
@@ -43,60 +41,68 @@ class InformationSource(Enum):
     LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
 
     @staticmethod
-    def load(value: str) -> InformationSource:
+    def load(value: str) -> "InformationSource":
         for entry in InformationSource:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid metron_info.InformationSource")
 
-    def __lt__(self: InformationSource, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: InformationSource) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
 class Source(PascalModel):
-    source: InformationSource = Field(alias="@source")
     value: PositiveInt = Field(alias="#text")
+    source: InformationSource = Field(alias="@source")
 
-    def __lt__(self: Source, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.source < other.source
 
-    def __eq__(self: Source, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.source == other.source
 
-    def __hash__(self: Source) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.source))
 
 
 class InformationList(PascalModel, Generic[T]):
     primary: T
-    alternative: list[T] = Field(default_factory=list)
+    alternatives: list[T] = Field(default_factory=list)
+
+    list_fields: ClassVar[dict[str, str]] = {"Alternatives": "Alternative"}
 
 
-class Resource(PascalModel):
+class Resource(PascalModel, Generic[T]):
+    value: T = Field(alias="#text")
     id: PositiveInt | None = Field(alias="@id", default=None)
-    value: str = Field(alias="#text")
 
-    def __lt__(self: Resource, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __eq__(self: Resource, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value == other.value
 
-    def __hash__(self: Resource) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.value))
+
+
+class Publisher(PascalModel):
+    name: str
+    imprint: Resource | None = None
+    id: PositiveInt | None = Field(alias="@id", default=None)
 
 
 class Format(Enum):
@@ -111,45 +117,57 @@ class Format(Enum):
     TRADE_PAPERBACK = "Trade Paperback"
 
     @staticmethod
-    def load(value: str) -> Format:
+    def load(value: str) -> "Format":
         for entry in Format:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid metron_info.Format")
 
-    def __lt__(self: Format, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: Format) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
-class Series(PascalModel):
-    id: PositiveInt | None = Field(alias="@id", default=None)
+class AlternativeName(Resource[str]):
     lang: str = Field(alias="@lang", default="en")
+
+
+class Series(PascalModel):
+    lang: str = Field(alias="@lang", default="en")
+    id: PositiveInt | None = Field(alias="@id", default=None)
     name: str
     sort_name: str | None = None
     volume: int | None = None
     format: Format | None = None
+    start_year: int | None = None
+    alternative_names: list[AlternativeName] = Field(default_factory=list)
+
+    list_fields: ClassVar[dict[str, str]] = {"AlternativeNames": "AlternativeName"}
+
+    @property
+    def filename(self) -> str:
+        return sanitize(self.name if self.volume == 1 else f"{self.name} v{self.volume}")
 
 
 class Price(PascalModel):
+    value: Decimal = Field(alias="#text")
     country: str = Field(alias="@country")
-    value: float = Field(alias="#text")
 
-    def __lt__(self: Price, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.country < other.country
 
-    def __eq__(self: Price, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.country == other.country
 
-    def __hash__(self: Price) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.country))
 
 
@@ -171,74 +189,56 @@ class Genre(Enum):
     WESTERN = "Western"
 
     @staticmethod
-    def load(value: str) -> Genre:
+    def load(value: str) -> "Genre":
         for entry in Genre:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid metron_info.Genre")
 
-    def __lt__(self: Genre, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: Genre) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
-class GenreResource(PascalModel):
-    id: PositiveInt | None = Field(alias="@id", default=None)
-    value: Genre = Field(alias="#text")
-
-    def __lt__(self: GenreResource, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
-
-    def __eq__(self: GenreResource, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value == other.value
-
-    def __hash__(self: GenreResource) -> int:
-        return hash((type(self), self.value))
-
-
 class Arc(PascalModel):
-    id: PositiveInt | None = Field(alias="@id", default=None)
     name: str
     number: PositiveInt | None = None
+    id: PositiveInt | None = Field(alias="@id", default=None)
 
-    def __lt__(self: Arc, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.name < other.name
 
-    def __eq__(self: Arc, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.name == other.name
 
-    def __hash__(self: Arc) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.name))
 
 
 class Universe(PascalModel):
-    id: int | None = Field(alias="@id", default=None, gt=0)
     name: str
     designation: str | None = None
+    id: PositiveInt | None = Field(alias="@id", default=None)
 
-    def __lt__(self: Universe, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.name < other.name
 
-    def __eq__(self: Universe, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.name == other.name
 
-    def __hash__(self: Universe) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.name))
 
 
@@ -255,18 +255,18 @@ class AgeRating(Enum):
     MATURE = "Mature"
 
     @staticmethod
-    def load(value: str) -> AgeRating:
+    def load(value: str) -> "AgeRating":
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid metron_info.AgeRating")
 
-    def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: AgeRating) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
@@ -315,208 +315,129 @@ class Role(Enum):
     OTHER = "Other"
 
     @staticmethod
-    def load(value: str) -> Role:
+    def load(value: str) -> "Role":
         for entry in Role:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid metron_info.Role")
 
-    def __lt__(self: Role, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: Role) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
-class RoleResource(PascalModel):
-    id: PositiveInt | None = Field(alias="@id", default=None)
-    value: Role = Field(alias="#text")
-
-    def __lt__(self: RoleResource, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
-
-    def __eq__(self: RoleResource, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value == other.value
-
-    def __hash__(self: RoleResource) -> int:
-        return hash((type(self), self.value))
-
-
 class Credit(PascalModel):
-    creator: Resource
-    roles: list[RoleResource] = Field(default_factory=list)
+    creator: Resource[str]
+    roles: list[Resource[Role]] = Field(default_factory=list)
 
     list_fields: ClassVar[dict[str, str]] = {"Roles": "Role"}
-    text_fields: ClassVar[list[str]] = ["Creator", "Roles"]
 
-    def __init__(self: Credit, **data: Any):
-        self.unwrap_list(mappings=self.list_fields, content=data)
-        self.to_xml_text(mappings=self.text_fields, content=data)
-        super().__init__(**data)
-
-    def __lt__(self: Credit, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.creator < other.creator
 
-    def __eq__(self: Credit, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.creator == other.creator
 
-    def __hash__(self: Credit) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.creator))
-
-
-class PageType(Enum):
-    FRONT_COVER = "FrontCover"
-    INNER_COVER = "InnerCover"
-    ROUNDUP = "Roundup"
-    STORY = "Story"
-    ADVERTISEMENT = "Advertisement"
-    EDITORIAL = "Editorial"
-    LETTERS = "Letters"
-    PREVIEW = "Preview"
-    BACK_COVER = "BackCover"
-    OTHER = "Other"
-    DELETED = "Deleted"
-
-    @staticmethod
-    def load(value: str) -> PageType:
-        for entry in PageType:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
-                return entry
-        raise ValueError(f"`{value}` isn't a valid metron_info.PageType")
-
-    def __lt__(self: PageType, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
-
-    def __str__(self: PageType) -> str:
-        return self.value
-
-
-class Page(PascalModel):
-    image: int = Field(alias="@Image")
-    type: PageType = Field(alias="@Type", default=PageType.STORY)
-    double_page: bool = Field(alias="@DoublePage", default=False)
-    image_size: int = Field(alias="@ImageSize", default=0)
-    key: str | None = Field(alias="@Key", default=None)
-    bookmark: str | None = Field(alias="@Bookmark", default=None)
-    image_height: int | None = Field(alias="@ImageHeight", default=None)
-    image_width: int | None = Field(alias="@ImageWidth", default=None)
-
-    def __lt__(self: Page, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.image < other.image
-
-    def __eq__(self: Page, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.image == other.image
-
-    def __hash__(self: Page) -> int:
-        return hash((type(self), self.image))
-
-    @staticmethod
-    def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
-        if page:
-            page_type = page.type
-        elif index == 0:
-            page_type = PageType.FRONT_COVER
-        elif is_final_page:
-            page_type = PageType.BACK_COVER
-        else:
-            page_type = PageType.STORY
-        with Image.open(file) as img:
-            width, height = img.size
-        return Page(
-            image=index,
-            type=page_type,
-            double_page=width >= height,
-            image_size=file.stat().st_size,
-            image_height=height,
-            image_width=width,
-        )
 
 
 class MetronInfo(PascalModel, InfoModel):
     id: InformationList[Source] | None = Field(alias="ID", default=None)
-    publisher: Resource
+    publisher: Publisher
     series: Series
     collection_title: str | None = None
     number: str | None = None
-    stories: list[Resource] = Field(default_factory=list)
+    stories: list[Resource[str]] = Field(default_factory=list)
     summary: str | None = None
-    notes: str | None = None
     prices: list[Price] = Field(default_factory=list)
     cover_date: date | None = None
     store_date: date | None = None
     page_count: int = 0
-    genres: list[GenreResource] = Field(default_factory=list)
-    tags: list[Resource] = Field(default_factory=list)
+    notes: str | None = None
+    genres: list[Resource[Genre]] = Field(default_factory=list)
+    tags: list[Resource[str]] = Field(default_factory=list)
     arcs: list[Arc] = Field(default_factory=list)
-    characters: list[Resource] = Field(default_factory=list)
-    teams: list[Resource] = Field(default_factory=list)
+    characters: list[Resource[str]] = Field(default_factory=list)
+    teams: list[Resource[str]] = Field(default_factory=list)
     universes: list[Universe] = Field(default_factory=list)
-    locations: list[Resource] = Field(default_factory=list)
+    locations: list[Resource[str]] = Field(default_factory=list)
+    reprints: list[Resource[str]] = Field(default_factory=list)
     gtin: GTIN | None = Field(alias="GTIN", default=None)
     age_rating: AgeRating = Field(default=AgeRating.UNKNOWN)
-    reprints: list[Resource] = Field(default_factory=list)
-    url: InformationList[HttpUrl] | None = Field(alias="URL", default=None)
+    urls: InformationList[HttpUrl] | None = Field(alias="URLs", default=None)
     credits: list[Credit] = Field(default_factory=list)
-    pages: list[Page] = Field(default_factory=list)
+    last_modified: datetime | None = None
 
     list_fields: ClassVar[dict[str, str]] = {
         **Credit.list_fields,
-        "Stories": "Story",
-        "Prices": "Price",
-        "Genres": "Genre",
-        "Tags": "Tag",
+        **InformationList.list_fields,
+        **Series.list_fields,
         "Arcs": "Arc",
         "Characters": "Character",
+        "Credits": "Credit",
+        "Genres": "Genre",
+        "Locations": "Location",
+        "Prices": "Price",
+        "Reprints": "Reprint",
+        "Stories": "Story",
+        "Tags": "Tag",
         "Teams": "Team",
         "Universes": "Universe",
-        "Locations": "Location",
-        "Reprints": "Reprint",
-        "Credits": "Credit",
-        "Pages": "Page",
     }
     text_fields: ClassVar[list[str]] = [
-        "Source",
-        "Publisher",
-        "Stories",
-        "Prices",
-        "Genres",
-        "Tags",
         "Characters",
-        "Teams",
+        "Creator",
+        "Genres",
         "Locations",
+        "Prices",
         "Reprints",
+        "Roles",
+        "Stories",
+        "Tags",
+        "Teams",
     ]
 
-    def __init__(self: MetronInfo, **data: Any):
-        self.unwrap_list(mappings=self.list_fields, content=data)
-        self.to_xml_text(mappings=self.text_fields, content=data)
-        super().__init__(**data)
+    def get_file(self, root: Path, extension: str) -> Path:
+        identifier = ""
+        if self.number:
+            padded_number = self.number.zfill(
+                {Format.SINGLE_ISSUE: 3, Format.DIGITAL_CHAPTER: 3}.get(self.series.format, 2)
+            )
+            identifier = f"_#{padded_number}"
+        elif self.collection_title:
+            identifier = f"_{sanitize(self.collection_title)}"
+
+        filename = {
+            Format.ANNUAL: f"{self.series.filename}_Annual{identifier}",
+            Format.DIGITAL_CHAPTER: f"{self.series.filename}_Chapter{identifier}",
+            Format.GRAPHIC_NOVEL: f"{self.series.filename}{identifier}_GN",
+            Format.HARDCOVER: f"{self.series.filename}{identifier}_HC",
+            Format.OMNIBUS: f"{self.series.filename}{identifier}",
+            Format.TRADE_PAPERBACK: f"{self.series.filename}{identifier}_TPB",
+        }.get(self.series.format, f"{self.series.filename}{identifier}")
+
+        return (
+            root / sanitize(self.publisher.name) / self.series.filename / f"{filename}.{extension}"
+        )
 
     @classmethod
-    def from_bytes(cls: type[MetronInfo], content: bytes) -> MetronInfo:
+    def from_bytes(cls, content: bytes) -> "MetronInfo":
         xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
         return cls(**xml_content["MetronInfo"])
 
-    def to_file(self: MetronInfo, file: Path) -> None:
+    def to_file(self, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)
         self.wrap_list(mappings=self.list_fields, content=content)
-        content = self.clean_contents(content)
+        content = self.clean_contents(content=content)
         content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
         content["@xsi:noNamespaceSchemaLocation"] = (
             "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"

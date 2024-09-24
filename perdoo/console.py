@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 __all__ = ["CONSOLE", "create_menu"]
 
 import logging

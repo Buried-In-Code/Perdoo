@@ -1,11 +1,9 @@
-from __future__ import annotations
-
 __all__ = ["YesNo", "Manga", "AgeRating", "PageType", "Page", "ComicInfo"]
 
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Optional
 
 import xmltodict
 from natsort import humansorted, ns
@@ -33,18 +31,18 @@ class YesNo(Enum):
     YES = "Yes"
 
     @staticmethod
-    def load(value: str) -> YesNo:
+    def load(value: str) -> "YesNo":
         for entry in YesNo:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid comic_info.YesNo")
 
-    def __lt__(self: YesNo, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: YesNo) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
@@ -55,18 +53,18 @@ class Manga(Enum):
     YES_AND_RIGHT_TO_LEFT = "YesAndRightToLeft"
 
     @staticmethod
-    def load(value: str) -> Manga:
+    def load(value: str) -> "Manga":
         for entry in Manga:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid comic_info.Manga")
 
-    def __lt__(self: Manga, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: Manga) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
@@ -88,18 +86,18 @@ class AgeRating(Enum):
     X18 = "X18+"
 
     @staticmethod
-    def load(value: str) -> AgeRating:
+    def load(value: str) -> "AgeRating":
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid comic_info.AgeRating")
 
-    def __lt__(self: AgeRating, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: AgeRating) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
@@ -117,18 +115,18 @@ class PageType(Enum):
     DELETED = "Deleted"
 
     @staticmethod
-    def load(value: str) -> PageType:
+    def load(value: str) -> "PageType":
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid comic_info.PageType")
 
-    def __lt__(self: PageType, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.value < other.value
 
-    def __str__(self: PageType) -> str:
+    def __str__(self) -> str:
         return self.value
 
 
@@ -142,21 +140,21 @@ class Page(PascalModel):
     image_width: int | None = Field(alias="@ImageWidth", default=None)
     image_height: int | None = Field(alias="@ImageHeight", default=None)
 
-    def __lt__(self: Page, other) -> int:  # noqa: ANN001
+    def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.image < other.image
 
-    def __eq__(self: Page, other) -> bool:  # noqa: ANN001
+    def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.image == other.image
 
-    def __hash__(self: Page) -> int:
+    def __hash__(self) -> int:
         return hash((type(self), self.image))
 
     @staticmethod
-    def from_path(file: Path, index: int, is_final_page: bool, page: Page | None) -> Page:
+    def from_path(file: Path, index: int, is_final_page: bool, page: Optional["Page"]) -> "Page":
         if page:
             page_type = page.type
         elif index == 0:
@@ -221,24 +219,24 @@ class ComicInfo(PascalModel, InfoModel):
 
     list_fields: ClassVar[dict[str, str]] = {"Pages": "Page"}
 
-    def __init__(self: ComicInfo, **data: Any):
+    def __init__(self, **data: Any):
         self.unwrap_list(mappings=self.list_fields, content=data)
         super().__init__(**data)
 
     @property
-    def cover_date(self: ComicInfo) -> date | None:
+    def cover_date(self) -> date | None:
         if not self.year:
             return None
         return date(self.year, self.month or 1, self.day or 1)
 
     @cover_date.setter
-    def cover_date(self: ComicInfo, value: date | None) -> None:
+    def cover_date(self, value: date | None) -> None:
         self.year = value.year if value else None
         self.month = value.month if value else None
         self.day = value.day if value else None
 
     @property
-    def credits(self: ComicInfo) -> dict[str, list[str]]:
+    def credits(self) -> dict[str, list[str]]:
         output = {}
         for role, attribute in (
             ("Writer", self.writer),
@@ -257,7 +255,7 @@ class ComicInfo(PascalModel, InfoModel):
         return output
 
     @credits.setter
-    def credits(self: ComicInfo, value: dict[str, list[str]]) -> None:
+    def credits(self, value: dict[str, list[str]]) -> None:
         def get_creators(role: str) -> list[str]:
             return humansorted(
                 {
@@ -277,51 +275,51 @@ class ComicInfo(PascalModel, InfoModel):
         self.editor = list_to_str(value=get_creators(role="Editor"))
 
     @property
-    def genre_list(self: ComicInfo) -> list[str]:
+    def genre_list(self) -> list[str]:
         return str_to_list(value=self.genre)
 
     @genre_list.setter
-    def genre_list(self: ComicInfo, value: list[str]) -> None:
+    def genre_list(self, value: list[str]) -> None:
         self.genre = list_to_str(value=value)
 
     @property
-    def character_list(self: ComicInfo) -> list[str]:
+    def character_list(self) -> list[str]:
         return str_to_list(value=self.characters)
 
     @character_list.setter
-    def character_list(self: ComicInfo, value: list[str]) -> None:
+    def character_list(self, value: list[str]) -> None:
         self.characters = list_to_str(value=value)
 
     @property
-    def team_list(self: ComicInfo) -> list[str]:
+    def team_list(self) -> list[str]:
         return str_to_list(value=self.teams)
 
     @team_list.setter
-    def team_list(self: ComicInfo, value: list[str]) -> None:
+    def team_list(self, value: list[str]) -> None:
         self.teams = list_to_str(value=value)
 
     @property
-    def location_list(self: ComicInfo) -> list[str]:
+    def location_list(self) -> list[str]:
         return str_to_list(value=self.locations)
 
     @location_list.setter
-    def location_list(self: ComicInfo, value: list[str]) -> None:
+    def location_list(self, value: list[str]) -> None:
         self.locations = list_to_str(value=value)
 
     @property
-    def story_arc_list(self: ComicInfo) -> list[str]:
+    def story_arc_list(self) -> list[str]:
         return str_to_list(value=self.story_arc)
 
     @story_arc_list.setter
-    def story_arc_list(self: ComicInfo, value: list[str]) -> None:
+    def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
     @classmethod
-    def from_bytes(cls: type[ComicInfo], content: bytes) -> ComicInfo:
+    def from_bytes(cls, content: bytes) -> "ComicInfo":
         xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
         return cls(**xml_content["ComicInfo"])
 
-    def to_file(self: ComicInfo, file: Path) -> None:
+    def to_file(self, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)
         self.wrap_list(mappings=self.list_fields, content=content)
         content = self.clean_contents(content)

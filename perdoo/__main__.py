@@ -1,9 +1,7 @@
-from __future__ import annotations
-
 import logging
 import shutil
 from argparse import ArgumentParser, Namespace
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from platform import python_version
 from tempfile import TemporaryDirectory
@@ -15,13 +13,12 @@ from rich.prompt import Prompt
 from perdoo import ARCHIVE_EXTENSIONS, IMAGE_EXTENSIONS, __version__, setup_logging
 from perdoo.archives import BaseArchive, CB7Archive, CBTArchive, CBZArchive, get_archive
 from perdoo.console import CONSOLE
-from perdoo.models import ComicInfo, Metadata, MetronInfo
+from perdoo.models import ComicInfo, MetronInfo
 from perdoo.models._base import InfoModel
-from perdoo.models.metadata import Format, Meta, Source, Tool
 from perdoo.models.metron_info import InformationSource
 from perdoo.services import Comicvine, League, Marvel, Metron
 from perdoo.settings import OutputFormat, Service, Settings
-from perdoo.utils import Details, Identifications, get_metadata_id, list_files, sanitize
+from perdoo.utils import Details, Identifications, list_files
 
 LOGGER = logging.getLogger("perdoo")
 
@@ -47,44 +44,16 @@ def convert_collection(path: Path, output: OutputFormat) -> None:
         ):
             archive = get_archive(path=file)
             archive_type.convert(old_archive=archive)
+        LOGGER.info("[ OK ] Converting %s to %s", file.name, output.name)
 
 
-def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
+def read_meta(archive: BaseArchive) -> tuple[date | None, Details | None]:
     filenames = archive.list_filenames()
 
     def read_meta_file(cls: type[InfoModel], filename: str) -> InfoModel | None:
         if filename in filenames:
             return cls.from_bytes(content=archive.read_file(filename=filename))
         return None
-
-    try:
-        metadata = read_meta_file(Metadata, "/Metadata.xml") or read_meta_file(
-            Metadata, "Metadata.xml"
-        )
-        if metadata:
-            metadata = cast(Metadata, metadata)
-            meta = metadata.meta
-            details = Details(
-                series=Identifications(
-                    search=metadata.issue.series.title,
-                    comicvine=get_metadata_id(metadata.issue.series.resources, Source.COMICVINE),
-                    league=get_metadata_id(
-                        metadata.issue.series.resources, Source.LEAGUE_OF_COMIC_GEEKS
-                    ),
-                    marvel=get_metadata_id(metadata.issue.series.resources, Source.MARVEL),
-                    metron=get_metadata_id(metadata.issue.series.resources, Source.METRON),
-                ),
-                issue=Identifications(
-                    search=metadata.issue.number,
-                    comicvine=get_metadata_id(metadata.issue.resources, Source.COMICVINE),
-                    league=get_metadata_id(metadata.issue.resources, Source.LEAGUE_OF_COMIC_GEEKS),
-                    marvel=get_metadata_id(metadata.issue.resources, Source.MARVEL),
-                    metron=get_metadata_id(metadata.issue.resources, Source.METRON),
-                ),
-            )
-            return meta, details
-    except ValidationError:
-        LOGGER.error("%s contains an invalid Metadata file", archive.path.name)  # noqa: TRY400
 
     try:
         metron_info = read_meta_file(MetronInfo, "/MetronInfo.xml") or read_meta_file(
@@ -126,9 +95,12 @@ def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
                     else None,
                 ),
             )
-            return Meta(date_=date.today(), tool=Tool(value="MetronInfo")), details
-    except ValidationError:
-        LOGGER.error("%s contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
+            last_modified = date(1900, 1, 1)
+            if metron_info.last_modified:
+                last_modified = metron_info.last_modified.date()
+            return last_modified, details
+    except ValidationError as ve:
+        LOGGER.error("%s contains an invalid MetronInfo file: %s", archive.path.name, ve)  # noqa: TRY400
 
     try:
         comic_info = read_meta_file(ComicInfo, "/ComicInfo.xml") or read_meta_file(
@@ -140,9 +112,9 @@ def read_meta(archive: BaseArchive) -> tuple[Meta | None, Details | None]:
                 series=Identifications(search=comic_info.series),
                 issue=Identifications(search=comic_info.number),
             )
-            return Meta(date_=date.today(), tool=Tool(value="ComicInfo")), details
-    except ValidationError:
-        LOGGER.error("%s contains an invalid ComicInfo file", archive.path.name)  # noqa: TRY400
+            return date(1900, 1, 1), details
+    except ValidationError as ve:
+        LOGGER.error("%s contains an invalid ComicInfo file: %s", archive.path.name, ve)  # noqa: TRY400
 
     return None, None
 
@@ -154,13 +126,12 @@ def load_archives(
     for file in list_files(path, f".{output}"):
         archive = get_archive(path=file)
         LOGGER.debug("Reading %s", file.stem)
-        meta, details = read_meta(archive=archive)
+        last_modified, details = read_meta(archive=archive)
         if (
-            not meta
+            not last_modified
             or not details
             or force
-            or meta.tool != Tool()
-            or abs(date.today() - meta.date_).days >= 28
+            or abs(date.today() - last_modified).days >= 28
         ):
             archives.append((file, archive, details))
     return archives
@@ -168,7 +139,7 @@ def load_archives(
 
 def fetch_from_services(
     settings: Settings, details: Details
-) -> tuple[Metadata | None, MetronInfo | None, ComicInfo | None]:
+) -> tuple[MetronInfo | None, ComicInfo | None]:
     services = {
         Service.COMICVINE: Comicvine(settings.comicvine)
         if settings.comicvine and settings.comicvine.api_key
@@ -189,46 +160,12 @@ def fetch_from_services(
     for service_name in settings.service_order:
         service = services[service_name]
         if service:
-            LOGGER.info("Fetching details from %s", type(service).__name__)
-            metadata, metron_info, comic_info = service.fetch(details=details)
-            if metadata and metron_info and comic_info:
-                return metadata, metron_info, comic_info
+            LOGGER.info("Fetching information from %s", type(service).__name__)
+            metron_info, comic_info = service.fetch(details=details)
+            if metron_info and comic_info:
+                return metron_info, comic_info
     LOGGER.warning("No external services configured or data incomplete")
-    return None, None, None
-
-
-def generate_filename(root: Path, extension: str, metadata: Metadata) -> Path:
-    publisher_filename = sanitize(metadata.issue.series.publisher.title)
-    series_filename = sanitize(
-        f"{metadata.issue.series.title} v{metadata.issue.series.volume}"
-        if metadata.issue.series.volume > 1
-        else metadata.issue.series.title
-    )
-
-    number_str = (
-        f"_#{metadata.issue.number.zfill(3 if metadata.issue.format == Format.SINGLE_ISSUE else 2)}"
-        if metadata.issue.number
-        else ""
-    )
-    format_str = {
-        Format.ANNUAL: "_Annual",
-        Format.DIGITAL_CHAPTER: "_Chapter",
-        Format.GRAPHIC_NOVEL: "_GN",
-        Format.HARDCOVER: "_HC",
-        Format.TRADE_PAPERBACK: "_TP",
-    }.get(metadata.issue.format, "")
-
-    if metadata.issue.format in {
-        Format.GRAPHIC_NOVEL,
-        Format.HARDCOVER,
-        Format.TRADE_PAPERBACK,
-        Format.OMNIBUS,
-    }:
-        issue_filename = f"{series_filename}{number_str}{format_str}"
-    else:
-        issue_filename = f"{series_filename}{format_str}{number_str}"
-
-    return root / publisher_filename / series_filename / f"{issue_filename}.{extension}"
+    return None, None
 
 
 def rename_images(folder: Path, filename: str) -> None:
@@ -241,36 +178,18 @@ def rename_images(folder: Path, filename: str) -> None:
             shutil.move(img_file, folder / new_filename)
 
 
-def process_pages(
-    folder: Path, metadata: Metadata, metron_info: MetronInfo, comic_info: ComicInfo, filename: str
-) -> None:
+def process_pages(folder: Path, comic_info: ComicInfo, filename: str) -> None:
     from perdoo.models.comic_info import Page as ComicPage
-    from perdoo.models.metadata import Page as MetadataPage
-    from perdoo.models.metron_info import Page as MetronPage
 
     rename_images(folder, filename)
     image_list = list_files(folder, *IMAGE_EXTENSIONS)
-    metadata_pages = set()
-    metron_info_pages = set()
     comic_info_pages = set()
     for index, img_file in enumerate(image_list):
         is_final_page = index == len(image_list) - 1
-        page = next((x for x in metadata.pages if x.index == index), None)
-        metadata_pages.add(
-            MetadataPage.from_path(
-                file=img_file, index=index, is_final_page=is_final_page, page=page
-            )
-        )
-        page = next((x for x in metron_info.pages if x.image == index), None)
-        metron_info_pages.add(
-            MetronPage.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
-        )
         page = next((x for x in comic_info.pages if x.image == index), None)
         comic_info_pages.add(
             ComicPage.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
         )
-    metadata.pages = sorted(metadata_pages)
-    metron_info.pages = sorted(metron_info_pages)
     comic_info.pages = sorted(comic_info_pages)
 
 
@@ -284,45 +203,39 @@ def start(settings: Settings, force: bool = False) -> None:
         archives = load_archives(
             path=settings.input_folder, output=settings.output.format, force=force
         )
+    LOGGER.info("[ OK ] Searching for %s files", settings.output.format)
 
     for file, archive, details in archives:
-        LOGGER.info("Processing %s", file.stem)
+        LOGGER.info("Fetching information for %s", file.stem)
         details = details or Details(
             series=Identifications(search=Prompt.ask("Series title", console=CONSOLE)),
             issue=Identifications(),
         )
 
-        metadata, metron_info, comic_info = fetch_from_services(settings=settings, details=details)
-        if not metadata:
+        metron_info, comic_info = fetch_from_services(settings=settings, details=details)
+        if not metron_info:
             LOGGER.warning("Not enough information to organize and rename this comic, skipping")
             continue
-
-        new_file = generate_filename(
-            root=settings.output_folder, extension=settings.output.format.value, metadata=metadata
+        new_file = metron_info.get_file(
+            root=settings.output_folder, extension=settings.output.format.value
         )
 
-        with TemporaryDirectory(prefix=f"{new_file.stem}_") as temp_str, CONSOLE.status(
-            f"Extracting {archive.path.stem} files", spinner="simpleDotsScrolling"
-        ) as status:
+        with (
+            TemporaryDirectory(prefix=f"{new_file.stem}_") as temp_str,
+            CONSOLE.status(
+                f"Extracting {archive.path.stem} files", spinner="simpleDotsScrolling"
+            ) as status,
+        ):
             temp_folder = Path(temp_str)
             if not archive.extract_files(destination=temp_folder):
                 return
-            status.update("Processing files")
-            process_pages(
-                folder=temp_folder,
-                metadata=metadata,
-                metron_info=metron_info,
-                comic_info=comic_info,
-                filename=new_file.stem,
-            )
-            metadata.meta = Meta(date_=date.today())
+            LOGGER.info("[ OK ] Extracting %s files", archive.path.stem)
+            status.update(f"Processing {new_file.stem} files")
+            process_pages(folder=temp_folder, comic_info=comic_info, filename=new_file.stem)
+            metron_info.last_modified = datetime.now()
 
             files = list_files(temp_folder, *IMAGE_EXTENSIONS)
-            if settings.output.create_metadata:
-                metadata_file = temp_folder / "Metadata.xml"
-                metadata.to_file(file=metadata_file)
-                files.append(metadata_file)
-            if metron_info and settings.output.create_metron_info:
+            if settings.output.create_metron_info:
                 metron_info_file = temp_folder / "MetronInfo.xml"
                 metron_info.to_file(file=metron_info_file)
                 files.append(metron_info_file)
@@ -331,6 +244,7 @@ def start(settings: Settings, force: bool = False) -> None:
                 comic_info.to_file(file=comic_info_file)
                 files.append(comic_info_file)
 
+            LOGGER.info("[ OK ] Processing %s files", new_file.stem)
             status.update(f"Archiving {new_file.stem}")
             archive_file = archive.archive_files(
                 src=temp_folder, output_name=archive.path.stem, files=files
@@ -340,6 +254,7 @@ def start(settings: Settings, force: bool = False) -> None:
                 continue
             archive.path.unlink(missing_ok=True)
             shutil.move(archive_file, archive.path)
+        LOGGER.info("[ OK ] Archiving %s", new_file.stem)
 
         if file.relative_to(settings.input_folder) != new_file.relative_to(settings.output_folder):
             LOGGER.info(
@@ -355,6 +270,7 @@ def start(settings: Settings, force: bool = False) -> None:
             if folder.is_dir() and not any(folder.iterdir()):
                 folder.rmdir()
                 LOGGER.info("Deleted empty folder: %s", folder)
+    LOGGER.info("[ OK ] Cleaning up empty folders")
 
 
 def main() -> None:

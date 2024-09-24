@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 __all__ = ["CBRArchive"]
 
 import logging
 from pathlib import Path
+from typing import Optional
 
 from rarfile import RarExecError, RarFile
 
@@ -13,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class CBRArchive(BaseArchive):
-    def list_filenames(self: CBRArchive) -> list[str]:
+    def list_filenames(self) -> list[str]:
         try:
             with RarFile(self.path) as stream:
                 return stream.namelist()
@@ -21,7 +20,7 @@ class CBRArchive(BaseArchive):
             LOGGER.exception("Unable to read %s", self.path.name)
             return []
 
-    def read_file(self: CBRArchive, filename: str) -> bytes:
+    def read_file(self, filename: str) -> bytes:
         try:
             with RarFile(self.path) as stream:
                 return stream.read(filename)
@@ -29,7 +28,7 @@ class CBRArchive(BaseArchive):
             LOGGER.exception("Unable to read %s", self.path.name)
             return b""
 
-    def extract_files(self: CBRArchive, destination: Path) -> bool:
+    def extract_files(self, destination: Path) -> bool:
         try:
             with RarFile(self.path, "r") as stream:
                 stream.extractall(path=destination)
@@ -40,10 +39,10 @@ class CBRArchive(BaseArchive):
 
     @classmethod
     def archive_files(
-        cls: type[CBRArchive], src: Path, output_name: str, files: list[Path] | None = None
+        cls, src: Path, output_name: str, files: list[Path] | None = None
     ) -> Path | None:
         raise NotImplementedError("Unable to create archive in CBR format")
 
     @staticmethod
-    def convert(old_archive: BaseArchive) -> CBRArchive | None:
+    def convert(old_archive: BaseArchive) -> Optional["CBRArchive"]:
         raise NotImplementedError("Unable to convert archive to CBR format")

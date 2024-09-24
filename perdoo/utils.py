@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-__all__ = ["list_files", "sanitize", "Details", "Identifications", "get_metadata_id"]
+__all__ = ["list_files", "sanitize", "Details", "Identifications"]
 
 import logging
 import re
@@ -8,8 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from natsort import humansorted, ns
-
-from perdoo.models.metadata import Resource, Source
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +44,3 @@ def sanitize(value: str | None) -> str | None:
     value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace("-", " "))
     value = " ".join(value.split())
     return value.replace(" ", "-")
-
-
-def get_metadata_id(resources: list[Resource], source: Source) -> int | None:
-    return next((x.value for x in resources if x.source == source), None)
