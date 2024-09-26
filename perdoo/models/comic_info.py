@@ -11,6 +11,7 @@ from PIL import Image
 from pydantic import Field, HttpUrl, NonNegativeFloat
 
 from perdoo.models._base import InfoModel, PascalModel
+from perdoo.utils import values_as_str
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -322,7 +323,7 @@ class ComicInfo(PascalModel, InfoModel):
     def to_file(self, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)
         self.wrap_list(mappings=self.list_fields, content=content)
-        content = self.clean_contents(content)
+        content = values_as_str(content=content)
         content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
         content["@xsi:noNamespaceSchemaLocation"] = (
             "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/schemas/v2.0/ComicInfo.xsd"

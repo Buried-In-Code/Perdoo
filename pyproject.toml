@@ -33,6 +33,7 @@ dependencies = [
   "simyan >= 1.2.2",
   "tomli >= 2.0.1 ; python_version < \"3.11\"",
   "tomli-w >= 1.0.0",
+  "typer >= 0.12.5",
   "xmltodict >= 0.13.0"
 ]
 description = "Unify and organize your comic collection."
@@ -49,7 +50,7 @@ cb7 = [
 ]
 
 [project.scripts]
-Perdoo = "perdoo.__main__:main"
+Perdoo = "perdoo.__main__:app"
 
 [project.urls]
 Homepage = "https://pypi.org/project/Perdoo"
@@ -94,6 +95,7 @@ ignore = [
   "DTZ",
   "EM",
   "FBT",
+  "PLR0913",
   "PLR2004",
   "PLW2901",
   "TCH",

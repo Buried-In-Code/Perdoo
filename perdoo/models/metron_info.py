@@ -28,7 +28,7 @@ import xmltodict
 from pydantic import Field, HttpUrl, PositiveInt
 
 from perdoo.models._base import InfoModel, PascalModel
-from perdoo.utils import sanitize
+from perdoo.utils import sanitize, values_as_str
 
 T = TypeVar("T")
 
@@ -437,7 +437,7 @@ class MetronInfo(PascalModel, InfoModel):
     def to_file(self, file: Path) -> None:
         content = self.model_dump(by_alias=True, exclude_none=True)
         self.wrap_list(mappings=self.list_fields, content=content)
-        content = self.clean_contents(content=content)
+        content = values_as_str(content=content)
         content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
         content["@xsi:noNamespaceSchemaLocation"] = (
             "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"

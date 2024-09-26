@@ -35,30 +35,6 @@ class PascalModel(
                 content[key] = []
         return content
 
-    def clean_contents(self, content: dict[str, Any]) -> dict[str, Any]:
-        cleaned_content = {}
-        for key, value in content.items():
-            if isinstance(value, bool):
-                value = "true" if value else "false"
-            if not value:
-                continue
-            if isinstance(value, dict):
-                value = self.clean_contents(value)
-            elif isinstance(value, list):
-                clean_list = []
-                for entry in value:
-                    if isinstance(entry, bool):
-                        clean_list.append("true" if entry else "false")
-                    elif isinstance(entry, dict):
-                        clean_list.append(self.clean_contents(entry))
-                    else:
-                        clean_list.append(str(entry))
-                value = clean_list
-            else:
-                value = str(value)
-            cleaned_content[key] = value
-        return cleaned_content
-
     def wrap_list(self, mappings: dict[str, str], content: dict[str, Any]) -> dict[str, Any]:
         for key, value in content.copy().items():
             if not value:
