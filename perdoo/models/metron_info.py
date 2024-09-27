@@ -21,14 +21,13 @@ __all__ = [
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
-from pathlib import Path
-from typing import ClassVar, Generic, TypeVar
+from typing import Generic, TypeVar
 
-import xmltodict
-from pydantic import Field, HttpUrl, PositiveInt
+from pydantic import HttpUrl, PositiveInt
+from pydantic_xml import attr, computed_attr, element, wrapped
 
-from perdoo.models._base import InfoModel, PascalModel
-from perdoo.utils import sanitize, values_as_str
+from perdoo.models._base import PascalModel
+from perdoo.utils import sanitize
 
 T = TypeVar("T")
 
@@ -57,8 +56,8 @@ class InformationSource(Enum):
 
 
 class Source(PascalModel):
-    value: PositiveInt = Field(alias="#text")
-    source: InformationSource = Field(alias="@source")
+    source: InformationSource = attr(name="source")
+    value: PositiveInt
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -75,15 +74,15 @@ class Source(PascalModel):
 
 
 class InformationList(PascalModel, Generic[T]):
-    primary: T
-    alternatives: list[T] = Field(default_factory=list)
-
-    list_fields: ClassVar[dict[str, str]] = {"Alternatives": "Alternative"}
+    alternatives: list[T] = wrapped(
+        path="Alternatives", entity=element(tag="Alternative", default_factory=list)
+    )
+    primary: T = element()
 
 
 class Resource(PascalModel, Generic[T]):
-    value: T = Field(alias="#text")
-    id: PositiveInt | None = Field(alias="@id", default=None)
+    value: T
+    id: PositiveInt | None = attr(name="id", default=None)
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -100,9 +99,9 @@ class Resource(PascalModel, Generic[T]):
 
 
 class Publisher(PascalModel):
-    name: str
-    imprint: Resource | None = None
-    id: PositiveInt | None = Field(alias="@id", default=None)
+    id: PositiveInt | None = attr(name="id", default=None)
+    imprint: Resource[str] | None = element(default=None)
+    name: str = element()
 
 
 class Format(Enum):
@@ -133,20 +132,20 @@ class Format(Enum):
 
 
 class AlternativeName(Resource[str]):
-    lang: str = Field(alias="@lang", default="en")
+    lang: str = attr(name="lang", default="en")
 
 
 class Series(PascalModel):
-    lang: str = Field(alias="@lang", default="en")
-    id: PositiveInt | None = Field(alias="@id", default=None)
-    name: str
-    sort_name: str | None = None
-    volume: int | None = None
-    format: Format | None = None
-    start_year: int | None = None
-    alternative_names: list[AlternativeName] = Field(default_factory=list)
-
-    list_fields: ClassVar[dict[str, str]] = {"AlternativeNames": "AlternativeName"}
+    alternative_names: list[AlternativeName] = wrapped(
+        path="AlternativeNames", entity=element(tag="AlternativeName", default_factory=list)
+    )
+    format: Format | None = element(default=None)
+    id: PositiveInt | None = attr(name="id", default=None)
+    lang: str = attr(name="lang", default="en")
+    name: str = element()
+    sort_name: str | None = element(default=None)
+    volume: int | None = element(default=None)
+    start_year: int | None = element(default=None)
 
     @property
     def filename(self) -> str:
@@ -154,8 +153,8 @@ class Series(PascalModel):
 
 
 class Price(PascalModel):
-    value: Decimal = Field(alias="#text")
-    country: str = Field(alias="@country")
+    country: str = attr(name="country")
+    value: Decimal
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -205,9 +204,9 @@ class Genre(Enum):
 
 
 class Arc(PascalModel):
-    name: str
-    number: PositiveInt | None = None
-    id: PositiveInt | None = Field(alias="@id", default=None)
+    id: PositiveInt | None = attr(name="id", default=None)
+    name: str = element()
+    number: PositiveInt | None = element(default=None)
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -224,9 +223,9 @@ class Arc(PascalModel):
 
 
 class Universe(PascalModel):
-    name: str
-    designation: str | None = None
-    id: PositiveInt | None = Field(alias="@id", default=None)
+    designation: str | None = element(default=None)
+    id: PositiveInt | None = attr(name="id", default=None)
+    name: str = element()
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -243,8 +242,8 @@ class Universe(PascalModel):
 
 
 class GTIN(PascalModel):
-    isbn: str | None = Field(alias="ISBN", default=None)
-    upc: str | None = Field(alias="UPC", default=None)
+    isbn: str | None = element(tag="ISBN", default=None)
+    upc: str | None = element(tag="UPC", default=None)
 
 
 class AgeRating(Enum):
@@ -331,10 +330,10 @@ class Role(Enum):
 
 
 class Credit(PascalModel):
-    creator: Resource[str]
-    roles: list[Resource[Role]] = Field(default_factory=list)
-
-    list_fields: ClassVar[dict[str, str]] = {"Roles": "Role"}
+    creator: Resource[str] = element()
+    roles: list[Resource[Role]] = wrapped(
+        path="Roles", entity=element(tag="Role", default_factory=list)
+    )
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -350,63 +349,57 @@ class Credit(PascalModel):
         return hash((type(self), self.creator))
 
 
-class MetronInfo(PascalModel, InfoModel):
-    id: InformationList[Source] | None = Field(alias="ID", default=None)
-    publisher: Publisher
-    series: Series
-    collection_title: str | None = None
-    number: str | None = None
-    stories: list[Resource[str]] = Field(default_factory=list)
-    summary: str | None = None
-    prices: list[Price] = Field(default_factory=list)
-    cover_date: date | None = None
-    store_date: date | None = None
-    page_count: int = 0
-    notes: str | None = None
-    genres: list[Resource[Genre]] = Field(default_factory=list)
-    tags: list[Resource[str]] = Field(default_factory=list)
-    arcs: list[Arc] = Field(default_factory=list)
-    characters: list[Resource[str]] = Field(default_factory=list)
-    teams: list[Resource[str]] = Field(default_factory=list)
-    universes: list[Universe] = Field(default_factory=list)
-    locations: list[Resource[str]] = Field(default_factory=list)
-    reprints: list[Resource[str]] = Field(default_factory=list)
-    gtin: GTIN | None = Field(alias="GTIN", default=None)
-    age_rating: AgeRating = Field(default=AgeRating.UNKNOWN)
-    urls: InformationList[HttpUrl] | None = Field(alias="URLs", default=None)
-    credits: list[Credit] = Field(default_factory=list)
-    last_modified: datetime | None = None
+class MetronInfo(PascalModel):
+    age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
+    arcs: list[Arc] = wrapped(path="Arcs", entity=element(tag="Arc", default_factory=list))
+    characters: list[Resource[str]] = wrapped(
+        path="Characters", entity=element(tag="Character", default_factory=list)
+    )
+    collection_title: str | None = element(default=None)
+    cover_date: date | None = element(default=None)
+    credits: list[Credit] = wrapped(
+        path="Credits", entity=element(tag="Credit", default_factory=list)
+    )
+    genres: list[Resource[Genre]] = wrapped(
+        path="Genres", entity=element(tag="Genre", default_factory=list)
+    )
+    gtin: GTIN | None = element(tag="GTIN", default=None)
+    id: InformationList[Source] | None = element(tag="ID", default=None)
+    last_modified: datetime | None = element(default=None)
+    locations: list[Resource[str]] = wrapped(
+        path="Locations", entity=element(tag="Location", default_factory=list)
+    )
+    notes: str | None = element(default=None)
+    number: str | None = element(default=None)
+    page_count: int = element(default=0)
+    prices: list[Price] = wrapped(path="Prices", entity=element(tag="Price", default_factory=list))
+    publisher: Publisher = element()
+    reprints: list[Resource[str]] = wrapped(
+        path="Reprints", entity=element(tag="Reprint", default_factory=list)
+    )
+    series: Series = element()
+    store_date: date | None = element(default=None)
+    stories: list[Resource[str]] = wrapped(
+        path="Stories", entity=element(tag="Story", default_factory=list)
+    )
+    summary: str | None = element(default=None)
+    tags: list[Resource[str]] = wrapped(
+        path="Tags", entity=element(tag="Tag", default_factory=list)
+    )
+    teams: list[Resource[str]] = wrapped(
+        path="Teams", entity=element(tag="Team", default_factory=list)
+    )
+    universes: list[Universe] = wrapped(
+        path="Universes", entity=element(tag="Universe", default_factory=list)
+    )
+    urls: InformationList[HttpUrl] | None = element(tag="URLs", default=None)
 
-    list_fields: ClassVar[dict[str, str]] = {
-        **Credit.list_fields,
-        **InformationList.list_fields,
-        **Series.list_fields,
-        "Arcs": "Arc",
-        "Characters": "Character",
-        "Credits": "Credit",
-        "Genres": "Genre",
-        "Locations": "Location",
-        "Prices": "Price",
-        "Reprints": "Reprint",
-        "Stories": "Story",
-        "Tags": "Tag",
-        "Teams": "Team",
-        "Universes": "Universe",
-    }
-    text_fields: ClassVar[list[str]] = [
-        "Characters",
-        "Creator",
-        "Genres",
-        "Locations",
-        "Prices",
-        "Reprints",
-        "Roles",
-        "Stories",
-        "Tags",
-        "Teams",
-    ]
+    @computed_attr
+    def schema_location(self) -> str:
+        return "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"
 
-    def get_file(self, root: Path, extension: str) -> Path:
+    @property
+    def filename(self) -> str:
         identifier = ""
         if self.number:
             padded_number = self.number.zfill(
@@ -416,7 +409,7 @@ class MetronInfo(PascalModel, InfoModel):
         elif self.collection_title:
             identifier = f"_{sanitize(self.collection_title)}"
 
-        filename = {
+        return {
             Format.ANNUAL: f"{self.series.filename}_Annual{identifier}",
             Format.DIGITAL_CHAPTER: f"{self.series.filename}_Chapter{identifier}",
             Format.GRAPHIC_NOVEL: f"{self.series.filename}{identifier}_GN",
@@ -424,30 +417,3 @@ class MetronInfo(PascalModel, InfoModel):
             Format.OMNIBUS: f"{self.series.filename}{identifier}",
             Format.TRADE_PAPERBACK: f"{self.series.filename}{identifier}_TPB",
         }.get(self.series.format, f"{self.series.filename}{identifier}")
-
-        return (
-            root / sanitize(self.publisher.name) / self.series.filename / f"{filename}.{extension}"
-        )
-
-    @classmethod
-    def from_bytes(cls, content: bytes) -> "MetronInfo":
-        xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
-        return cls(**xml_content["MetronInfo"])
-
-    def to_file(self, file: Path) -> None:
-        content = self.model_dump(by_alias=True, exclude_none=True)
-        self.wrap_list(mappings=self.list_fields, content=content)
-        content = values_as_str(content=content)
-        content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
-        content["@xsi:noNamespaceSchemaLocation"] = (
-            "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"
-        )
-
-        with file.open("wb") as stream:
-            xmltodict.unparse(
-                {"MetronInfo": {k: content[k] for k in sorted(content)}},
-                output=stream,
-                short_empty_elements=True,
-                pretty=True,
-                indent=" " * 2,
-            )

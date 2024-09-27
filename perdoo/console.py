@@ -5,6 +5,7 @@ import logging
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressColumn, TextColumn
 from rich.prompt import IntPrompt
 from rich.theme import Theme
 
@@ -58,3 +59,13 @@ def create_menu(
             options=options, title=title, subtitle=subtitle, prompt=prompt, default=default
         )
     return selected
+
+
+def create_progress() -> Progress:
+    return Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        MofNCompleteColumn(),
+        console=CONSOLE,
+    )

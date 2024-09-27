@@ -3,15 +3,15 @@ __all__ = ["YesNo", "Manga", "AgeRating", "PageType", "Page", "ComicInfo"]
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Optional
 
-import xmltodict
 from natsort import humansorted, ns
 from PIL import Image
-from pydantic import Field, HttpUrl, NonNegativeFloat
+from pydantic import HttpUrl, NonNegativeFloat
+from pydantic_xml import attr, computed_attr, element, wrapped
 
-from perdoo.models._base import InfoModel, PascalModel
-from perdoo.utils import values_as_str
+from perdoo.models._base import PascalModel
+from perdoo.utils import sanitize
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -132,14 +132,14 @@ class PageType(Enum):
 
 
 class Page(PascalModel):
-    image: int = Field(alias="@Image")
-    type: PageType = Field(alias="@Type", default=PageType.STORY)
-    double_page: bool = Field(alias="@DoublePage", default=False)
-    image_size: int = Field(alias="@ImageSize", default=0)
-    key: str | None = Field(alias="@Key", default=None)
-    bookmark: str | None = Field(alias="@Bookmark", default=None)
-    image_width: int | None = Field(alias="@ImageWidth", default=None)
-    image_height: int | None = Field(alias="@ImageHeight", default=None)
+    image: int = attr()
+    type: PageType = attr(default=PageType.STORY)
+    double_page: bool = attr(default=False)
+    image_size: int = attr(default=0)
+    key: str | None = attr(default=None)
+    bookmark: str | None = attr(default=None)
+    image_width: int | None = attr(default=None)
+    image_height: int | None = attr(default=None)
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -176,53 +176,51 @@ class Page(PascalModel):
         )
 
 
-class ComicInfo(PascalModel, InfoModel):
-    title: str | None = None
-    series: str | None = None
-    number: str | None = None
-    count: int | None = None
-    volume: int | None = None
-    alternate_series: str | None = None
-    alternate_number: str | None = None
-    alternate_count: int | None = None
-    summary: str | None = None
-    notes: str | None = None
-    year: int | None = None
-    month: int | None = None
-    day: int | None = None
-    writer: str | None = None
-    penciller: str | None = None
-    inker: str | None = None
-    colorist: str | None = None
-    letterer: str | None = None
-    cover_artist: str | None = None
-    editor: str | None = None
-    publisher: str | None = None
-    imprint: str | None = None
-    genre: str | None = None
-    web: HttpUrl | None = None
-    page_count: int = 0
-    language_iso: str | None = Field(alias="LanguageISO", default=None)
-    format: str | None = None
-    black_and_white: YesNo = YesNo.UNKNOWN
-    manga: Manga = Manga.UNKNOWN
-    characters: str | None = None
-    teams: str | None = None
-    locations: str | None = None
-    scan_information: str | None = None
-    story_arc: str | None = None
-    series_group: str | None = None
-    age_rating: AgeRating = AgeRating.UNKNOWN
-    pages: list[Page] = Field(default_factory=list)
-    community_rating: NonNegativeFloat | None = Field(default=None, le=5)
-    main_character_or_team: str | None = None
-    review: str | None = None
+class ComicInfo(PascalModel):
+    title: str | None = element(default=None)
+    series: str | None = element(default=None)
+    number: str | None = element(default=None)
+    count: int | None = element(default=None)
+    volume: int | None = element(default=None)
+    alternate_series: str | None = element(default=None)
+    alternate_number: str | None = element(default=None)
+    alternate_count: int | None = element(default=None)
+    summary: str | None = element(default=None)
+    notes: str | None = element(default=None)
+    year: int | None = element(default=None)
+    month: int | None = element(default=None)
+    day: int | None = element(default=None)
+    writer: str | None = element(default=None)
+    penciller: str | None = element(default=None)
+    inker: str | None = element(default=None)
+    colorist: str | None = element(default=None)
+    letterer: str | None = element(default=None)
+    cover_artist: str | None = element(default=None)
+    editor: str | None = element(default=None)
+    publisher: str | None = element(default=None)
+    imprint: str | None = element(default=None)
+    genre: str | None = element(default=None)
+    web: HttpUrl | None = element(default=None)
+    page_count: int = element(default=0)
+    language_iso: str | None = element(tag="LanguageISO", default=None)
+    format: str | None = element(default=None)
+    black_and_white: YesNo = element(default=YesNo.UNKNOWN)
+    manga: Manga = element(default=Manga.UNKNOWN)
+    characters: str | None = element(default=None)
+    teams: str | None = element(default=None)
+    locations: str | None = element(default=None)
+    scan_information: str | None = element(default=None)
+    story_arc: str | None = element(default=None)
+    series_group: str | None = element(default=None)
+    age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
+    pages: list[Page] = wrapped(path="Pages", entity=element(tag="Page", default_factory=list))
+    community_rating: NonNegativeFloat | None = element(default=None, le=5)
+    main_character_or_team: str | None = element(default=None)
+    review: str | None = element(default=None)
 
-    list_fields: ClassVar[dict[str, str]] = {"Pages": "Page"}
-
-    def __init__(self, **data: Any):
-        self.unwrap_list(mappings=self.list_fields, content=data)
-        super().__init__(**data)
+    @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
+    def schema_location(self) -> str:
+        return "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/schemas/v2.0/ComicInfo.xsd"
 
     @property
     def cover_date(self) -> date | None:
@@ -315,25 +313,22 @@ class ComicInfo(PascalModel, InfoModel):
     def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    @classmethod
-    def from_bytes(cls, content: bytes) -> "ComicInfo":
-        xml_content = xmltodict.parse(content, force_list=list(cls.list_fields.values()))
-        return cls(**xml_content["ComicInfo"])
-
-    def to_file(self, file: Path) -> None:
-        content = self.model_dump(by_alias=True, exclude_none=True)
-        self.wrap_list(mappings=self.list_fields, content=content)
-        content = values_as_str(content=content)
-        content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
-        content["@xsi:noNamespaceSchemaLocation"] = (
-            "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/schemas/v2.0/ComicInfo.xsd"
-        )
-
-        with file.open("wb") as stream:
-            xmltodict.unparse(
-                {"ComicInfo": {k: content[k] for k in sorted(content)}},
-                output=stream,
-                short_empty_elements=True,
-                pretty=True,
-                indent=" " * 2,
+    @property
+    def series_filename(self) -> str | None:
+        if self.series:
+            return sanitize(
+                self.series
+                if not self.volume or self.volume == 1
+                else f"{self.series} v{self.volume}"
             )
+        return None
+
+    @property
+    def filename(self) -> str | None:
+        identifier = ""
+        if self.number:
+            identifier = f"_#{self.number.zfill(3)}"
+        elif self.title:
+            identifier = f"_{sanitize(self.title)}"
+
+        return f"{self.series_filename}{identifier}" if self.series_filename else None

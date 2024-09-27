@@ -1,7 +1,9 @@
 __all__ = ["BaseArchive", "CB7Archive", "CBTArchive", "CBZArchive", "get_archive"]
 
+from dataclasses import dataclass
 from pathlib import Path
 from tarfile import is_tarfile
+from typing import ClassVar
 from zipfile import is_zipfile
 
 from rarfile import is_rarfile
@@ -30,3 +32,32 @@ def get_archive(path: Path) -> BaseArchive:
     if py7zr_loaded and is_7zfile:
         return CB7Archive(path=path)
     raise NotImplementedError(f"{path.name} is an unsupported archive")
+
+
+@dataclass(frozen=True)
+class Archive:
+    name: str
+    type: type[BaseArchive]
+
+    @property
+    def extension(self) -> str:
+        return f".{self.name}"
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ArchiveRegistry:
+    _registry: ClassVar[dict[str, Archive]] = {
+        "cb7": Archive("cb7", CB7Archive),
+        "cbr": Archive("cbr", CBRArchive),
+        "cbt": Archive("cbt", CBTArchive),
+        "cbz": Archive("cbz", CBZArchive),
+    }
+
+    @classmethod
+    def load(cls, value: str) -> Archive:
+        key = value.casefold()
+        if key in cls._registry:
+            return cls._registry[key]
+        raise ValueError(f"`{value}` isn't a valid Archive")

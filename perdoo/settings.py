@@ -1,25 +1,16 @@
-__all__ = [
-    "Comicvine",
-    "LeagueofComicGeeks",
-    "Marvel",
-    "Metron",
-    "OutputFormat",
-    "Output",
-    "Service",
-    "Settings",
-    "SyncOption",
-]
+__all__ = ["Comicvine", "LeagueofComicGeeks", "Marvel", "Metron", "Output", "Service", "Settings"]
 
 from enum import Enum
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import tomli_w as tomlwriter
 from pydantic import BaseModel, field_validator
 from rich.panel import Panel
 
 from perdoo import get_config_root, get_data_root
+from perdoo.archives import Archive, ArchiveRegistry
 from perdoo.console import CONSOLE
 from perdoo.utils import flatten_dict, values_as_str
 
@@ -37,35 +28,6 @@ class SettingsModel(
     extra="ignore",
 ):
     pass
-
-
-class SyncOption(Enum):
-    FORCE = "Force"
-    OUTDATED = "Outdated"
-    SKIP = "Skip"
-
-    @staticmethod
-    def load(value: str) -> "SyncOption":
-        for entry in SyncOption:
-            if entry.value.casefold() == value.casefold():
-                return entry
-        raise ValueError(f"`{value}` isn't a valid SyncOption")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
-
-    def __str__(self) -> str:
-        return self.value
-
-
-class Flags(SettingsModel):
-    convert: bool = True
-    sync: SyncOption = SyncOption.OUTDATED
-    rename: bool = True
-    organize: bool = True
-    import_folder: Path | None = None
 
 
 class Comicvine(SettingsModel):
@@ -86,27 +48,6 @@ class Marvel(SettingsModel):
 class Metron(SettingsModel):
     password: str | None = None
     username: str | None = None
-
-
-class OutputFormat(Enum):
-    CB7 = "cb7"
-    CBT = "cbt"
-    CBZ = "cbz"
-
-    @staticmethod
-    def load(value: str) -> "OutputFormat":
-        for entry in OutputFormat:
-            if entry.value.casefold() == value.casefold():
-                return entry
-        raise ValueError(f"`{value}` isn't a valid OutputFormat")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class Service(Enum):
@@ -134,22 +75,23 @@ class Service(Enum):
 class Output(SettingsModel):
     create_comic_info: bool = True
     create_metron_info: bool = True
-    format: OutputFormat = OutputFormat.CBZ
+    format: Literal["cb7", "cbt", "cbz"] = "cbz"
 
     @field_validator("format", mode="before")
-    def validate_format(cls, v: str) -> str:
-        if v != "cb7":
-            return v
-        if find_spec("py7zr") is not None:
-            return v
-        raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+    def validate_format(cls, value: str) -> str:
+        if value == "cb7" and find_spec("py7zr") is None:
+            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+        return value
+
+    @property
+    def archive_format(self) -> Archive:
+        return ArchiveRegistry.load(self.format)
 
 
 class Settings(SettingsModel):
     _file: ClassVar[Path] = get_config_root() / "settings.toml"
 
     collection_folder: Path = get_data_root()
-    flags: Flags = Flags()
     comicvine: Comicvine = Comicvine()
     league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
     marvel: Marvel = Marvel()
@@ -184,7 +126,7 @@ class Settings(SettingsModel):
         setattr(target, keys[-1], value)
 
     @classmethod
-    def display(cls, extras: dict[str, bool | SyncOption | Path] | None = None) -> None:
+    def display(cls, extras: dict[str, Any] | None = None) -> None:
         if extras is None:
             extras = {}
         default = flatten_dict(content=cls().model_dump())
@@ -197,15 +139,11 @@ class Settings(SettingsModel):
         ]
         override_vals = [
             f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]"
-            if k not in extras or extras[k] == v
-            else f"[dim][repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/][/]"
             for k, v in file_overrides.items()
             if default[k] != v
         ]
         extra_vals = [
-            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]"
-            for k, v in extras.items()
-            if default[k] != v and file_overrides[k] != v
+            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in extras.items()
         ]
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default"))
