@@ -59,14 +59,9 @@ class Service(Enum):
     @staticmethod
     def load(value: str) -> "Service":
         for entry in Service:
-            if entry.value.casefold() == value.casefold():
+            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
         raise ValueError(f"`{value}` isn't a valid Service")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
 
     def __str__(self) -> str:
         return self.value

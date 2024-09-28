@@ -36,12 +36,7 @@ class YesNo(Enum):
         for entry in YesNo:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid comic_info.YesNo")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid YesNo")
 
     def __str__(self) -> str:
         return self.value
@@ -58,12 +53,7 @@ class Manga(Enum):
         for entry in Manga:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid comic_info.Manga")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid Manga")
 
     def __str__(self) -> str:
         return self.value
@@ -91,12 +81,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid comic_info.AgeRating")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid AgeRating")
 
     def __str__(self) -> str:
         return self.value
@@ -120,12 +105,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid comic_info.PageType")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid PageType")
 
     def __str__(self) -> str:
         return self.value

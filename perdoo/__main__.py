@@ -29,10 +29,10 @@ class SyncOption(Enum):
 
     @staticmethod
     def load(value: str) -> "SyncOption":
-        try:
-            return SyncOption[value.upper()]
-        except KeyError as ke:
-            raise ValueError(f"`{value}` isn't a valid SyncOption") from ke
+        for entry in SyncOption:
+            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
+                return entry
+        raise ValueError(f"`{value}` isn't a valid SyncOption")
 
     def __str__(self) -> str:
         return self.value

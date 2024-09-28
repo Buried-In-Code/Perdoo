@@ -57,7 +57,7 @@ class ArchiveRegistry:
 
     @classmethod
     def load(cls, value: str) -> Archive:
-        key = value.casefold()
-        if key in cls._registry:
-            return cls._registry[key]
-        raise ValueError(f"`{value}` isn't a valid Archive")
+        try:
+            return cls._registry[value.casefold()]
+        except KeyError as ke:
+            raise ValueError(f"`{value}` isn't a valid Archive") from ke

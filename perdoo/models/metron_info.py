@@ -44,12 +44,7 @@ class InformationSource(Enum):
         for entry in InformationSource:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid metron_info.InformationSource")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid InformationSource")
 
     def __str__(self) -> str:
         return self.value
@@ -120,12 +115,7 @@ class Format(Enum):
         for entry in Format:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid metron_info.Format")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid Format")
 
     def __str__(self) -> str:
         return self.value
@@ -192,12 +182,7 @@ class Genre(Enum):
         for entry in Genre:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid metron_info.Genre")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid Genre")
 
     def __str__(self) -> str:
         return self.value
@@ -258,12 +243,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid metron_info.AgeRating")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid AgeRating")
 
     def __str__(self) -> str:
         return self.value
@@ -318,12 +298,7 @@ class Role(Enum):
         for entry in Role:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid metron_info.Role")
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
+        raise ValueError(f"`{value}` isn't a valid Role")
 
     def __str__(self) -> str:
         return self.value
