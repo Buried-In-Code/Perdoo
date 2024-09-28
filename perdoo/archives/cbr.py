@@ -28,6 +28,12 @@ class CBRArchive(BaseArchive):
             LOGGER.exception("Unable to read %s", self.path.name)
             return b""
 
+    def remove_file(self, filename: str) -> bool:
+        raise NotImplementedError("Unable to remove a file from a CBR archive.")
+
+    def write_file(self, filename: str, data: str) -> bool:
+        raise NotImplementedError("Unable to write a file to a CBR archive.")
+
     def extract_files(self, destination: Path) -> bool:
         try:
             with RarFile(self.path, "r") as stream:
@@ -41,8 +47,8 @@ class CBRArchive(BaseArchive):
     def archive_files(
         cls, src: Path, output_name: str, files: list[Path] | None = None
     ) -> Path | None:
-        raise NotImplementedError("Unable to create archive in CBR format")
+        raise NotImplementedError("Unable to create a CBR archive.")
 
     @staticmethod
     def convert(old_archive: BaseArchive) -> Optional["CBRArchive"]:
-        raise NotImplementedError("Unable to convert archive to CBR format")
+        raise NotImplementedError("Unable to convert an archive to CBR.")

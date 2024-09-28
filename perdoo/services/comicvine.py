@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 
 from pydantic import HttpUrl
+from requests.exceptions import JSONDecodeError
 from rich.prompt import Confirm, Prompt
 from simyan.comicvine import Comicvine as Simyan
 from simyan.exceptions import ServiceError
@@ -52,11 +53,14 @@ class Comicvine(BaseService[Volume, Issue]):
             )
             if index != 0:
                 return options[index - 1].id
-            if not Confirm.ask("Try Again", console=CONSOLE):
+            if not Confirm.ask("Search Again", console=CONSOLE):
                 return None
             return self._get_series_id(title=None)
         except ServiceError:
             LOGGER.exception("")
+            return None
+        except JSONDecodeError:
+            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
             return None
 
     def fetch_series(self, details: Details) -> Volume | None:
@@ -69,6 +73,9 @@ class Comicvine(BaseService[Volume, Issue]):
             return series
         except ServiceError:
             LOGGER.exception("")
+            return None
+        except JSONDecodeError:
+            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
             return None
 
     def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
@@ -101,6 +108,9 @@ class Comicvine(BaseService[Volume, Issue]):
         except ServiceError:
             LOGGER.exception("")
             return None
+        except JSONDecodeError:
+            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
+            return None
 
     def fetch_issue(self, series_id: int, details: Details) -> Issue | None:
         issue_id = details.issue.comicvine or self._get_issue_id(
@@ -114,6 +124,9 @@ class Comicvine(BaseService[Volume, Issue]):
             return issue
         except ServiceError:
             LOGGER.exception("")
+            return None
+        except JSONDecodeError:
+            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
             return None
 
     def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
@@ -191,7 +204,7 @@ class Comicvine(BaseService[Volume, Issue]):
             try:
                 temp = self.session.get_issue(issue_id=details.issue.comicvine)
                 details.series.comicvine = temp.volume.id
-            except ServiceError:
+            except (ServiceError, JSONDecodeError):
                 pass
 
         series = self.fetch_series(details=details)

@@ -77,7 +77,7 @@ class CBTArchive(BaseArchive):
             )
             if not archive_file:
                 return None
-            new_filepath = old_archive.path.parent / f"{old_archive.path.stem}.cbt"
+            new_file = old_archive.path.with_suffix(".cbt")
             old_archive.path.unlink(missing_ok=True)
-            shutil.move(archive_file, new_filepath)
-            return CBTArchive(path=new_filepath)
+            shutil.move(archive_file, new_file)
+            return CBTArchive(path=new_file)

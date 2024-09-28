@@ -1,6 +1,5 @@
 __all__ = [
     "__version__",
-    "ARCHIVE_EXTENSIONS",
     "IMAGE_EXTENSIONS",
     "get_cache_root",
     "get_config_root",
@@ -18,7 +17,6 @@ from rich.traceback import install
 
 from perdoo.console import CONSOLE
 
-ARCHIVE_EXTENSIONS = (".cb7", ".cbr", ".cbt", ".cbz")
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp")
 
 

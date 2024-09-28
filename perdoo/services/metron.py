@@ -60,7 +60,7 @@ class Metron(BaseService[Series, Issue]):
             )
             if index != 0:
                 return options[index - 1].id
-            if not Confirm.ask("Try Again", console=CONSOLE):
+            if not Confirm.ask("Search Again", console=CONSOLE):
                 return None
             return self._get_series_id(title=None)
         except ApiError:

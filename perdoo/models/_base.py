@@ -29,8 +29,10 @@ class PascalModel(
     def from_bytes(cls, content: bytes) -> Self:
         return cls.from_xml(content)
 
-    def to_file(self, file: Path) -> None:
-        content = b'<?xml version="1.0" encoding="UTF-8"?>\n' + self.to_xml(
+    def to_bytes(self) -> bytes:
+        return b'<?xml version="1.0" encoding="UTF-8"?>\n' + self.to_xml(
             skip_empty=True, pretty_print=True, encoding="UTF-8"
         )
-        file.write_bytes(content)
+
+    def to_file(self, file: Path) -> None:
+        file.write_bytes(self.to_bytes())
