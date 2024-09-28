@@ -225,7 +225,6 @@ def run(
                 if metron_info and metron_info.last_modified:
                     last_modified = metron_info.last_modified.date()
             if (date.today() - last_modified).days >= 28:
-                LOGGER.info("Syncing metadata")
                 sync_metadata(
                     entry=entry,
                     details=details,
