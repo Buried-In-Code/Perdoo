@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from perdoo import IMAGE_EXTENSIONS
 from perdoo.archives import Archive, BaseArchive
 from perdoo.models import ComicInfo, MetronInfo
+from perdoo.models.comic_info import Page
 from perdoo.services import BaseService
 from perdoo.settings import Service
 from perdoo.utils import Details, list_files, sanitize
@@ -18,6 +19,23 @@ def convert_file(entry: BaseArchive, output: Archive) -> BaseArchive | None:
         return entry
     LOGGER.info("Converting '%s' to '%s'", entry, output)
     return output.convert(entry)
+
+
+def _load_page_info(entry: BaseArchive, comic_info: ComicInfo) -> None:
+    with TemporaryDirectory(prefix=f"{entry.path.stem}_") as temp_str:
+        temp_folder = Path(temp_str)
+        if not entry.extract_files(destination=temp_folder):
+            return
+
+        image_list = list_files(temp_folder, *IMAGE_EXTENSIONS)
+        pages = set()
+        for index, img_file in enumerate(image_list):
+            is_final_page = index == len(image_list) - 1
+            page = next((x for x in comic_info.pages if x.image == index), None)
+            pages.add(
+                Page.from_path(file=img_file, index=index, is_final_page=is_final_page, page=page)
+            )
+        comic_info.pages = sorted(pages)
 
 
 def sync_metadata(
@@ -36,6 +54,7 @@ def sync_metadata(
             if metron_info and create_metron_info:
                 entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
             if comic_info and create_comic_info:
+                _load_page_info(entry=entry, comic_info=comic_info)
                 entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
             if metron_info or comic_info:
                 return
