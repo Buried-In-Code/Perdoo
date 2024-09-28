@@ -394,7 +394,7 @@ class MetronInfo(PascalModel):
     )
     urls: InformationList[HttpUrl] | None = element(tag="URLs", default=None)
 
-    @computed_attr
+    @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:
         return "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"
 
