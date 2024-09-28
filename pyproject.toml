@@ -61,9 +61,6 @@ Source = "https://github.com/Buried-In-Code/Perdoo"
 [tool.hatch.build.targets.sdist]
 exclude = [".github/"]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
 [tool.hatch.version]
 path = "perdoo/__init__.py"
 

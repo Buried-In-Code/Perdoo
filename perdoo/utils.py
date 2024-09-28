@@ -1,4 +1,4 @@
-__all__ = ["list_files", "sanitize", "Details", "Identifications", "flatten_dict", "values_as_str"]
+__all__ = ["Identifications", "Details", "list_files", "sanitize", "flatten_dict"]
 
 import logging
 import re
@@ -56,26 +56,3 @@ def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any
         else:
             items[new_key] = value
     return items
-
-
-def values_as_str(content: dict[str, Any]) -> dict[str, Any]:
-    output = {}
-    for key, value in content.items():
-        if isinstance(value, bool):
-            value = str(value)
-        if not value:
-            continue
-        if isinstance(value, dict):
-            value = values_as_str(content=value)
-        elif isinstance(value, list):
-            cleaned_list = []
-            for entry in value:
-                if isinstance(entry, dict):
-                    cleaned_list.append(values_as_str(content=entry))
-                else:
-                    cleaned_list.append(str(entry))
-            value = cleaned_list
-        else:
-            value = str(value)
-        output[key] = value
-    return output

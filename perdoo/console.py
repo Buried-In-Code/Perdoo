@@ -2,10 +2,8 @@ __all__ = ["CONSOLE", "create_menu"]
 
 import logging
 
-from rich import box
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressColumn, TextColumn
 from rich.prompt import IntPrompt
 from rich.theme import Theme
 
@@ -48,13 +46,7 @@ def create_menu(
     if default:
         panel_text.append(f"[prompt]0:[/] [prompt.default]{default}[/]")
     CONSOLE.print(
-        Panel(
-            "\n".join(panel_text),
-            box=box.ASCII2,
-            border_style="prompt.border",
-            title=title,
-            subtitle=subtitle,
-        )
+        Panel("\n".join(panel_text), border_style="prompt.border", title=title, subtitle=subtitle)
     )
     selected = IntPrompt.ask(prompt=prompt, default=0 if default else None, console=CONSOLE)
     if (
@@ -68,13 +60,3 @@ def create_menu(
             options=options, title=title, subtitle=subtitle, prompt=prompt, default=default
         )
     return selected
-
-
-def create_progress() -> Progress:
-    return Progress(
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        MofNCompleteColumn(),
-        console=CONSOLE,
-    )

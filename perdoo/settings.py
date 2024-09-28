@@ -12,7 +12,7 @@ from rich.panel import Panel
 from perdoo import get_config_root, get_data_root
 from perdoo.archives import Archive, ArchiveRegistry
 from perdoo.console import CONSOLE
-from perdoo.utils import flatten_dict, values_as_str
+from perdoo.utils import flatten_dict
 
 try:
     import tomllib as tomlreader  # Python >= 3.11
@@ -83,6 +83,23 @@ class Output(SettingsModel):
         return ArchiveRegistry.load(self.format)
 
 
+def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
+    output = {}
+    for key, value in content.items():
+        if isinstance(value, bool):
+            value = str(value)
+        if not value:
+            continue
+        if isinstance(value, dict):
+            value = _stringify_values(content=value)
+        elif isinstance(value, list):
+            value = [_stringify_values(content=x) if isinstance(x, dict) else str(x) for x in value]
+        else:
+            value = str(value)
+        output[key] = value
+    return output
+
+
 class Settings(SettingsModel):
     _file: ClassVar[Path] = get_config_root() / "settings.toml"
 
@@ -110,7 +127,7 @@ class Settings(SettingsModel):
     def save(self) -> None:
         with self._file.open("wb") as stream:
             content = self.model_dump(by_alias=False, exclude_defaults=True)
-            content = values_as_str(content=content)
+            content = _stringify_values(content=content)
             tomlwriter.dump(content, stream)
 
     def update(self, key: str, value: Any) -> None:  # noqa: ANN401
