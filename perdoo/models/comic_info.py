@@ -36,7 +36,7 @@ class YesNo(Enum):
         for entry in YesNo:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid YesNo")
+        raise ValueError(f"'{value}' isn't a valid YesNo")
 
     def __str__(self) -> str:
         return self.value
@@ -53,7 +53,7 @@ class Manga(Enum):
         for entry in Manga:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid Manga")
+        raise ValueError(f"'{value}' isn't a valid Manga")
 
     def __str__(self) -> str:
         return self.value
@@ -81,7 +81,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid AgeRating")
+        raise ValueError(f"'{value}' isn't a valid AgeRating")
 
     def __str__(self) -> str:
         return self.value
@@ -105,7 +105,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid PageType")
+        raise ValueError(f"'{value}' isn't a valid PageType")
 
     def __str__(self) -> str:
         return self.value

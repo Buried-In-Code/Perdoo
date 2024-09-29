@@ -61,7 +61,7 @@ class Service(Enum):
         for entry in Service:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid Service")
+        raise ValueError(f"'{value}' isn't a valid Service")
 
     def __str__(self) -> str:
         return self.value

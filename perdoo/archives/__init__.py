@@ -60,4 +60,4 @@ class ArchiveRegistry:
         try:
             return cls._registry[value.casefold()]
         except KeyError as ke:
-            raise ValueError(f"`{value}` isn't a valid Archive") from ke
+            raise ValueError(f"'{value}' isn't a valid Archive") from ke

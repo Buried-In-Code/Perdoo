@@ -1,4 +1,11 @@
-__all__ = ["Identifications", "Details", "list_files", "sanitize", "flatten_dict"]
+__all__ = [
+    "Identifications",
+    "Details",
+    "list_files",
+    "sanitize",
+    "flatten_dict",
+    "delete_empty_folders",
+]
 
 import logging
 import re
@@ -56,3 +63,13 @@ def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any
         else:
             items[new_key] = value
     return items
+
+
+def delete_empty_folders(folder: Path) -> None:
+    if folder.is_dir():
+        for subfolder in folder.iterdir():
+            if subfolder.is_dir():
+                delete_empty_folders(subfolder)
+        if not any(folder.iterdir()):
+            folder.rmdir()
+            LOGGER.info("Deleted empty folder: %s", folder)

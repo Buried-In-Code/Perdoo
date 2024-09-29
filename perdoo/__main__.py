@@ -16,7 +16,7 @@ from perdoo.models import ComicInfo, MetronInfo, get_metadata
 from perdoo.models.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
 from perdoo.settings import Service, Settings
-from perdoo.utils import Details, Identifications, flatten_dict, list_files
+from perdoo.utils import Details, Identifications, delete_empty_folders, flatten_dict, list_files
 
 app = Typer(help="CLI tool for managing comic collections and settings.")
 LOGGER = logging.getLogger("perdoo")
@@ -32,7 +32,7 @@ class SyncOption(Enum):
         for entry in SyncOption:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"`{value}` isn't a valid SyncOption")
+        raise ValueError(f"'{value}' isn't a valid SyncOption")
 
     def __str__(self) -> str:
         return self.value
@@ -207,7 +207,7 @@ def run(
             LOGGER.error("%s, Skipping", nie)  # noqa: TRY400
 
     for index, entry in enumerate(entries):
-        CONSOLE.rule(f"[{index + 1}/{len(entries)}] Importing {entry.path.name}")
+        CONSOLE.rule(f"[{index + 1}/{len(entries)}] Importing {entry.path.name}", align="left")
         if not skip_convert:
             with CONSOLE.status(
                 f"Converting to {settings.output.archive_format}", spinner="simpleDotsScrolling"
@@ -247,6 +247,9 @@ def run(
                     root=settings.collection_folder,
                     target=target.parent,
                 )
+
+    with CONSOLE.status("Cleaning up empty folders"):
+        delete_empty_folders(folder=target)
 
 
 if __name__ == "__main__":
