@@ -206,8 +206,8 @@ def run(
         except NotImplementedError as nie:  # noqa: PERF203
             LOGGER.error("%s, Skipping", nie)  # noqa: TRY400
 
-    for entry in entries:
-        CONSOLE.rule(f"Importing {entry.path.name}")
+    for index, entry in enumerate(entries):
+        CONSOLE.rule(f"[{index + 1}/{len(entries)}] Importing {entry.path.name}")
         if not skip_convert:
             with CONSOLE.status(
                 f"Converting to {settings.output.archive_format}", spinner="simpleDotsScrolling"

@@ -48,7 +48,7 @@ def sync_metadata(
 ) -> None:
     for service_name in service_order:
         if service := services.get(service_name):
-            LOGGER.info("Searching %s for matches", type(service).__name__)
+            LOGGER.info("Searching %s for matching issue", type(service).__name__)
             metron_info, comic_info = service.fetch(details=details)
 
             if metron_info and create_metron_info:
