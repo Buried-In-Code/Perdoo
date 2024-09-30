@@ -29,17 +29,52 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 2. Clone the repository: `git clone https://github.com/Buried-In-Code/Perdoo`
 3. Install the project: `pip install .`
 
-## Execution
+## Usage
 
-- `Perdoo <arguments>`
+```
+Usage: Perdoo [OPTIONS] COMMAND [ARGS]...
 
-### Arguments
+Commands:
+  config                  Manage settings.
+  run                     Run Perdoo.
 
-| Argument    | Type | Description                                                             |
-| ----------- | ---- | ----------------------------------------------------------------------- |
-| `--force`   | bool | Forces the sync of archives, regardless of when they were last updated. |
-| `--version` | bool | Displays the version of Perdoo running.                                 |
-| `--debug`   | bool | Displays extra/debug messages while running.                            |
+Options:
+  --version               Show the version and exit.
+  --install-completion    Install completion for the current shell.
+  --show-completion       Show completion for the current shell, to copy it or customize the installation.
+  --help                  Show this message and exit.
+```
+
+### Perdoo Config
+
+```
+Usage: Perdoo config [OPTIONS] [KEY] [VALUE]
+
+Arguments:
+  key        [KEY]      The config key to retrieve or modify.
+  value      [VALUE]    The value to set for the specified key.
+
+Options:
+  --reset               Reset the specified config key to its default value. If no key is provided, reset all settings.
+  --help                Show this message and exit.
+```
+
+### Perdoo Run
+
+```
+Usage: Perdoo run [OPTIONS] TARGET
+
+Arguments:
+  target                             PATH    Import comics from the specified file/folder. [required]
+
+Options:
+  --skip-convert                             Skip converting comics to the configured format.
+  --sync -s [Force|Outdated|Skip]            Sync comic data with online services. [default: Outdated]
+  --skip-rename                              Skip renaming comics based on their ComicInfo/MetronInfo.
+  --skip-organize                            Skip organize/moving comics to appropriate directories.
+  --debug                                    Enable debug mode to show extra information.
+  --help                                     Show this message and exit.
+```
 
 ## Supported Formats
 
