@@ -139,7 +139,7 @@ class Series(PascalModel):
 
     @property
     def filename(self) -> str:
-        return sanitize(self.name if self.volume == 1 else f"{self.name} v{self.volume}")
+        return sanitize(self.name if not self.volume or self.volume == 1 else f"{self.name} v{self.volume}")
 
 
 class Price(PascalModel):
