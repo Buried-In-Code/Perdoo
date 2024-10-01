@@ -99,6 +99,7 @@ def view(
     hide_metron_info: Annotated[bool, Option("--hide-metron-info")] = False,
 ) -> None:
     archive = get_archive(target)
+    CONSOLE.print(f"Archive format: '{type(archive).__name__[:3]}'")
     metron_info, comic_info = get_metadata(archive)
     if not hide_comic_info:
         comic_info.display()
