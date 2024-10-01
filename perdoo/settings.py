@@ -1,4 +1,14 @@
-__all__ = ["Comicvine", "LeagueofComicGeeks", "Marvel", "Metron", "Output", "Service", "Settings"]
+__all__ = [
+    "Comicvine",
+    "LeagueofComicGeeks",
+    "Marvel",
+    "Metron",
+    "ComicInfo",
+    "MetronInfo",
+    "Metadata",
+    "Service",
+    "Settings",
+]
 
 from enum import Enum
 from importlib.util import find_spec
@@ -10,7 +20,6 @@ from pydantic import BaseModel, field_validator
 from rich.panel import Panel
 
 from perdoo import get_config_root, get_data_root
-from perdoo.archives import Archive, ArchiveRegistry
 from perdoo.console import CONSOLE
 from perdoo.utils import flatten_dict
 
@@ -67,20 +76,18 @@ class Service(Enum):
         return self.value
 
 
-class Output(SettingsModel):
-    create_comic_info: bool = True
-    create_metron_info: bool = True
-    format: Literal["cb7", "cbt", "cbz"] = "cbz"
+class ComicInfo(SettingsModel):
+    create: bool = True
+    handle_pages: bool = True
 
-    @field_validator("format", mode="before")
-    def validate_format(cls, value: str) -> str:
-        if value == "cb7" and find_spec("py7zr") is None:
-            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
-        return value
 
-    @property
-    def archive_format(self) -> Archive:
-        return ArchiveRegistry.load(self.format)
+class MetronInfo(SettingsModel):
+    create: bool = True
+
+
+class Metadata(SettingsModel):
+    comic_info: ComicInfo = ComicInfo()
+    metron_info: MetronInfo = MetronInfo()
 
 
 def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
@@ -108,13 +115,15 @@ class Settings(SettingsModel):
     league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
     marvel: Marvel = Marvel()
     metron: Metron = Metron()
-    service_order: list[Service] = [
-        Service.METRON,
-        Service.MARVEL,
-        Service.COMICVINE,
-        Service.LEAGUE_OF_COMIC_GEEKS,
-    ]
-    output: Output = Output()
+    service_order: list[Service] = [Service.METRON, Service.MARVEL, Service.COMICVINE]
+    metadata: Metadata = Metadata()
+    output_format: Literal["cb7", "cbt", "cbz"] = "cbz"
+
+    @field_validator("output_format", mode="before")
+    def validate_format(cls, value: str) -> str:
+        if value == "cb7" and find_spec("py7zr") is None:
+            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+        return value
 
     @classmethod
     def load(cls) -> "Settings":

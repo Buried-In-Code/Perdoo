@@ -210,9 +210,9 @@ def run(
         CONSOLE.rule(f"[{index + 1}/{len(entries)}] Importing {entry.path.name}", align="left")
         if not skip_convert:
             with CONSOLE.status(
-                f"Converting to {settings.output.archive_format}", spinner="simpleDotsScrolling"
+                f"Converting to '{settings.output_format}'", spinner="simpleDotsScrolling"
             ):
-                entry = convert_file(entry, output=settings.output.archive_format)
+                entry = convert_file(entry, output_format=settings.output_format)
         if entry is None or isinstance(entry, CBRArchive):
             continue
 
@@ -230,8 +230,8 @@ def run(
                     details=details,
                     services=services,
                     service_order=settings.service_order,
-                    create_metron_info=settings.output.create_metron_info,
-                    create_comic_info=settings.output.create_comic_info,
+                    comic_info_settings=settings.metadata.comic_info,
+                    metron_info_settings=settings.metadata.metron_info,
                 )
         metadata = get_metadata(archive=entry, debug=debug)
 

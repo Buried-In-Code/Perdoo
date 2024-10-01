@@ -4,20 +4,25 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from perdoo import IMAGE_EXTENSIONS
-from perdoo.archives import Archive, BaseArchive
+from perdoo.archives import BaseArchive, get_archive_class
 from perdoo.models import ComicInfo, MetronInfo
 from perdoo.models.comic_info import Page
 from perdoo.services import BaseService
-from perdoo.settings import Service
+from perdoo.settings import (
+    ComicInfo as ComicInfoSettings,
+    MetronInfo as MetronInfoSettings,
+    Service,
+)
 from perdoo.utils import Details, list_files, sanitize
 
 LOGGER = logging.getLogger("perdoo")
 
 
-def convert_file(entry: BaseArchive, output: Archive) -> BaseArchive | None:
-    if isinstance(entry, output.type):
+def convert_file(entry: BaseArchive, output_format: str) -> BaseArchive | None:
+    output = get_archive_class(output_format)
+    if isinstance(entry, output):
         return entry
-    LOGGER.info("Converting '%s' to '%s'", entry, output)
+    LOGGER.debug("Converting '%s' to '%s'", entry.path.name, output_format)
     return output.convert(entry)
 
 
@@ -43,19 +48,25 @@ def sync_metadata(
     details: Details,
     services: dict[Service, BaseService | None],
     service_order: list[Service],
-    create_metron_info: bool,
-    create_comic_info: bool,
+    comic_info_settings: ComicInfoSettings,
+    metron_info_settings: MetronInfoSettings,
 ) -> None:
     for service_name in service_order:
         if service := services.get(service_name):
             LOGGER.info("Searching %s for matching issue", type(service).__name__)
             metron_info, comic_info = service.fetch(details=details)
 
-            if metron_info and create_metron_info:
-                entry.write_file("/MetronInfo.xml", metron_info.to_bytes().decode())
-            if comic_info and create_comic_info:
-                _load_page_info(entry=entry, comic_info=comic_info)
-                entry.write_file("/ComicInfo.xml", comic_info.to_bytes().decode())
+            if comic_info and comic_info_settings.create:
+                if comic_info_settings.handle_pages:
+                    LOGGER.info("Processing ComicInfo Page data")
+                    _load_page_info(entry=entry, comic_info=comic_info)
+                else:
+                    comic_info.pages = []
+                LOGGER.info("Writing ComicInfo to archive")
+                entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
+            if metron_info and metron_info_settings.create:
+                LOGGER.info("Writing MetronInfo to archive")
+                entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
             if metron_info or comic_info:
                 return
 

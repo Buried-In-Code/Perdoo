@@ -43,6 +43,7 @@ class CBZArchive(BaseArchive):
             return False
 
     def write_file(self, filename: str, data: str) -> bool:
+        filename = f"/{filename}"
         try:
             with ZipFileRemove(self.path, "a") as stream:
                 if filename in stream.namelist():
