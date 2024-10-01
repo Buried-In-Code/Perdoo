@@ -60,9 +60,12 @@ def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any
         new_key = f"{parent_key}.{key}" if parent_key else key
         if isinstance(value, dict):
             items.update(flatten_dict(content=value, parent_key=new_key))
+        elif isinstance(value, list) and value and isinstance(value[0], dict):
+            for index, entry in enumerate(value):
+                items.update(flatten_dict(content=entry, parent_key=f"{new_key}[{index}]"))
         else:
             items[new_key] = value
-    return items
+    return dict(humansorted(items.items(), alg=ns.NA | ns.G))
 
 
 def delete_empty_folders(folder: Path) -> None:

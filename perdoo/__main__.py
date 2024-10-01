@@ -92,6 +92,20 @@ def config(
         Settings.display()
 
 
+@app.command()
+def view(
+    target: Annotated[Path, Argument(dir_okay=False, exists=True, show_default=False)],
+    hide_comic_info: Annotated[bool, Option("--hide-comic-info")] = False,
+    hide_metron_info: Annotated[bool, Option("--hide-metron-info")] = False,
+) -> None:
+    archive = get_archive(target)
+    metron_info, comic_info = get_metadata(archive)
+    if not hide_comic_info:
+        comic_info.display()
+    if not hide_metron_info:
+        metron_info.display()
+
+
 def get_services(settings: Settings) -> dict[Service, BaseService]:
     output = {}
     if settings.comicvine.api_key:

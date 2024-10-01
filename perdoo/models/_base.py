@@ -3,6 +3,10 @@ __all__ = ["PascalModel"]
 from pathlib import Path
 
 from pydantic_xml import BaseXmlModel
+from rich.panel import Panel
+
+from perdoo.console import CONSOLE
+from perdoo.utils import flatten_dict
 
 try:
     from typing import Self
@@ -36,3 +40,11 @@ class PascalModel(
 
     def to_file(self, file: Path) -> None:
         file.write_bytes(self.to_bytes())
+
+    def display(self) -> None:
+        content = flatten_dict(content=self.model_dump(exclude_none=True))
+        content_vals = [
+            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in content.items()
+        ]
+
+        CONSOLE.print(Panel.fit("\n".join(content_vals), title=type(self).__name__))
