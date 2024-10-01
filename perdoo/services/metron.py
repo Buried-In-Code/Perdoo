@@ -8,6 +8,7 @@ from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
 from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
+from natsort import humansorted, ns
 from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
@@ -97,13 +98,14 @@ class Metron(BaseService[Series, Issue]):
 
     def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
         try:
-            options = sorted(
+            options = humansorted(
                 self.session.issues_list(
                     params={"series_id": series_id, "number": number}
                     if number
                     else {"series_id": series_id}
                 ),
                 key=lambda x: (x.number, x.issue_name),
+                alg=ns.NA | ns.G,
             )
             if not options:
                 LOGGER.warning(

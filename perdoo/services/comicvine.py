@@ -4,6 +4,7 @@ import logging
 import re
 from datetime import datetime
 
+from natsort import humansorted, ns
 from pydantic import HttpUrl
 from requests.exceptions import JSONDecodeError
 from rich.prompt import Confirm, Prompt
@@ -80,13 +81,14 @@ class Comicvine(BaseService[Volume, Issue]):
 
     def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
         try:
-            options = sorted(
+            options = humansorted(
                 self.session.list_issues(
                     {"filter": f"volume:{series_id},issue_number:{number}"}
                     if number
                     else {"filter": f"volume:{series_id}"}
                 ),
                 key=lambda x: (x.number, x.name),
+                alg=ns.NA | ns.G,
             )
             if not options:
                 LOGGER.warning(

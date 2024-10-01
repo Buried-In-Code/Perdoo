@@ -52,10 +52,10 @@ def sync_metadata(
             metron_info, comic_info = service.fetch(details=details)
 
             if metron_info and create_metron_info:
-                entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
+                entry.write_file("/MetronInfo.xml", metron_info.to_bytes().decode())
             if comic_info and create_comic_info:
                 _load_page_info(entry=entry, comic_info=comic_info)
-                entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
+                entry.write_file("/ComicInfo.xml", comic_info.to_bytes().decode())
             if metron_info or comic_info:
                 return
 

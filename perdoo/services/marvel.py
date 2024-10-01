@@ -8,6 +8,7 @@ from esak.exceptions import ApiError
 from esak.series import Series
 from esak.session import Session as Esak
 from esak.sqlite_cache import SqliteCache
+from natsort import humansorted, ns
 from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
@@ -65,13 +66,14 @@ class Marvel(BaseService[Series, Comic]):
 
     def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
         try:
-            options = sorted(
+            options = humansorted(
                 self.session.comics_list(
                     params={"noVariants": True, "series": series_id, "issueNumber": number}
                     if number
                     else {"noVariants": True, "series": series_id}
                 ),
                 key=lambda x: x.issue_number,
+                alg=ns.NA | ns.G,
             )
             if not options:
                 LOGGER.warning(
