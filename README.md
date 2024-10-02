@@ -5,9 +5,8 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
 [![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![pdm-managed](https://img.shields.io/badge/Pdm-informational?style=flat-square&logo=pdm&labelColor=grey)](https://pdm-project.org)
-[![Pre-Commit](https://img.shields.io/badge/Pre--Commit-informational?style=flat-square&logo=pre-commit&labelColor=grey)](https://github.com/pre-commit/pre-commit)
-[![Ruff](https://img.shields.io/badge/Ruff-informational?style=flat-square&logo=ruff&labelColor=grey)](https://github.com/astral-sh/ruff)
+[![Pre-Commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
+[![Ruff](https://img.shields.io/badge/ruff-enabled-brightgreen?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/graphs/contributors)
 
@@ -37,6 +36,7 @@ Usage: Perdoo [OPTIONS] COMMAND [ARGS]...
 Commands:
   config                  Manage settings.
   run                     Run Perdoo.
+  view                    View details of metadata inside a Comic file.
 
 Options:
   --version               Show the version and exit.
@@ -74,6 +74,20 @@ Options:
   --skip-organize                            Skip organize/moving comics to appropriate directories.
   --debug                                    Enable debug mode to show extra information.
   --help                                     Show this message and exit.
+```
+
+### Perdoo View
+
+```
+Usage: Perdoo view [OPTIONS] TARGET
+
+Arguments:
+  target                FILE    Comic to view details of. [required]
+
+Options:
+  --hide-comic-info             Don't show the ComicInfo details.
+  --hide-metron-info            Don't show the MetronInfo details.
+  --help                        Show this message and exit.
 ```
 
 ## Supported Formats

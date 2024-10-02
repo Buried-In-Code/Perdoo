@@ -92,11 +92,18 @@ def config(
         Settings.display()
 
 
-@app.command()
+@app.command(help="View details of metadata inside a Comic file.")
 def view(
-    target: Annotated[Path, Argument(dir_okay=False, exists=True, show_default=False)],
-    hide_comic_info: Annotated[bool, Option("--hide-comic-info")] = False,
-    hide_metron_info: Annotated[bool, Option("--hide-metron-info")] = False,
+    target: Annotated[
+        Path,
+        Argument(dir_okay=False, exists=True, show_default=False, help="Comic to view details of."),
+    ],
+    hide_comic_info: Annotated[
+        bool, Option("--hide-comic-info", help="Don't show the ComicInfo details.")
+    ] = False,
+    hide_metron_info: Annotated[
+        bool, Option("--hide-metron-info", help="Don't show the MetronInfo details.")
+    ] = False,
 ) -> None:
     archive = get_archive(target)
     CONSOLE.print(f"Archive format: '{type(archive).__name__[:3]}'")
