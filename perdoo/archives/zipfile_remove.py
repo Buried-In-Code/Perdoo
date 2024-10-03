@@ -2,6 +2,7 @@ __all__ = ["ZipFileRemove"]
 
 from zipfile import ZipFile, ZipInfo
 
+
 class ZipFileRemove(ZipFile):
     def remove(self, zinfo_or_arcname):
         """Remove a member from the archive."""
@@ -24,7 +25,7 @@ class ZipFileRemove(ZipFile):
             zinfo = self.getinfo(zinfo_or_arcname)
 
         return self._remove_members({zinfo})
-        
+
     def _remove_members(self, members, *, remove_physical=True, chunk_size=2**20):
         """Remove members in a zip file.
         All members (as zinfo) should exist in the zip; otherwise the zip file
