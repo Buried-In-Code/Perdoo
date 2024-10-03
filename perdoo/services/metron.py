@@ -188,6 +188,7 @@ class Metron(BaseService[Series, Issue]):
                 sort_name=series.sort_name,
                 volume=series.volume,
                 format=Format.load(value=series.series_type.name),
+                start_year=series.year_began,
             ),
             collection_title=issue.collection_title or None,
             number=issue.number,

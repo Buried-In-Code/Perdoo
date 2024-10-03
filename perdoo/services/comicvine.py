@@ -154,7 +154,7 @@ class Comicvine(BaseService[Volume, Issue]):
                 primary=Source(source=InformationSource.COMIC_VINE, value=issue.id)
             ),
             publisher=Publisher(id=series.publisher.id, name=series.publisher.name),
-            series=Series(id=series.id, name=series.name),
+            series=Series(id=series.id, name=series.name, start_year=series.start_year),
             collection_title=issue.name,
             number=issue.number,
             summary=issue.summary,

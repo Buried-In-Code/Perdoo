@@ -152,7 +152,12 @@ class Marvel(BaseService[Series, Comic]):
                 primary=Source(source=InformationSource.MARVEL, value=issue.id)
             ),
             publisher=Publisher(name="Marvel"),
-            series=Series(id=series.id, name=series.title, format=load_format(value=issue.format)),
+            series=Series(
+                id=series.id,
+                name=series.title,
+                format=load_format(value=issue.format),
+                start_year=series.start_year,
+            ),
             collection_title=issue.title,
             number=issue.issue_number,
             stories=[Resource[str](id=x.id, value=x.name) for x in issue.stories],
