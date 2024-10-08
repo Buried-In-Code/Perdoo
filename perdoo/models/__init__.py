@@ -1,4 +1,4 @@
-__all__ = ["ComicInfo", "MetronInfo"]
+__all__ = ["ComicInfo", "MetronInfo", "get_metadata"]
 
 import logging
 from typing import cast

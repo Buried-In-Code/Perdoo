@@ -5,7 +5,6 @@ __all__ = [
     "Arc",
     "Credit",
     "Format",
-    "Genre",
     "InformationList",
     "InformationSource",
     "MetronInfo",
@@ -162,34 +161,6 @@ class Price(PascalModel):
         return hash((type(self), self.country))
 
 
-class Genre(Enum):
-    ADULT = "Adult"
-    CRIME = "Crime"
-    ESPIONAGE = "Espionage"
-    FANTASY = "Fantasy"
-    HISTORICAL = "Historical"
-    HORROR = "Horror"
-    HUMOR = "Humor"
-    MANGA = "Manga"
-    PARODY = "Parody"
-    ROMANCE = "Romance"
-    SCIENCE_FICTION = "Science Fiction"
-    SPORT = "Sport"
-    SUPER_HERO = "Super-Hero"
-    WAR = "War"
-    WESTERN = "Western"
-
-    @staticmethod
-    def load(value: str) -> "Genre":
-        for entry in Genre:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
-                return entry
-        raise ValueError(f"'{value}' isn't a valid Genre")
-
-    def __str__(self) -> str:
-        return self.value
-
-
 class Arc(PascalModel):
     id: PositiveInt | None = attr(name="id", default=None)
     name: str = element()
@@ -337,7 +308,7 @@ class MetronInfo(PascalModel):
     credits: list[Credit] = wrapped(
         path="Credits", entity=element(tag="Credit", default_factory=list)
     )
-    genres: list[Resource[Genre]] = wrapped(
+    genres: list[Resource[str]] = wrapped(
         path="Genres", entity=element(tag="Genre", default_factory=list)
     )
     gtin: GTIN | None = element(tag="GTIN", default=None)
@@ -370,6 +341,7 @@ class MetronInfo(PascalModel):
         path="Universes", entity=element(tag="Universe", default_factory=list)
     )
     urls: InformationList[HttpUrl] | None = element(tag="URLs", default=None)
+    volume: str | None = element(default=None)
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:

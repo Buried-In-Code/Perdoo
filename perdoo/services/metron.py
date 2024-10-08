@@ -151,7 +151,6 @@ class Metron(BaseService[Series, Issue]):
             Arc,
             Credit,
             Format,
-            Genre,
             InformationList,
             Price,
             Publisher,
@@ -198,10 +197,7 @@ class Metron(BaseService[Series, Issue]):
             cover_date=issue.cover_date,
             store_date=issue.store_date,
             page_count=issue.page_count or 0,
-            genres=[
-                Resource[Genre](id=x.id, value=Genre.load(value=x.name))
-                for x in issue.series.genres
-            ],
+            genres=[Resource[str](id=x.id, value=x.name) for x in issue.series.genres],
             arcs=[Arc(id=x.id, name=x.name) for x in issue.arcs],
             characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
             teams=[Resource[str](id=x.id, value=x.name) for x in issue.teams],
