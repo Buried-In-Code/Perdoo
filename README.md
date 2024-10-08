@@ -30,6 +30,8 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ## Usage
 
+<details><summary>Perdoo Commands</summary>
+
 ```
 Usage: Perdoo [OPTIONS] COMMAND [ARGS]...
 
@@ -45,7 +47,8 @@ Options:
   --help                  Show this message and exit.
 ```
 
-### Perdoo Config
+</details>
+<details><summary>Perdoo Config</summary>
 
 ```
 Usage: Perdoo config [OPTIONS] [KEY] [VALUE]
@@ -59,7 +62,8 @@ Options:
   --help                Show this message and exit.
 ```
 
-### Perdoo Run
+</details>
+<details><summary>Perdoo Run</summary>
 
 ```
 Usage: Perdoo run [OPTIONS] TARGET
@@ -76,7 +80,8 @@ Options:
   --help                                     Show this message and exit.
 ```
 
-### Perdoo View
+</details>
+<details><summary>Perdoo View</summary>
 
 ```
 Usage: Perdoo view [OPTIONS] TARGET
@@ -89,6 +94,8 @@ Options:
   --hide-metron-info            Don't show the MetronInfo details.
   --help                        Show this message and exit.
 ```
+
+</details>
 
 ## Supported Formats
 
@@ -135,7 +142,7 @@ The files are named based on the format of the comic:
 - Omnibus: `{Series Title}_#{Issue Number}.cbz`
 - Trade Paperback: `{Series Title}_#{Issue Number}_TPB.cbz`
 
-## Collection Folder Structure
+### Folder Structure
 
 ```
 Collection Root
