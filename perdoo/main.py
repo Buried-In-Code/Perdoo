@@ -126,16 +126,17 @@ def _construct_new_file_path(
     metadata: tuple[MetronInfo | None, ComicInfo | None], root: Path
 ) -> Path | None:
     metron_info, comic_info = metadata
+    output = root
     if metron_info:
-        return root / sanitize(metron_info.publisher.name) / metron_info.series.filename
-    if comic_info:
-        output = root
+        if metron_info.publisher:
+            output /= sanitize(metron_info.publisher.name)
+        output /= metron_info.series.filename
+    elif comic_info:
         if comic_info.publisher:
             output /= sanitize(comic_info.publisher)
         if comic_info.series_filename:
             output /= comic_info.series_filename
-        return output
-    return None
+    return output
 
 
 def organize_file(

@@ -32,10 +32,12 @@ T = TypeVar("T")
 
 
 class InformationSource(Enum):
+    ANILIST = "AniList"
     COMIC_VINE = "Comic Vine"
     GRAND_COMICS_DATABASE = "Grand Comics Database"
     MARVEL = "Marvel"
     METRON = "Metron"
+    MYANIMELIST = "MyAnimeList"
     LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
 
     @staticmethod
@@ -321,7 +323,7 @@ class MetronInfo(PascalModel):
     number: str | None = element(default=None)
     page_count: int = element(default=0)
     prices: list[Price] = wrapped(path="Prices", entity=element(tag="Price", default_factory=list))
-    publisher: Publisher = element()
+    publisher: Publisher | None = element(default=None)
     reprints: list[Resource[str]] = wrapped(
         path="Reprints", entity=element(tag="Reprint", default_factory=list)
     )
