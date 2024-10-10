@@ -255,6 +255,8 @@ def run(
                     comic_info_settings=settings.metadata.comic_info,
                     metron_info_settings=settings.metadata.metron_info,
                 )
+            else:
+                LOGGER.info("Metadata up-to-date")
         metadata = get_metadata(archive=entry, debug=debug)
 
         if not skip_rename:
