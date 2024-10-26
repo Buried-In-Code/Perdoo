@@ -319,6 +319,7 @@ class MetronInfo(PascalModel):
     locations: list[Resource[str]] = wrapped(
         path="Locations", entity=element(tag="Location", default_factory=list)
     )
+    manga_volume: str | None = element(default=None)
     notes: str | None = element(default=None)
     number: str | None = element(default=None)
     page_count: int = element(default=0)
@@ -343,7 +344,6 @@ class MetronInfo(PascalModel):
         path="Universes", entity=element(tag="Universe", default_factory=list)
     )
     urls: InformationList[HttpUrl] | None = element(tag="URLs", default=None)
-    volume: str | None = element(default=None)
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:

@@ -155,6 +155,9 @@ def organize_file(
 
     new_file_path.mkdir(parents=True, exist_ok=True)
     organized_file = new_file_path / entry.path.name
+    if organized_file.exists():
+        LOGGER.warning("'%s' already exists, skipping")
+        return
     LOGGER.info(
         "Moving '%s' to '%s'", entry.path.relative_to(target), organized_file.relative_to(root)
     )
