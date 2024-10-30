@@ -72,7 +72,7 @@ class CBZArchive(BaseArchive):
         try:
             with ZipFile(output_file, "w", ZIP_DEFLATED) as stream:
                 for file in files:
-                    stream.write(file, arcname=file.relative_to(src))
+                    stream.write(file, arcname=file.name)
             return output_file
         except BadZipFile:
             LOGGER.exception("")

@@ -60,7 +60,7 @@ class CBTArchive(BaseArchive):
         try:
             with tarfile.open(output_file, "w:gz") as tar:
                 for file in files:
-                    tar.add(file, arcname=file.relative_to(src))
+                    tar.add(file, arcname=file.name)
             return output_file
         except tarfile.CompressionError:
             LOGGER.exception("")

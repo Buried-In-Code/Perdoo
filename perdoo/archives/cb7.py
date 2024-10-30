@@ -62,7 +62,7 @@ class CB7Archive(BaseArchive):
         try:
             with py7zr.SevenZipFile(output_file, "w") as archive:
                 for file in files:
-                    archive.write(file, arcname=str(file.relative_to(src)))
+                    archive.write(file, arcname=file.name)
             return output_file
         except py7zr.Bad7zFile:
             LOGGER.exception("")
