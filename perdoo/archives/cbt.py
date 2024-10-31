@@ -52,10 +52,7 @@ class CBTArchive(BaseArchive):
             return False
 
     @classmethod
-    def archive_files(
-        cls, src: Path, output_name: str, files: list[Path] | None = None
-    ) -> Path | None:
-        files = files or list_files(path=src)
+    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path | None:
         output_file = src.parent / f"{output_name}.cbt"
         try:
             with tarfile.open(output_file, "w:gz") as tar:
@@ -73,7 +70,7 @@ class CBTArchive(BaseArchive):
             if not old_archive.extract_files(destination=temp_folder):
                 return None
             archive_file = CBTArchive.archive_files(
-                src=temp_folder, output_name=old_archive.path.stem
+                src=temp_folder, output_name=old_archive.path.stem, files=list_files(temp_folder)
             )
             if not archive_file:
                 return None

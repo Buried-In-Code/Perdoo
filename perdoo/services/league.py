@@ -11,7 +11,7 @@ from perdoo import get_cache_root
 from perdoo.models import ComicInfo, MetronInfo
 from perdoo.services._base import BaseService
 from perdoo.settings import LeagueofComicGeeks as LeagueSettings
-from perdoo.utils import Details
+from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,16 +29,16 @@ class League(BaseService[Series, Comic]):
             LOGGER.info("Generating new access token")
             self.session.access_token = settings.access_token = self.session.generate_access_token()
 
-    def _get_series_id(self, title: str | None) -> int | None:
+    def _search_series(self, name: str | None, volume: int | None, year: int | None) -> int | None:
         pass
 
-    def fetch_series(self, details: Details) -> Series | None:
+    def fetch_series(self, search: SeriesSearch) -> Series | None:
         pass
 
-    def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
+    def _search_issue(self, series_id: int, number: str | None) -> int | None:
         pass
 
-    def fetch_issue(self, series_id: int, details: Details) -> Comic | None:
+    def fetch_issue(self, series_id: int, search: IssueSearch) -> Comic | None:
         pass
 
     def _process_metron_info(self, series: Series, issue: Comic) -> MetronInfo | None:
@@ -47,5 +47,5 @@ class League(BaseService[Series, Comic]):
     def _process_comic_info(self, series: Series, issue: Comic) -> ComicInfo | None:
         pass
 
-    def fetch(self, details: Details) -> tuple[MetronInfo | None, ComicInfo | None]:  # noqa: ARG002
+    def fetch(self, search: Search) -> tuple[MetronInfo | None, ComicInfo | None]:  # noqa: ARG002
         return None, None

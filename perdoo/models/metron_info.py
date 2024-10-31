@@ -1,11 +1,11 @@
 __all__ = [
-    "GTIN",
     "AgeRating",
     "AlternativeName",
     "Arc",
     "Credit",
     "Format",
-    "InformationList",
+    "GTIN",
+    "Id",
     "InformationSource",
     "MetronInfo",
     "Price",
@@ -13,8 +13,8 @@ __all__ = [
     "Resource",
     "Role",
     "Series",
-    "Source",
     "Universe",
+    "Url",
 ]
 
 from datetime import date, datetime
@@ -31,136 +31,22 @@ from perdoo.utils import sanitize
 T = TypeVar("T")
 
 
-class InformationSource(Enum):
-    ANILIST = "AniList"
-    COMIC_VINE = "Comic Vine"
-    GRAND_COMICS_DATABASE = "Grand Comics Database"
-    MARVEL = "Marvel"
-    METRON = "Metron"
-    MYANIMELIST = "MyAnimeList"
-    LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
+class AgeRating(Enum):
+    UNKNOWN = "Unknown"
+    EVERYONE = "Everyone"
+    TEEN = "Teen"
+    TEEN_PLUS = "Teen Plus"
+    MATURE = "Mature"
 
     @staticmethod
-    def load(value: str) -> "InformationSource":
-        for entry in InformationSource:
+    def load(value: str) -> "AgeRating":
+        for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid InformationSource")
+        raise ValueError(f"'{value}' isn't a valid AgeRating")
 
     def __str__(self) -> str:
         return self.value
-
-
-class Source(PascalModel):
-    source: InformationSource = attr(name="source")
-    value: PositiveInt
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.source < other.source
-
-    def __eq__(self, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.source == other.source
-
-    def __hash__(self) -> int:
-        return hash((type(self), self.source))
-
-
-class InformationList(PascalModel, Generic[T]):
-    alternatives: list[T] = wrapped(
-        path="Alternatives", entity=element(tag="Alternative", default_factory=list)
-    )
-    primary: T = element()
-
-
-class Resource(PascalModel, Generic[T]):
-    value: T
-    id: PositiveInt | None = attr(name="id", default=None)
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value < other.value
-
-    def __eq__(self, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.value == other.value
-
-    def __hash__(self) -> int:
-        return hash((type(self), self.value))
-
-
-class Publisher(PascalModel):
-    id: PositiveInt | None = attr(name="id", default=None)
-    imprint: Resource[str] | None = element(default=None)
-    name: str = element()
-
-
-class Format(Enum):
-    ANNUAL = "Annual"
-    DIGITAL_CHAPTER = "Digital Chapter"
-    GRAPHIC_NOVEL = "Graphic Novel"
-    HARDCOVER = "Hardcover"
-    LIMITED_SERIES = "Limited Series"
-    OMNIBUS = "Omnibus"
-    ONE_SHOT = "One-Shot"
-    SINGLE_ISSUE = "Single Issue"
-    TRADE_PAPERBACK = "Trade Paperback"
-
-    @staticmethod
-    def load(value: str) -> "Format":
-        for entry in Format:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
-                return entry
-        raise ValueError(f"'{value}' isn't a valid Format")
-
-    def __str__(self) -> str:
-        return self.value
-
-
-class AlternativeName(Resource[str]):
-    lang: str = attr(name="lang", default="en")
-
-
-class Series(PascalModel):
-    alternative_names: list[AlternativeName] = wrapped(
-        path="AlternativeNames", entity=element(tag="AlternativeName", default_factory=list)
-    )
-    format: Format | None = element(default=None)
-    id: PositiveInt | None = attr(name="id", default=None)
-    lang: str = attr(name="lang", default="en")
-    name: str = element()
-    sort_name: str | None = element(default=None)
-    volume: int | None = element(default=None)
-    start_year: int | None = element(default=None)
-
-    @property
-    def filename(self) -> str:
-        return sanitize(
-            self.name if not self.volume or self.volume == 1 else f"{self.name} v{self.volume}"
-        )
-
-
-class Price(PascalModel):
-    country: str = attr(name="country")
-    value: Decimal
-
-    def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.country < other.country
-
-    def __eq__(self, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return self.country == other.country
-
-    def __hash__(self) -> int:
-        return hash((type(self), self.country))
 
 
 class Arc(PascalModel):
@@ -182,46 +68,22 @@ class Arc(PascalModel):
         return hash((type(self), self.name))
 
 
-class Universe(PascalModel):
-    designation: str | None = element(default=None)
+class Resource(PascalModel, Generic[T]):
+    value: T
     id: PositiveInt | None = attr(name="id", default=None)
-    name: str = element()
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
-        return self.name < other.name
+        return self.value < other.value
 
     def __eq__(self, other) -> bool:  # noqa: ANN001
         if not isinstance(other, type(self)):
             return NotImplemented
-        return self.name == other.name
+        return self.value == other.value
 
     def __hash__(self) -> int:
-        return hash((type(self), self.name))
-
-
-class GTIN(PascalModel):
-    isbn: str | None = element(tag="ISBN", default=None)
-    upc: str | None = element(tag="UPC", default=None)
-
-
-class AgeRating(Enum):
-    UNKNOWN = "Unknown"
-    EVERYONE = "Everyone"
-    TEEN = "Teen"
-    TEEN_PLUS = "Teen Plus"
-    MATURE = "Mature"
-
-    @staticmethod
-    def load(value: str) -> "AgeRating":
-        for entry in AgeRating:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
-                return entry
-        raise ValueError(f"'{value}' isn't a valid AgeRating")
-
-    def __str__(self) -> str:
-        return self.value
+        return hash((type(self), self.value))
 
 
 class Role(Enum):
@@ -299,6 +161,156 @@ class Credit(PascalModel):
         return hash((type(self), self.creator))
 
 
+class GTIN(PascalModel):
+    isbn: str | None = element(tag="ISBN", default=None)
+    upc: str | None = element(tag="UPC", default=None)
+
+
+class InformationSource(Enum):
+    ANILIST = "AniList"
+    COMIC_VINE = "Comic Vine"
+    GRAND_COMICS_DATABASE = "Grand Comics Database"
+    MARVEL = "Marvel"
+    METRON = "Metron"
+    MYANIMELIST = "MyAnimeList"
+    LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
+
+    @staticmethod
+    def load(value: str) -> "InformationSource":
+        for entry in InformationSource:
+            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
+                return entry
+        raise ValueError(f"'{value}' isn't a valid InformationSource")
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class Id(PascalModel):
+    primary: bool = attr(name="primary", default=False)
+    source: InformationSource = attr(name="source")
+    value: PositiveInt
+
+    def __lt__(self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.source < other.source
+
+    def __eq__(self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.source == other.source
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.source))
+
+
+class Price(PascalModel):
+    country: str = attr(name="country")
+    value: Decimal
+
+    def __lt__(self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.country < other.country
+
+    def __eq__(self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.country == other.country
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.country))
+
+
+class Publisher(PascalModel):
+    id: PositiveInt | None = attr(name="id", default=None)
+    imprint: Resource[str] | None = element(default=None)
+    name: str = element()
+
+
+class AlternativeName(Resource[str]):
+    lang: str = attr(name="lang", default="en")
+
+
+class Format(Enum):
+    ANNUAL = "Annual"
+    DIGITAL_CHAPTER = "Digital Chapter"
+    GRAPHIC_NOVEL = "Graphic Novel"
+    HARDCOVER = "Hardcover"
+    LIMITED_SERIES = "Limited Series"
+    OMNIBUS = "Omnibus"
+    ONE_SHOT = "One-Shot"
+    SINGLE_ISSUE = "Single Issue"
+    TRADE_PAPERBACK = "Trade Paperback"
+
+    @staticmethod
+    def load(value: str) -> "Format":
+        for entry in Format:
+            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
+                return entry
+        raise ValueError(f"'{value}' isn't a valid Format")
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class Series(PascalModel):
+    alternative_names: list[AlternativeName] = wrapped(
+        path="AlternativeNames", entity=element(tag="AlternativeName", default_factory=list)
+    )
+    format: Format | None = element(default=None)
+    id: PositiveInt | None = attr(name="id", default=None)
+    lang: str = attr(name="lang", default="en")
+    name: str = element()
+    sort_name: str | None = element(default=None)
+    volume: int | None = element(default=None)
+    start_year: int | None = element(default=None)
+
+    @property
+    def filename(self) -> str:
+        return sanitize(
+            self.name if not self.volume or self.volume == 1 else f"{self.name} v{self.volume}"
+        )
+
+
+class Universe(PascalModel):
+    designation: str | None = element(default=None)
+    id: PositiveInt | None = attr(name="id", default=None)
+    name: str = element()
+
+    def __lt__(self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.name < other.name
+
+    def __eq__(self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.name == other.name
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.name))
+
+
+class Url(PascalModel):
+    primary: bool = attr(name="primary", default=False)
+    value: HttpUrl
+
+    def __lt__(self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.value < other.value
+
+    def __eq__(self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.value == other.value
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.value))
+
+
 class MetronInfo(PascalModel):
     age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
     arcs: list[Arc] = wrapped(path="Arcs", entity=element(tag="Arc", default_factory=list))
@@ -314,7 +326,7 @@ class MetronInfo(PascalModel):
         path="Genres", entity=element(tag="Genre", default_factory=list)
     )
     gtin: GTIN | None = element(tag="GTIN", default=None)
-    id: InformationList[Source] | None = element(tag="ID", default=None)
+    ids: list[Id] = wrapped("IDS", entity=element(tag="ID", default_factory=list))
     last_modified: datetime | None = element(default=None)
     locations: list[Resource[str]] = wrapped(
         path="Locations", entity=element(tag="Location", default_factory=list)
@@ -343,7 +355,7 @@ class MetronInfo(PascalModel):
     universes: list[Universe] = wrapped(
         path="Universes", entity=element(tag="Universe", default_factory=list)
     )
-    urls: InformationList[HttpUrl] | None = element(tag="URLs", default=None)
+    urls: list[Url] = wrapped(path="URLS", entity=element(tag="URLs", default_factory=list))
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:

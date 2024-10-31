@@ -25,8 +25,8 @@ def get_metadata(
 
     metron_info = None
     try:
-        metron_info = read_meta_file(cls=MetronInfo, filename="/MetronInfo.xml") or read_meta_file(
-            cls=MetronInfo, filename="MetronInfo.xml"
+        metron_info = read_meta_file(cls=MetronInfo, filename="MetronInfo.xml") or read_meta_file(
+            cls=MetronInfo, filename="/MetronInfo.xml"
         )
         if metron_info:
             metron_info = cast(MetronInfo, metron_info)
@@ -37,8 +37,8 @@ def get_metadata(
             LOGGER.error("'%s' contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
     comic_info = None
     try:
-        comic_info = read_meta_file(cls=ComicInfo, filename="/ComicInfo.xml") or read_meta_file(
-            cls=ComicInfo, filename="ComicInfo.xml"
+        comic_info = read_meta_file(cls=ComicInfo, filename="ComicInfo.xml") or read_meta_file(
+            cls=ComicInfo, filename="/ComicInfo.xml"
         )
         if comic_info:
             comic_info = cast(ComicInfo, comic_info)

@@ -3,17 +3,12 @@ import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from perdoo import IMAGE_EXTENSIONS
 from perdoo.archives import BaseArchive, get_archive_class
 from perdoo.models import ComicInfo, MetronInfo
 from perdoo.models.comic_info import Page
 from perdoo.services import BaseService
-from perdoo.settings import (
-    ComicInfo as ComicInfoSettings,
-    MetronInfo as MetronInfoSettings,
-    Service,
-)
-from perdoo.utils import Details, list_files, sanitize
+from perdoo.settings import Service, Settings
+from perdoo.utils import Search, list_files, sanitize
 
 LOGGER = logging.getLogger("perdoo")
 
@@ -26,13 +21,15 @@ def convert_file(entry: BaseArchive, output_format: str) -> BaseArchive | None:
     return output.convert(entry)
 
 
-def _load_page_info(entry: BaseArchive, comic_info: ComicInfo) -> None:
+def _load_page_info(
+    image_extensions: tuple[str, ...], entry: BaseArchive, comic_info: ComicInfo
+) -> None:
     with TemporaryDirectory(prefix=f"{entry.path.stem}_") as temp_str:
         temp_folder = Path(temp_str)
         if not entry.extract_files(destination=temp_folder):
             return
 
-        image_list = list_files(temp_folder, *IMAGE_EXTENSIONS)
+        image_list = list_files(temp_folder, *image_extensions)
         pages = set()
         for index, img_file in enumerate(image_list):
             is_final_page = index == len(image_list) - 1
@@ -45,39 +42,43 @@ def _load_page_info(entry: BaseArchive, comic_info: ComicInfo) -> None:
 
 def sync_metadata(
     entry: BaseArchive,
-    details: Details,
+    search: Search,
     services: dict[Service, BaseService | None],
-    service_order: list[Service],
-    comic_info_settings: ComicInfoSettings,
-    metron_info_settings: MetronInfoSettings,
+    settings: Settings,
 ) -> None:
-    for service_name in service_order:
+    for service_name in settings.services.order:
         if service := services.get(service_name):
             LOGGER.info("Searching %s for matching issue", type(service).__name__)
-            metron_info, comic_info = service.fetch(details=details)
+            metron_info, comic_info = service.fetch(search=search)
 
-            if comic_info and comic_info_settings.create:
-                if comic_info_settings.handle_pages:
+            if comic_info and settings.output.metadata.comic_info.create:
+                if settings.output.metadata.comic_info.handle_pages:
                     LOGGER.info("Processing ComicInfo Page data")
-                    _load_page_info(entry=entry, comic_info=comic_info)
+                    _load_page_info(
+                        image_extensions=settings.image_extensions,
+                        entry=entry,
+                        comic_info=comic_info,
+                    )
                 else:
                     comic_info.pages = []
                 LOGGER.info("Writing ComicInfo to archive")
                 entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
-            if metron_info and metron_info_settings.create:
+            if metron_info and settings.output.metadata.metron_info.create:
                 LOGGER.info("Writing MetronInfo to archive")
                 entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
             if metron_info or comic_info:
                 return
 
 
-def _rename_images_in_archive(entry: BaseArchive, filename: str) -> None:
+def _rename_images_in_archive(
+    image_extensions: tuple[str, ...], entry: BaseArchive, filename: str
+) -> None:
     with TemporaryDirectory(prefix=f"{entry.path.stem}_") as temp_str:
         temp_folder = Path(temp_str)
         if not entry.extract_files(destination=temp_folder):
             return
 
-        image_list = list_files(temp_folder, *IMAGE_EXTENSIONS)
+        image_list = list_files(temp_folder, *image_extensions)
         pad_count = len(str(len(image_list)))
 
         for index, img_file in enumerate(image_list):
@@ -87,7 +88,11 @@ def _rename_images_in_archive(entry: BaseArchive, filename: str) -> None:
                 LOGGER.info("Renaming '%s' to '%s'", img_file.stem, renamed_img.stem)
                 shutil.move(img_file, renamed_img)
 
-        archive_file = entry.archive_files(src=temp_folder, output_name=entry.path.stem)
+        files = list_files(temp_folder, *image_extensions)
+        files.extend([temp_folder / "ComicInfo.xml", temp_folder / "MetronInfo.xml"])
+        archive_file = entry.archive_files(
+            src=temp_folder, output_name=entry.path.stem, files=files
+        )
         if not archive_file:
             LOGGER.critical("Unable to re-archive images")
             return
@@ -96,7 +101,9 @@ def _rename_images_in_archive(entry: BaseArchive, filename: str) -> None:
         shutil.move(archive_file, entry.path)
 
 
-def rename_file(entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo | None]) -> None:
+def rename_file(
+    entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo | None], settings: Settings
+) -> None:
     metron_info, comic_info = metadata
     new_filename = (
         metron_info.filename if metron_info else comic_info.filename if comic_info else None
@@ -115,11 +122,13 @@ def rename_file(entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo
     if all(
         x.startswith(new_filename)
         for x in entry.list_filenames()
-        if Path(x).suffix.casefold() in IMAGE_EXTENSIONS
+        if Path(x).suffix.casefold() in settings.image_extensions
     ):
         return
 
-    _rename_images_in_archive(entry=entry, filename=new_filename)
+    _rename_images_in_archive(
+        image_extensions=settings.image_extensions, entry=entry, filename=new_filename
+    )
 
 
 def _construct_new_file_path(

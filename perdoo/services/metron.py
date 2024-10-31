@@ -9,7 +9,6 @@ from mokkari.schemas.series import Series
 from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
-from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
@@ -18,7 +17,7 @@ from perdoo.models import ComicInfo, MetronInfo
 from perdoo.models.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Metron as MetronSettings
-from perdoo.utils import Details
+from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class Metron(BaseService[Series, Issue]):
         cache = SqliteCache(db_name=str(get_cache_root() / "mokkari.sqlite"), expire=14)
         self.session = Mokkari(username=settings.username, passwd=settings.password, cache=cache)
 
-    def _get_series_via_comicvine(self, comicvine_id: int | None) -> int | None:
+    def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
             return None
         try:
@@ -40,15 +39,24 @@ class Metron(BaseService[Series, Issue]):
             LOGGER.exception("")
             return None
 
-    def _get_series_id(self, title: str | None) -> int | None:
-        title = title or Prompt.ask("Series title", console=CONSOLE)
+    def _search_series(self, name: str | None, volume: int | None, year: int | None) -> int | None:
+        name = name or Prompt.ask("Series Name", console=CONSOLE)
         try:
+            params = {"name": name}
+            if volume:
+                params["volume"] = volume
+            if year:
+                params["year_began"] = year
             options = sorted(
-                self.session.series_list(params={"name": title}),
-                key=lambda x: (x.display_name, x.volume),
+                self.session.series_list(params=params), key=lambda x: (x.display_name, x.volume)
             )
             if not options:
-                LOGGER.warning("Unable to find any Series with the title: '%s'", title)
+                LOGGER.warning(
+                    "Unable to find any Series with the Name, Volume and YearBegan: '%s %s %s'",
+                    name,
+                    volume,
+                    year,
+                )
             index = create_menu(
                 options=[
                     f"{x.id} | {x.display_name} v{x.volume}"
@@ -61,30 +69,36 @@ class Metron(BaseService[Series, Issue]):
             )
             if index != 0:
                 return options[index - 1].id
-            if not Confirm.ask("Search Again", console=CONSOLE):
-                return None
-            return self._get_series_id(title=None)
+            if year:
+                LOGGER.info("Searching again without the YearBegan")
+                return self._search_series(name=name, volume=volume, year=None)
+            if volume:
+                LOGGER.info("Searching again without the Volume")
+                return self._search_series(name=name, volume=None, year=None)
+            if Confirm.ask("Search Again", console=CONSOLE):
+                return self._search_series(name=None, volume=None, year=None)
+            return None
         except ApiError:
             LOGGER.exception("")
             return None
 
-    def fetch_series(self, details: Details) -> Series | None:
+    def fetch_series(self, search: SeriesSearch) -> Series | None:
         series_id = (
-            details.series.metron
-            or self._get_series_via_comicvine(comicvine_id=details.series.comicvine)
-            or self._get_series_id(title=details.series.search)
+            search.metron
+            or self._search_series_by_comicvine(comicvine_id=search.comicvine)
+            or self._search_series(name=search.name, volume=search.volume, year=search.year)
         )
         if not series_id:
             return None
         try:
             series = self.session.series(_id=series_id)
-            details.series.metron = series_id
+            search.metron = series_id
             return series
         except ApiError:
             LOGGER.exception("")
             return None
 
-    def _get_issue_via_comicvine(self, comicvine_id: int | None) -> int | None:
+    def _search_issue_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
             return None
         try:
@@ -96,7 +110,7 @@ class Metron(BaseService[Series, Issue]):
             LOGGER.exception("")
             return None
 
-    def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
+    def _search_issue(self, series_id: int, number: str | None) -> int | None:
         try:
             options = humansorted(
                 self.session.issues_list(
@@ -109,7 +123,7 @@ class Metron(BaseService[Series, Issue]):
             )
             if not options:
                 LOGGER.warning(
-                    "Unable to find any Issues with a SeriesId: %s and number: '%s'",
+                    "Unable to find any Issues with the SeriesId and Number: '%s %s'",
                     series_id,
                     number,
                 )
@@ -121,24 +135,24 @@ class Metron(BaseService[Series, Issue]):
             if index != 0:
                 return options[index - 1].id
             if number:
-                LOGGER.info("Searching again without the issue number")
-                return self._get_issue_id(series_id=series_id, number=None)
+                LOGGER.info("Searching again without the Number")
+                return self._search_issue(series_id=series_id, number=None)
             return None
         except ApiError:
             LOGGER.exception("")
             return None
 
-    def fetch_issue(self, series_id: int, details: Details) -> Issue | None:
+    def fetch_issue(self, series_id: int, search: IssueSearch) -> Issue | None:
         issue_id = (
-            details.issue.metron
-            or self._get_issue_via_comicvine(comicvine_id=details.issue.comicvine)
-            or self._get_issue_id(series_id=series_id, number=details.issue.search)
+            search.metron
+            or self._search_issue_by_comicvine(comicvine_id=search.comicvine)
+            or self._search_issue(series_id=series_id, number=search.number)
         )
         if not issue_id:
             return None
         try:
             issue = self.session.issue(_id=issue_id)
-            details.issue.metron = issue_id
+            search.metron = issue_id
             return issue
         except ApiError:
             LOGGER.exception("")
@@ -151,14 +165,14 @@ class Metron(BaseService[Series, Issue]):
             Arc,
             Credit,
             Format,
-            InformationList,
+            Id,
             Price,
             Publisher,
             Resource,
             Role,
             Series,
-            Source,
             Universe,
+            Url,
         )
 
         def load_role(value: str) -> Role:
@@ -167,13 +181,11 @@ class Metron(BaseService[Series, Issue]):
             except ValueError:
                 return Role.OTHER
 
+        ids = [Id(primary=True, source=InformationSource.METRON, value=issue.id)]
+        if issue.cv_id:
+            ids.append(Id(source=InformationSource.COMIC_VINE, value=issue.cv_id))
         return MetronInfo(
-            id=InformationList[Source](
-                primary=Source(source=InformationSource.METRON, value=issue.id),
-                alternatives=[Source(source=InformationSource.COMIC_VINE, value=issue.cv_id)]
-                if issue.cv_id
-                else [],
-            ),
+            ids=ids,
             publisher=Publisher(
                 id=series.publisher.id,
                 name=series.publisher.name,
@@ -207,7 +219,7 @@ class Metron(BaseService[Series, Issue]):
             else None,
             age_rating=AgeRating.load(value=issue.rating.name),
             reprints=[Resource[str](id=x.id, value=x.issue) for x in issue.reprints],
-            urls=InformationList[HttpUrl](primary=issue.resource_url),
+            urls=[Url(primary=True, value=issue.resource_url)],
             credits=[
                 Credit(
                     creator=Resource[str](id=x.id, value=x.creator),
@@ -249,19 +261,19 @@ class Metron(BaseService[Series, Issue]):
 
         return comic_info
 
-    def fetch(self, details: Details) -> tuple[MetronInfo | None, ComicInfo | None]:
-        if not details.series.metron and details.issue.metron:
+    def fetch(self, search: Search) -> tuple[MetronInfo | None, ComicInfo | None]:
+        if not search.series.metron and search.issue.metron:
             try:
-                temp = self.session.issue(_id=details.issue.metron)
-                details.series.metron = temp.series.id
+                temp = self.session.issue(_id=search.issue.metron)
+                search.series.metron = temp.series.id
             except ApiError:
                 pass
 
-        series = self.fetch_series(details=details)
+        series = self.fetch_series(search=search.series)
         if not series:
             return None, None
 
-        issue = self.fetch_issue(series_id=series.id, details=details)
+        issue = self.fetch_issue(series_id=series.id, search=search.issue)
         if not issue:
             return None, None
 

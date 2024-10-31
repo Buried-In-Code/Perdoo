@@ -13,19 +13,16 @@ CONSOLE = Console(
     theme=Theme(
         {
             "prompt": "green",
-            "prompt.border": "dim green",
+            "prompt.border": "dim bright_green",
             "prompt.choices": "white",
-            "prompt.default": "dim white",
-            "title": "magenta",
-            "title.border": "dim magenta",
-            "subtitle": "blue",
-            "subtitle.border": "dim blue",
-            "syntax.border": "dim cyan",
+            "prompt.default": "italic white",
+            "title": "bold not dim blue",
+            "subtitle": "not dim blue",
             "logging.level.debug": "dim white",
             "logging.level.info": "white",
             "logging.level.warning": "yellow",
-            "logging.level.error": "bold red",
-            "logging.level.critical": "bold magenta",
+            "logging.level.error": "red",
+            "logging.level.critical": "bold bright_red",
         }
     )
 )
@@ -41,12 +38,20 @@ def create_menu(
     if not options:
         return 0
     panel_text = []
+    padding = len(str(len(options)))
     for index, item in enumerate(options):
-        panel_text.append(f"[prompt]{index + 1}:[/] [prompt.choices]{item}[/]")
+        panel_text.append(
+            f"[markdown.item.number]{index + 1:>{padding}}.[/] [prompt.choices]{item}[/]"
+        )
     if default:
-        panel_text.append(f"[prompt]0:[/] [prompt.default]{default}[/]")
+        panel_text.append(f"[markdown.item.number]{0:>{padding}}.[/] [prompt.default]{default}[/]")
     CONSOLE.print(
-        Panel("\n".join(panel_text), border_style="prompt.border", title=title, subtitle=subtitle)
+        Panel(
+            "\n".join(panel_text),
+            title=f"[title]{title}[/]" if title else None,
+            subtitle=f"[subtitle]{subtitle}[/]" if subtitle else None,
+            border_style="prompt.border",
+        )
     )
     selected = IntPrompt.ask(prompt=prompt, default=0 if default else None, console=CONSOLE)
     if (

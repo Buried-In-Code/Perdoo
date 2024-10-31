@@ -1,6 +1,7 @@
 __all__ = [
-    "Identifications",
-    "Details",
+    "SeriesSearch",
+    "IssueSearch",
+    "Search",
     "list_files",
     "sanitize",
     "flatten_dict",
@@ -19,8 +20,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class Identifications:
-    search: str | None = None
+class SeriesSearch:
+    name: str
+    volume: int | None = None
+    year: int | None = None
     comicvine: int | None = None
     league: int | None = None
     marvel: int | None = None
@@ -28,9 +31,18 @@ class Identifications:
 
 
 @dataclass
-class Details:
-    series: Identifications | None
-    issue: Identifications | None
+class IssueSearch:
+    number: str | None = None
+    comicvine: int | None = None
+    league: int | None = None
+    marvel: int | None = None
+    metron: int | None = None
+
+
+@dataclass
+class Search:
+    series: SeriesSearch
+    issue: IssueSearch
 
 
 def list_files(path: Path, *extensions: str) -> list[Path]:

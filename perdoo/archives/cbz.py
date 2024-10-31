@@ -43,7 +43,6 @@ class CBZArchive(BaseArchive):
             return False
 
     def write_file(self, filename: str, data: str) -> bool:
-        filename = f"/{filename}"
         try:
             with ZipFileRemove(self.path, "a") as stream:
                 if filename in stream.namelist():
@@ -64,10 +63,7 @@ class CBZArchive(BaseArchive):
             return False
 
     @classmethod
-    def archive_files(
-        cls, src: Path, output_name: str, files: list[Path] | None = None
-    ) -> Path | None:
-        files = files or list_files(path=src)
+    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path | None:
         output_file = src.parent / f"{output_name}.cbz"
         try:
             with ZipFile(output_file, "w", ZIP_DEFLATED) as stream:
@@ -85,7 +81,7 @@ class CBZArchive(BaseArchive):
             if not old_archive.extract_files(destination=temp_folder):
                 return None
             archive_file = CBZArchive.archive_files(
-                src=temp_folder, output_name=old_archive.path.stem
+                src=temp_folder, output_name=old_archive.path.stem, files=list_files(temp_folder)
             )
             if not archive_file:
                 return None

@@ -9,9 +9,9 @@ from perdoo.console import CONSOLE
 from perdoo.utils import flatten_dict
 
 try:
-    from typing import Self
+    from typing import Self  # Python >= 3.11
 except ImportError:
-    from typing_extensions import Self
+    from typing_extensions import Self  # Python < 3.11
 
 
 def to_pascal_case(value: str) -> str:

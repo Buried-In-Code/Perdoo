@@ -39,6 +39,32 @@ class SettingsModel(
     pass
 
 
+class ComicInfo(SettingsModel):
+    create: bool = True
+    handle_pages: bool = True
+
+
+class MetronInfo(SettingsModel):
+    create: bool = True
+
+
+class Metadata(SettingsModel):
+    comic_info: ComicInfo = ComicInfo()
+    metron_info: MetronInfo = MetronInfo()
+
+
+class Output(SettingsModel):
+    folder: Path = get_data_root()
+    format: Literal["cb7", "cbt", "cbz"] = "cbz"
+    metadata: Metadata = Metadata()
+
+    @field_validator("format", mode="before")
+    def validate_format(cls, value: str) -> str:
+        if value == "cb7" and find_spec("py7zr") is None:
+            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+        return value
+
+
 class Comicvine(SettingsModel):
     api_key: str | None = None
 
@@ -76,18 +102,12 @@ class Service(Enum):
         return self.value
 
 
-class ComicInfo(SettingsModel):
-    create: bool = True
-    handle_pages: bool = True
-
-
-class MetronInfo(SettingsModel):
-    create: bool = True
-
-
-class Metadata(SettingsModel):
-    comic_info: ComicInfo = ComicInfo()
-    metron_info: MetronInfo = MetronInfo()
+class Services(SettingsModel):
+    comicvine: Comicvine = Comicvine()
+    league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
+    marvel: Marvel = Marvel()
+    metron: Metron = Metron()
+    order: list[Service] = [Service.METRON, Service.MARVEL, Service.COMICVINE]
 
 
 def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
@@ -110,20 +130,9 @@ def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
 class Settings(SettingsModel):
     _file: ClassVar[Path] = get_config_root() / "settings.toml"
 
-    collection_folder: Path = get_data_root()
-    comicvine: Comicvine = Comicvine()
-    league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
-    marvel: Marvel = Marvel()
-    metron: Metron = Metron()
-    service_order: list[Service] = [Service.METRON, Service.MARVEL, Service.COMICVINE]
-    metadata: Metadata = Metadata()
-    output_format: Literal["cb7", "cbt", "cbz"] = "cbz"
-
-    @field_validator("output_format", mode="before")
-    def validate_format(cls, value: str) -> str:
-        if value == "cb7" and find_spec("py7zr") is None:
-            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
-        return value
+    image_extensions: tuple[str, ...] = (".jpg", ".jpeg", ".png", ".webp", ".jxl")
+    output: Output = Output()
+    services: Services = Services()
 
     @classmethod
     def load(cls) -> "Settings":

@@ -5,7 +5,6 @@ import re
 from datetime import datetime
 
 from natsort import humansorted, ns
-from pydantic import HttpUrl
 from requests.exceptions import JSONDecodeError
 from rich.prompt import Confirm, Prompt
 from simyan.comicvine import Comicvine as Simyan
@@ -20,7 +19,7 @@ from perdoo.models import ComicInfo, MetronInfo
 from perdoo.models.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Comicvine as ComicvineSettings
-from perdoo.utils import Details
+from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,33 +29,40 @@ class Comicvine(BaseService[Volume, Issue]):
         cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite", expiry=14)
         self.session = Simyan(api_key=settings.api_key, cache=cache)
 
-    def _get_series_id(self, title: str | None) -> int | None:
-        title = title or Prompt.ask("Series title", console=CONSOLE)
+    def _search_series(self, name: str | None, volume: int | None, year: int | None) -> int | None:
+        name = name or Prompt.ask("Volume Name", console=CONSOLE)
         try:
             options = sorted(
-                self.session.list_volumes({"filter": f"name:{title}"}),
+                self.session.list_volumes({"filter": f"name:{name}"}),
                 key=lambda x: (
                     x.publisher.name if x.publisher and x.publisher.name else "",
                     x.name,
                     x.start_year or 0,
                 ),
             )
+            if year:
+                options = [x for x in options if x.start_year == year]
             if not options:
-                LOGGER.warning("Unable to find any Series with the title: '%s'", title)
+                LOGGER.warning(
+                    "Unable to find any Volumes with the Name and StartYear: '%s %s'", name, year
+                )
             index = create_menu(
                 options=[
                     f"{x.id} | {x.publisher.name if x.publisher and x.publisher.name else ''}"
                     f" | {x.name} ({x.start_year})"
                     for x in options
                 ],
-                title="Comicvine Series",
+                title="Comicvine Volume",
                 default="None of the Above",
             )
             if index != 0:
                 return options[index - 1].id
-            if not Confirm.ask("Search Again", console=CONSOLE):
-                return None
-            return self._get_series_id(title=None)
+            if year:
+                LOGGER.info("Searching again without the StartYear")
+                return self._search_series(name=name, volume=volume, year=None)
+            if Confirm.ask("Search Again", console=CONSOLE):
+                return self._search_series(name=None, volume=None, year=None)
+            return None
         except ServiceError:
             LOGGER.exception("")
             return None
@@ -64,13 +70,15 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
             return None
 
-    def fetch_series(self, details: Details) -> Volume | None:
-        series_id = details.series.comicvine or self._get_series_id(title=details.series.search)
+    def fetch_series(self, search: SeriesSearch) -> Volume | None:
+        series_id = search.comicvine or self._search_series(
+            name=search.name, volume=search.volume, year=search.year
+        )
         if not series_id:
             return None
         try:
             series = self.session.get_volume(volume_id=series_id)
-            details.series.comicvine = series_id
+            search.comicvine = series_id
             return series
         except ServiceError:
             LOGGER.exception("")
@@ -79,7 +87,7 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
             return None
 
-    def _get_issue_id(self, series_id: int, number: str | None) -> int | None:
+    def _search_issue(self, series_id: int, number: str | None) -> int | None:
         try:
             options = humansorted(
                 self.session.list_issues(
@@ -92,7 +100,7 @@ class Comicvine(BaseService[Volume, Issue]):
             )
             if not options:
                 LOGGER.warning(
-                    "Unable to find any Issues with a SeriesId: %s and the issue number: '%s'",
+                    "Unable to find any Issues with the Volume and IssueNumber: '%s %s'",
                     series_id,
                     number,
                 )
@@ -104,8 +112,8 @@ class Comicvine(BaseService[Volume, Issue]):
             if index != 0:
                 return options[index - 1].id
             if number:
-                LOGGER.info("Searching again without the issue number")
-                return self._get_issue_id(series_id=series_id, number=None)
+                LOGGER.info("Searching again without the IssueNumber")
+                return self._search_issue(series_id=series_id, number=None)
             return None
         except ServiceError:
             LOGGER.exception("")
@@ -114,15 +122,13 @@ class Comicvine(BaseService[Volume, Issue]):
             LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
             return None
 
-    def fetch_issue(self, series_id: int, details: Details) -> Issue | None:
-        issue_id = details.issue.comicvine or self._get_issue_id(
-            series_id=series_id, number=details.issue.search
-        )
+    def fetch_issue(self, series_id: int, search: IssueSearch) -> Issue | None:
+        issue_id = search.comicvine or self._search_issue(series_id=series_id, number=search.number)
         if not issue_id:
             return None
         try:
             issue = self.session.get_issue(issue_id=issue_id)
-            details.issue.comicvine = issue_id
+            search.comicvine = issue_id
             return issue
         except ServiceError:
             LOGGER.exception("")
@@ -135,12 +141,12 @@ class Comicvine(BaseService[Volume, Issue]):
         from perdoo.models.metron_info import (
             Arc,
             Credit,
-            InformationList,
+            Id,
             Publisher,
             Resource,
             Role,
             Series,
-            Source,
+            Url,
         )
 
         def load_role(value: str) -> Role:
@@ -150,9 +156,7 @@ class Comicvine(BaseService[Volume, Issue]):
                 return Role.OTHER
 
         return MetronInfo(
-            id=InformationList[Source](
-                primary=Source(source=InformationSource.COMIC_VINE, value=issue.id)
-            ),
+            ids=[Id(primary=True, source=InformationSource.COMIC_VINE, value=issue.id)],
             publisher=Publisher(id=series.publisher.id, name=series.publisher.name),
             series=Series(id=series.id, name=series.name, start_year=series.start_year),
             collection_title=issue.name,
@@ -164,7 +168,7 @@ class Comicvine(BaseService[Volume, Issue]):
             characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
             teams=[Resource[str](id=x.id, value=x.name) for x in issue.teams],
             locations=[Resource[str](id=x.id, value=x.name) for x in issue.locations],
-            urls=InformationList[HttpUrl](primary=issue.site_url),
+            urls=[Url(primary=True, value=issue.site_url)],
             credits=[
                 Credit(
                     creator=Resource[str](id=x.id, value=x.name),
@@ -201,19 +205,19 @@ class Comicvine(BaseService[Volume, Issue]):
 
         return comic_info
 
-    def fetch(self, details: Details) -> tuple[MetronInfo | None, ComicInfo | None]:
-        if not details.series.comicvine and details.issue.comicvine:
+    def fetch(self, search: Search) -> tuple[MetronInfo | None, ComicInfo | None]:
+        if not search.series.comicvine and search.issue.comicvine:
             try:
-                temp = self.session.get_issue(issue_id=details.issue.comicvine)
-                details.series.comicvine = temp.volume.id
+                temp = self.session.get_issue(issue_id=search.issue.comicvine)
+                search.series.comicvine = temp.volume.id
             except (ServiceError, JSONDecodeError):
                 pass
 
-        series = self.fetch_series(details=details)
+        series = self.fetch_series(search=search.series)
         if not series:
             return None, None
 
-        issue = self.fetch_issue(series_id=series.id, details=details)
+        issue = self.fetch_issue(series_id=series.id, search=search.issue)
         if not issue:
             return None, None
 

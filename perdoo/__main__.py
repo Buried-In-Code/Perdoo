@@ -1,9 +1,11 @@
 import logging
+import shutil
 from argparse import SUPPRESS
 from datetime import date
 from enum import Enum
 from pathlib import Path
 from platform import python_version
+from tempfile import TemporaryDirectory
 from typing import Annotated
 
 from typer import Argument, Context, Exit, Option, Typer
@@ -15,8 +17,15 @@ from perdoo.main import convert_file, organize_file, rename_file, sync_metadata
 from perdoo.models import ComicInfo, MetronInfo, get_metadata
 from perdoo.models.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
-from perdoo.settings import Service, Settings
-from perdoo.utils import Details, Identifications, delete_empty_folders, flatten_dict, list_files
+from perdoo.settings import Service, Services, Settings
+from perdoo.utils import (
+    IssueSearch,
+    Search,
+    SeriesSearch,
+    delete_empty_folders,
+    flatten_dict,
+    list_files,
+)
 
 app = Typer(help="CLI tool for managing comic collections and settings.")
 LOGGER = logging.getLogger("perdoo")
@@ -92,7 +101,7 @@ def config(
         Settings.display()
 
 
-@app.command(help="View details of metadata inside a Comic file.")
+@app.command(help="View details of metadata inside a Comic archive.")
 def view(
     target: Annotated[
         Path,
@@ -114,7 +123,7 @@ def view(
         metron_info.display()
 
 
-def get_services(settings: Settings) -> dict[Service, BaseService]:
+def get_services(settings: Services) -> dict[Service, BaseService]:
     output = {}
     if settings.comicvine.api_key:
         output[Service.COMICVINE] = Comicvine(settings.comicvine)
@@ -127,55 +136,65 @@ def get_services(settings: Settings) -> dict[Service, BaseService]:
     return output
 
 
-def get_details(
+def get_search_details(
     metadata: tuple[MetronInfo | None, ComicInfo | None], fallback_title: str
-) -> Details:
+) -> Search:
     metron_info, comic_info = metadata
 
-    if metron_info:
-        series_id = metron_info.series.id if metron_info.id else None
-        issue_id = metron_info.id.primary.value if metron_info.id else None
-        return Details(
-            series=Identifications(
-                search=metron_info.series.name,
-                comicvine=series_id
-                if metron_info.id.primary.source == InformationSource.COMIC_VINE
-                else None,
-                league=series_id
-                if metron_info.id.primary.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                else None,
-                marvel=series_id
-                if metron_info.id.primary.source == InformationSource.MARVEL
-                else None,
-                metron=series_id
-                if metron_info.id.primary.source == InformationSource.METRON
-                else None,
+    if metron_info and metron_info.series and metron_info.series.name:
+        series_id = metron_info.series.id
+        source = next(iter(x.source for x in metron_info.ids if x.primary), None)
+        return Search(
+            series=SeriesSearch(
+                name=metron_info.series.name,
+                volume=metron_info.series.volume,
+                year=metron_info.series.start_year,
+                comicvine=series_id if source == InformationSource.COMIC_VINE else None,
+                league=series_id if source == InformationSource.LEAGUE_OF_COMIC_GEEKS else None,
+                marvel=series_id if source == InformationSource.MARVEL else None,
+                metron=series_id if source == InformationSource.METRON else None,
             ),
-            issue=Identifications(
-                search=metron_info.number,
-                comicvine=issue_id
-                if metron_info.id.primary.source == InformationSource.COMIC_VINE
-                else None,
-                league=issue_id
-                if metron_info.id.primary.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                else None,
-                marvel=issue_id
-                if metron_info.id.primary.source == InformationSource.MARVEL
-                else None,
-                metron=issue_id
-                if metron_info.id.primary.source == InformationSource.METRON
-                else None,
+            issue=IssueSearch(
+                number=metron_info.number,
+                comicvine=next(
+                    iter(
+                        x.value for x in metron_info.ids if x.source == InformationSource.COMIC_VINE
+                    ),
+                    None,
+                ),
+                league=next(
+                    iter(
+                        x.value
+                        for x in metron_info.ids
+                        if x.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    ),
+                    None,
+                ),
+                marvel=next(
+                    iter(x.value for x in metron_info.ids if x.source == InformationSource.MARVEL),
+                    None,
+                ),
+                metron=next(
+                    iter(x.value for x in metron_info.ids if x.source == InformationSource.METRON),
+                    None,
+                ),
             ),
         )
-    if comic_info:
-        return Details(
-            series=Identifications(search=comic_info.series),
-            issue=Identifications(search=comic_info.number),
+    if comic_info and comic_info.series:
+        return Search(
+            series=SeriesSearch(
+                name=comic_info.series,
+                volume=comic_info.volume
+                if comic_info.volume and comic_info.volume < 1900
+                else None,
+                year=comic_info.volume if comic_info.volume and comic_info.volume > 1900 else None,
+            ),
+            issue=IssueSearch(number=comic_info.number),
         )
-    return Details(series=Identifications(search=fallback_title), issue=Identifications())
+    return Search(series=SeriesSearch(name=fallback_title), issue=IssueSearch())
 
 
-@app.command(help="Run Perdoo.")
+@app.command(name="import", help="Import comics into your collection using Perdoo")
 def run(
     target: Annotated[
         Path,
@@ -185,6 +204,9 @@ def run(
     ],
     skip_convert: Annotated[
         bool, Option("--skip-convert", help="Convert comics to the configured format.")
+    ] = False,
+    skip_clean: Annotated[
+        bool, Option("--skip-clean", help="Clean archive of all non-image files.")
     ] = False,
     sync: Annotated[
         SyncOption,
@@ -211,12 +233,13 @@ def run(
             extras={
                 "target": target,
                 "flags.skip-convert": skip_convert,
+                "flags.skip-clean": skip_clean,
                 "flags.sync": sync,
                 "flags.skip-rename": skip_rename,
                 "flags.skip-organize": skip_organize,
             }
         )
-    services = get_services(settings=settings)
+    services = get_services(settings=settings.services)
     if not services and sync != SyncOption.SKIP:
         LOGGER.warning("No external services configured")
         sync = SyncOption.SKIP
@@ -229,46 +252,58 @@ def run(
             LOGGER.error("%s, Skipping", nie)  # noqa: TRY400
 
     for index, entry in enumerate(entries):
-        CONSOLE.rule(f"[{index + 1}/{len(entries)}] Importing {entry.path.name}", align="left")
+        CONSOLE.rule(
+            f"[{index + 1}/{len(entries)}] Importing {entry.path.name}",
+            align="left",
+            style="subtitle",
+        )
         if not skip_convert:
             with CONSOLE.status(
-                f"Converting to '{settings.output_format}'", spinner="simpleDotsScrolling"
+                f"Converting to '{settings.output.format}'", spinner="simpleDotsScrolling"
             ):
-                entry = convert_file(entry, output_format=settings.output_format)
+                entry = convert_file(entry, output_format=settings.output.format)
         if entry is None or isinstance(entry, CBRArchive):
             continue
 
+        metadata = get_metadata(archive=entry, debug=debug)
+        if not skip_clean:
+            with (
+                CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"),
+                TemporaryDirectory(prefix=f"{entry.path.stem}_") as temp_str,
+            ):
+                temp_folder = Path(temp_str)
+                if entry.extract_files(destination=temp_folder):
+                    new_file = entry.archive_files(
+                        src=temp_folder,
+                        output_name=entry.path.stem,
+                        files=list_files(temp_folder, *settings.image_extensions),
+                    )
+                    if new_file:
+                        shutil.move(new_file, entry.path)
+
         if sync != SyncOption.SKIP:
-            metadata = get_metadata(archive=entry, debug=debug)
-            details = get_details(metadata=metadata, fallback_title=entry.path.stem)
+            search = get_search_details(metadata=metadata, fallback_title=entry.path.stem)
             last_modified = date(1900, 1, 1)
             if sync == SyncOption.OUTDATED:
                 metron_info, _ = metadata
                 if metron_info and metron_info.last_modified:
                     last_modified = metron_info.last_modified.date()
             if (date.today() - last_modified).days >= 28:
-                sync_metadata(
-                    entry=entry,
-                    details=details,
-                    services=services,
-                    service_order=settings.service_order,
-                    comic_info_settings=settings.metadata.comic_info,
-                    metron_info_settings=settings.metadata.metron_info,
-                )
+                sync_metadata(entry=entry, search=search, services=services, settings=settings)
+                metadata = get_metadata(archive=entry, debug=debug)
             else:
                 LOGGER.info("Metadata up-to-date")
-        metadata = get_metadata(archive=entry, debug=debug)
 
         if not skip_rename:
             with CONSOLE.status("Renaming to match metadata", spinner="simpleDotsScrolling"):
-                rename_file(entry=entry, metadata=metadata)
+                rename_file(entry=entry, metadata=metadata, settings=settings)
 
         if not skip_organize:
             with CONSOLE.status("Organizing based on metadata", spinner="simpleDotsScrolling"):
                 organize_file(
                     entry=entry,
                     metadata=metadata,
-                    root=settings.collection_folder,
+                    root=settings.output.folder,
                     target=target.parent,
                 )
 
