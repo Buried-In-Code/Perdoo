@@ -6,9 +6,9 @@ from typing import cast
 from pydantic import ValidationError
 
 from perdoo.archives import BaseArchive
-from perdoo.models._base import PascalModel
-from perdoo.models.comic_info import ComicInfo
-from perdoo.models.metron_info import MetronInfo
+from perdoo.metadata._base import PascalModel
+from perdoo.metadata.comic_info import ComicInfo
+from perdoo.metadata.metron_info import MetronInfo
 
 LOGGER = logging.getLogger("perdoo.models")
 

@@ -4,8 +4,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from perdoo.archives import BaseArchive, get_archive_class
-from perdoo.models import ComicInfo, MetronInfo
-from perdoo.models.comic_info import Page
+from perdoo.metadata import ComicInfo, MetronInfo
+from perdoo.metadata.comic_info import Page
 from perdoo.services import BaseService
 from perdoo.settings import Service, Settings
 from perdoo.utils import Search, list_files, sanitize

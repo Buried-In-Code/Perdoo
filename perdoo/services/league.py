@@ -8,9 +8,9 @@ from himon.schemas.series import Series
 from himon.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
-from perdoo.models import ComicInfo, MetronInfo
+from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.services._base import BaseService
-from perdoo.settings import LeagueofComicGeeks as LeagueSettings
+from perdoo.settings import LeagueOfComicGeeks as LeagueSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)

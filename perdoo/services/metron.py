@@ -13,8 +13,8 @@ from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
-from perdoo.models import ComicInfo, MetronInfo
-from perdoo.models.metron_info import InformationSource
+from perdoo.metadata import ComicInfo, MetronInfo
+from perdoo.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Metron as MetronSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
@@ -159,7 +159,7 @@ class Metron(BaseService[Series, Issue]):
             return None
 
     def _process_metron_info(self, series: Series, issue: Issue) -> MetronInfo | None:
-        from perdoo.models.metron_info import (
+        from perdoo.metadata.metron_info import (
             GTIN,
             AgeRating,
             Arc,
@@ -231,7 +231,7 @@ class Metron(BaseService[Series, Issue]):
         )
 
     def _process_comic_info(self, series: Series, issue: Issue) -> ComicInfo | None:
-        from perdoo.models.comic_info import AgeRating
+        from perdoo.metadata.comic_info import AgeRating
 
         def load_age_rating(value: str) -> AgeRating:
             try:

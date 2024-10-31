@@ -15,8 +15,8 @@ from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
 from perdoo.console import CONSOLE, create_menu
-from perdoo.models import ComicInfo, MetronInfo
-from perdoo.models.metron_info import InformationSource
+from perdoo.metadata import ComicInfo, MetronInfo
+from perdoo.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Comicvine as ComicvineSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
@@ -138,7 +138,7 @@ class Comicvine(BaseService[Volume, Issue]):
             return None
 
     def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
-        from perdoo.models.metron_info import (
+        from perdoo.metadata.metron_info import (
             Arc,
             Credit,
             Id,

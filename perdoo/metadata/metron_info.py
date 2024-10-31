@@ -25,7 +25,7 @@ from typing import Generic, TypeVar
 from pydantic import HttpUrl, PositiveInt
 from pydantic_xml import attr, computed_attr, element, wrapped
 
-from perdoo.models._base import PascalModel
+from perdoo.metadata._base import PascalModel
 from perdoo.utils import sanitize
 
 T = TypeVar("T")

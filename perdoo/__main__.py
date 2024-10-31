@@ -14,8 +14,8 @@ from perdoo import __version__, setup_logging
 from perdoo.archives import CBRArchive, get_archive
 from perdoo.console import CONSOLE
 from perdoo.main import convert_file, organize_file, rename_file, sync_metadata
-from perdoo.models import ComicInfo, MetronInfo, get_metadata
-from perdoo.models.metron_info import InformationSource
+from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
+from perdoo.metadata.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
 from perdoo.settings import Service, Services, Settings
 from perdoo.utils import (
@@ -101,7 +101,7 @@ def config(
         Settings.display()
 
 
-@app.command(help="View details of metadata inside a Comic archive.")
+@app.command(help="View the ComicInfo/MetronInfo inside a Comic archive.")
 def view(
     target: Annotated[
         Path,
@@ -203,20 +203,31 @@ def run(
         ),
     ],
     skip_convert: Annotated[
-        bool, Option("--skip-convert", help="Convert comics to the configured format.")
+        bool, Option("--skip-convert", help="Skip converting comics to the configured format.")
     ] = False,
     skip_clean: Annotated[
-        bool, Option("--skip-clean", help="Clean archive of all non-image files.")
+        bool,
+        Option(
+            "--skip-clean",
+            help="Skip removing any files not listed in the 'image_extensions' setting.",
+        ),
     ] = False,
     sync: Annotated[
         SyncOption,
-        Option("--sync", "-s", case_sensitive=False, help="Sync comic data with online services."),
+        Option(
+            "--sync",
+            "-s",
+            case_sensitive=False,
+            help="Sync ComicInfo/MetronInfo with online services.",
+        ),
     ] = SyncOption.OUTDATED.value,
     skip_rename: Annotated[
-        bool, Option("--skip-rename", help="Rename comics based on their ComicInfo/MetronInfo.")
+        bool,
+        Option("--skip-rename", help="Skip renaming comics based on their ComicInfo/MetronInfo."),
     ] = False,
     skip_organize: Annotated[
-        bool, Option("--skip-organize", help="Organize/move comics to appropriate directories.")
+        bool,
+        Option("--skip-organize", help="Skip organize/moving comics to appropriate directories."),
     ] = False,
     debug: Annotated[
         bool, Option("--debug", help="Enable debug mode to show extra information.")

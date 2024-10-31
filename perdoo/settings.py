@@ -1,12 +1,14 @@
 __all__ = [
-    "Comicvine",
-    "LeagueofComicGeeks",
-    "Marvel",
-    "Metron",
     "ComicInfo",
     "MetronInfo",
     "Metadata",
+    "Output",
+    "Comicvine",
+    "LeagueOfComicGeeks",
+    "Marvel",
+    "Metron",
     "Service",
+    "Services",
     "Settings",
 ]
 
@@ -69,7 +71,7 @@ class Comicvine(SettingsModel):
     api_key: str | None = None
 
 
-class LeagueofComicGeeks(SettingsModel):
+class LeagueOfComicGeeks(SettingsModel):
     client_id: str | None = None
     client_secret: str | None = None
     access_token: str | None = None
@@ -104,10 +106,10 @@ class Service(Enum):
 
 class Services(SettingsModel):
     comicvine: Comicvine = Comicvine()
-    league_of_comic_geeks: LeagueofComicGeeks = LeagueofComicGeeks()
+    league_of_comic_geeks: LeagueOfComicGeeks = LeagueOfComicGeeks()
     marvel: Marvel = Marvel()
     metron: Metron = Metron()
-    order: list[Service] = [Service.METRON, Service.MARVEL, Service.COMICVINE]
+    order: tuple[Service, ...] = (Service.METRON, Service.MARVEL, Service.COMICVINE)
 
 
 def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
@@ -119,7 +121,7 @@ def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
             continue
         if isinstance(value, dict):
             value = _stringify_values(content=value)
-        elif isinstance(value, list):
+        elif isinstance(value, list | tuple | set):
             value = [_stringify_values(content=x) if isinstance(x, dict) else str(x) for x in value]
         else:
             value = str(value)

@@ -30,15 +30,34 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 Usage: Perdoo [OPTIONS] COMMAND [ARGS]...
 
 Commands:
-  settings                Manage settings.
   import                  Import comics into your collection using Perdoo.
-  view                    View details of metadata inside a Comic file.
+  settings                Manage settings.
+  view                    View the ComicInfo/MetronInfo inside a Comic archive.
 
 Options:
   --version               Show the version and exit.
   --install-completion    Install completion for the current shell.
   --show-completion       Show completion for the current shell, to copy it or customize the installation.
   --help                  Show this message and exit.
+```
+
+</details>
+<details><summary>Perdoo Import</summary>
+
+```
+Usage: Perdoo import [OPTIONS] TARGET
+
+Arguments:
+  target                             PATH    Import comics from the specified file/folder. [required]
+
+Options:
+  --skip-convert                             Skip converting comics to the configured format.
+  --skip-clean                               Skip removing any files not listed in the 'image_extensions' setting.
+  --sync -s [Force|Outdated|Skip]            Sync ComicInfo/MetronInfo with online services. [default: Outdated]
+  --skip-rename                              Skip renaming comics based on their ComicInfo/MetronInfo.
+  --skip-organize                            Skip organize/moving comics to appropriate directories.
+  --debug                                    Enable debug mode to show extra information.
+  --help                                     Show this message and exit.
 ```
 
 </details>
@@ -54,24 +73,6 @@ Arguments:
 Options:
   --reset               Reset the specified config key to its default value. If no key is provided, reset all settings.
   --help                Show this message and exit.
-```
-
-</details>
-<details><summary>Perdoo Import</summary>
-
-```
-Usage: Perdoo import [OPTIONS] TARGET
-
-Arguments:
-  target                             PATH    Import comics from the specified file/folder. [required]
-
-Options:
-  --skip-convert                             Skip converting comics to the configured format.
-  --sync -s [Force|Outdated|Skip]            Sync comic data with online services. [default: Outdated]
-  --skip-rename                              Skip renaming comics based on their ComicInfo/MetronInfo.
-  --skip-organize                            Skip organize/moving comics to appropriate directories.
-  --debug                                    Enable debug mode to show extra information.
-  --help                                     Show this message and exit.
 ```
 
 </details>
