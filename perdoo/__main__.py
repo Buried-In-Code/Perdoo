@@ -61,7 +61,7 @@ def common(
         raise Exit
 
 
-@app.command(help="Manage settings.")
+@app.command(name="settings", help="Manage settings.")
 def config(
     key: Annotated[
         str | None, Argument(show_default=False, help="The config key to retrieve or modify.")
@@ -194,7 +194,7 @@ def get_search_details(
     return Search(series=SeriesSearch(name=fallback_title), issue=IssueSearch())
 
 
-@app.command(name="import", help="Import comics into your collection using Perdoo")
+@app.command(name="import", help="Import comics into your collection using Perdoo.")
 def run(
     target: Annotated[
         Path,

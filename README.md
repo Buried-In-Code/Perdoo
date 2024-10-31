@@ -22,12 +22,6 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 1. Ensure you have [Pipx](https://pipxproject.github.io/pipx/) installed: `pipx --version`
 2. Install the project: `pipx install perdoo`
 
-### From Source
-
-1. Ensure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
-2. Clone the repository: `git clone https://github.com/Buried-In-Code/Perdoo`
-3. Install the project: `pip install .`
-
 ## Usage
 
 <details><summary>Perdoo Commands</summary>
@@ -36,8 +30,8 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 Usage: Perdoo [OPTIONS] COMMAND [ARGS]...
 
 Commands:
-  config                  Manage settings.
-  run                     Run Perdoo.
+  settings                Manage settings.
+  import                  Import comics into your collection using Perdoo.
   view                    View details of metadata inside a Comic file.
 
 Options:
@@ -48,10 +42,10 @@ Options:
 ```
 
 </details>
-<details><summary>Perdoo Config</summary>
+<details><summary>Perdoo Settings</summary>
 
 ```
-Usage: Perdoo config [OPTIONS] [KEY] [VALUE]
+Usage: Perdoo settings [OPTIONS] [KEY] [VALUE]
 
 Arguments:
   key        [KEY]      The config key to retrieve or modify.
@@ -63,10 +57,10 @@ Options:
 ```
 
 </details>
-<details><summary>Perdoo Run</summary>
+<details><summary>Perdoo Import</summary>
 
 ```
-Usage: Perdoo run [OPTIONS] TARGET
+Usage: Perdoo import [OPTIONS] TARGET
 
 Arguments:
   target                             PATH    Import comics from the specified file/folder. [required]
@@ -104,13 +98,13 @@ Options:
 - .cbr
 - .cbt
 - .cbz
-- .cb7 _(Requires installing `cb7` dependencies: `pip install perdoo[cb7]`)_
+- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
 
 ### Output Extensions
 
 - .cbt
 - .cbz _(Default)_
-- .cb7 _(Requires installing `cb7` dependencies: `pip install perdoo[cb7]`)_
+- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
 
 ### Metadata Files
 
