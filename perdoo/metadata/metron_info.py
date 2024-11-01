@@ -37,6 +37,8 @@ class AgeRating(Enum):
     TEEN = "Teen"
     TEEN_PLUS = "Teen Plus"
     MATURE = "Mature"
+    EXPLICIT = "Explicit"
+    ADULT = "Adult"
 
     @staticmethod
     def load(value: str) -> "AgeRating":
