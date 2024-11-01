@@ -21,6 +21,13 @@ def convert_file(entry: BaseArchive, output_format: str) -> BaseArchive | None:
     return output.convert(entry)
 
 
+def clean_archive(entry: BaseArchive, settings: Settings) -> None:
+    for filename in entry.list_filenames():
+        if Path(filename).suffix not in settings.image_extensions:
+            entry.remove_file(filename=filename)
+            LOGGER.info("Removed '%s' from '%s'", filename, entry.path.name)
+
+
 def _load_page_info(
     image_extensions: tuple[str, ...], entry: BaseArchive, comic_info: ComicInfo
 ) -> None:

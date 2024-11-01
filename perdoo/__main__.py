@@ -1,11 +1,9 @@
 import logging
-import shutil
 from argparse import SUPPRESS
 from datetime import date
 from enum import Enum
 from pathlib import Path
 from platform import python_version
-from tempfile import TemporaryDirectory
 from typing import Annotated
 
 from typer import Argument, Context, Exit, Option, Typer
@@ -13,7 +11,7 @@ from typer import Argument, Context, Exit, Option, Typer
 from perdoo import __version__, setup_logging
 from perdoo.archives import CBRArchive, get_archive
 from perdoo.console import CONSOLE
-from perdoo.main import convert_file, organize_file, rename_file, sync_metadata
+from perdoo.main import clean_archive, convert_file, organize_file, rename_file, sync_metadata
 from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
@@ -278,19 +276,8 @@ def run(
 
         metadata = get_metadata(archive=entry, debug=debug)
         if not skip_clean:
-            with (
-                CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"),
-                TemporaryDirectory(prefix=f"{entry.path.stem}_") as temp_str,
-            ):
-                temp_folder = Path(temp_str)
-                if entry.extract_files(destination=temp_folder):
-                    new_file = entry.archive_files(
-                        src=temp_folder,
-                        output_name=entry.path.stem,
-                        files=list_files(temp_folder, *settings.image_extensions),
-                    )
-                    if new_file:
-                        shutil.move(new_file, entry.path)
+            with CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"):
+                clean_archive(entry=entry, settings=settings)
 
         if sync != SyncOption.SKIP:
             search = get_search_details(metadata=metadata, fallback_title=entry.path.stem)
