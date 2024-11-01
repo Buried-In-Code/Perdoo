@@ -48,33 +48,34 @@ def _load_page_info(
 
 
 def sync_metadata(
-    entry: BaseArchive,
-    search: Search,
-    services: dict[Service, BaseService | None],
-    settings: Settings,
-) -> None:
+    search: Search, services: dict[Service, BaseService | None], settings: Settings
+) -> tuple[MetronInfo | None, ComicInfo | None]:
     for service_name in settings.services.order:
         if service := services.get(service_name):
             LOGGER.info("Searching %s for matching issue", type(service).__name__)
             metron_info, comic_info = service.fetch(search=search)
-
-            if comic_info and settings.output.metadata.comic_info.create:
-                if settings.output.metadata.comic_info.handle_pages:
-                    LOGGER.info("Processing ComicInfo Page data")
-                    _load_page_info(
-                        image_extensions=settings.image_extensions,
-                        entry=entry,
-                        comic_info=comic_info,
-                    )
-                else:
-                    comic_info.pages = []
-                LOGGER.info("Writing ComicInfo.xml to '%s'", entry.path.name)
-                entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
-            if metron_info and settings.output.metadata.metron_info.create:
-                LOGGER.info("Writing MetronInfo.xml to '%s'", entry.path.name)
-                entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
             if metron_info or comic_info:
-                return
+                return metron_info, comic_info
+    return None
+
+
+def save_metadata(
+    entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo | None], settings: Settings
+) -> None:
+    metron_info, comic_info = metadata
+    if comic_info and settings.output.metadata.comic_info.create:
+        if settings.output.metadata.comic_info.handle_pages:
+            LOGGER.info("Processing ComicInfo Page data")
+            _load_page_info(
+                image_extensions=settings.image_extensions, entry=entry, comic_info=comic_info
+            )
+        else:
+            comic_info.pages = []
+        LOGGER.info("Writing ComicInfo.xml to '%s'", entry.path.name)
+        entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
+    if metron_info and settings.output.metadata.metron_info.create:
+        LOGGER.info("Writing MetronInfo.xml to '%s'", entry.path.name)
+        entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
 
 
 def _rename_images_in_archive(

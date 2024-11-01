@@ -11,7 +11,14 @@ from typer import Argument, Context, Exit, Option, Typer
 from perdoo import __version__, setup_logging
 from perdoo.archives import CBRArchive, get_archive
 from perdoo.console import CONSOLE
-from perdoo.main import clean_archive, convert_file, organize_file, rename_file, sync_metadata
+from perdoo.main import (
+    clean_archive,
+    convert_file,
+    organize_file,
+    rename_file,
+    save_metadata,
+    sync_metadata,
+)
 from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
@@ -287,10 +294,11 @@ def run(
                 if metron_info and metron_info.last_modified:
                     last_modified = metron_info.last_modified.date()
             if (date.today() - last_modified).days >= 28:
-                sync_metadata(entry=entry, search=search, services=services, settings=settings)
-                metadata = get_metadata(archive=entry, debug=debug)
+                metadata = sync_metadata(search=search, services=services, settings=settings)
             else:
                 LOGGER.info("Metadata up-to-date")
+
+        save_metadata(entry=entry, metadata=metadata, settings=settings)
 
         if not skip_rename:
             with CONSOLE.status("Renaming to match metadata", spinner="simpleDotsScrolling"):
