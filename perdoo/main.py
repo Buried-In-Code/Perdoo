@@ -71,10 +71,10 @@ def save_metadata(
             )
         else:
             comic_info.pages = []
-        LOGGER.info("Writing ComicInfo.xml to '%s'", entry.path.name)
+        LOGGER.info("Writing 'ComicInfo.xml' to '%s'", entry.path.name)
         entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
     if metron_info and settings.output.metadata.metron_info.create:
-        LOGGER.info("Writing MetronInfo.xml to '%s'", entry.path.name)
+        LOGGER.info("Writing 'MetronInfo.xml' to '%s'", entry.path.name)
         entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
 
 

@@ -12,8 +12,8 @@ LOGGER = logging.getLogger(__name__)
 CONSOLE = Console(
     theme=Theme(
         {
-            "prompt": "green",
-            "prompt.border": "dim bright_green",
+            "prompt": "cyan",
+            "prompt.border": "dim bright_cyan",
             "prompt.choices": "white",
             "prompt.default": "italic white",
             "title": "bold not dim blue",

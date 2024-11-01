@@ -6,6 +6,7 @@ from pathlib import Path
 from platform import python_version
 from typing import Annotated
 
+from comicfn2dict import comicfn2dict
 from typer import Argument, Context, Exit, Option, Typer
 
 from perdoo import __version__, setup_logging
@@ -196,7 +197,8 @@ def get_search_details(
             ),
             issue=IssueSearch(number=comic_info.number),
         )
-    return Search(series=SeriesSearch(name=fallback_title), issue=IssueSearch())
+    series_name = comicfn2dict(fallback_title).get("series", fallback_title)
+    return Search(series=SeriesSearch(name=series_name), issue=IssueSearch())
 
 
 @app.command(name="import", help="Import comics into your collection using Perdoo.")
