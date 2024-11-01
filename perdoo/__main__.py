@@ -197,7 +197,7 @@ def get_search_details(
             ),
             issue=IssueSearch(number=comic_info.number),
         )
-    series_name = comicfn2dict(fallback_title).get("series", fallback_title)
+    series_name = comicfn2dict(fallback_title).get("series", fallback_title).replace("-", " ")
     return Search(series=SeriesSearch(name=series_name), issue=IssueSearch())
 
 
