@@ -56,7 +56,7 @@ def sync_metadata(
             metron_info, comic_info = service.fetch(search=search)
             if metron_info or comic_info:
                 return metron_info, comic_info
-    return None
+    return None, None
 
 
 def save_metadata(
