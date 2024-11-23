@@ -26,21 +26,25 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 <details><summary>Perdoo Commands</summary>
 
+  <!-- RICH-CODEX hide_command: true -->
   ![`uv run Perdoo --help`](docs/img/perdoo-commands.svg)
 
 </details>
 <details><summary>Perdoo Import</summary>
 
+  <!-- RICH-CODEX hide_command: true -->
   ![`uv run Perdoo import --help`](docs/img/perdoo-import.svg)
 
 </details>
 <details><summary>Perdoo Settings</summary>
 
+  <!-- RICH-CODEX hide_command: true -->
   ![`uv run Perdoo settings --help`](docs/img/perdoo-settings.svg)
 
 </details>
 <details><summary>Perdoo View</summary>
-
+  
+  <!-- RICH-CODEX hide_command: true -->
   ![`uv run Perdoo view --help`](docs/img/perdoo-view.svg)
 
 </details>
