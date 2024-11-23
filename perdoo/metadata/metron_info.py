@@ -22,7 +22,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Generic, TypeVar
 
-from pydantic import HttpUrl, PositiveInt
+from pydantic import HttpUrl, NonNegativeInt, PositiveInt
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
@@ -271,7 +271,7 @@ class Series(PascalModel):
     name: str = element()
     sort_name: str | None = element(default=None)
     start_year: int | None = element(default=None)
-    volume: PositiveInt | None = element(default=None)
+    volume: NonNegativeInt | None = element(default=None)
     volume_count: PositiveInt | None = element(default=None)
 
     @property
@@ -341,7 +341,7 @@ class MetronInfo(PascalModel):
     manga_volume: str | None = element(default=None)
     notes: str | None = element(default=None)
     number: str | None = element(default=None)
-    page_count: PositiveInt = element(default=0)
+    page_count: NonNegativeInt = element(default=0)
     prices: list[Price] = wrapped(path="Prices", entity=element(tag="Price", default_factory=list))
     publisher: Publisher | None = element(default=None)
     reprints: list[Resource[str]] = wrapped(

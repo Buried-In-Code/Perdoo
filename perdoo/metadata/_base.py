@@ -2,6 +2,7 @@ __all__ = ["PascalModel"]
 
 from pathlib import Path
 
+from pydantic.alias_generators import to_pascal
 from pydantic_xml import BaseXmlModel
 from rich.panel import Panel
 
@@ -14,16 +15,13 @@ except ImportError:
     from typing_extensions import Self  # Python < 3.11
 
 
-def to_pascal_case(value: str) -> str:
-    return value.replace("_", " ").title().replace(" ", "")
-
-
 class PascalModel(
     BaseXmlModel,
-    alias_generator=to_pascal_case,
+    alias_generator=to_pascal,
     populate_by_name=True,
     str_strip_whitespace=True,
     validate_assignment=True,
+    coerce_numbers_to_str=True,
     extra="ignore",
     nsmap={"xsi": "http://www.w3.org/2001/XMLSchema-instance"},
     skip_empty=True,

@@ -212,13 +212,6 @@ def run(
     skip_convert: Annotated[
         bool, Option("--skip-convert", help="Skip converting comics to the configured format.")
     ] = False,
-    skip_clean: Annotated[
-        bool,
-        Option(
-            "--skip-clean",
-            help="Skip removing any files not listed in the 'image_extensions' setting.",
-        ),
-    ] = False,
     sync: Annotated[
         SyncOption,
         Option(
@@ -228,6 +221,13 @@ def run(
             help="Sync ComicInfo/MetronInfo with online services.",
         ),
     ] = SyncOption.OUTDATED.value,
+    skip_clean: Annotated[
+        bool,
+        Option(
+            "--skip-clean",
+            help="Skip removing any files not listed in the 'image_extensions' setting.",
+        ),
+    ] = False,
     skip_rename: Annotated[
         bool,
         Option("--skip-rename", help="Skip renaming comics based on their ComicInfo/MetronInfo."),
@@ -284,9 +284,6 @@ def run(
             continue
 
         metadata = get_metadata(archive=entry, debug=debug)
-        if not skip_clean:
-            with CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"):
-                clean_archive(entry=entry, settings=settings)
 
         if sync != SyncOption.SKIP:
             search = get_search_details(metadata=metadata, fallback_title=entry.path.stem)
@@ -300,6 +297,9 @@ def run(
             else:
                 LOGGER.info("Metadata up-to-date")
 
+        if not skip_clean:
+            with CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"):
+                clean_archive(entry=entry, settings=settings)
         save_metadata(entry=entry, metadata=metadata, settings=settings)
 
         if not skip_rename:
