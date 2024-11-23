@@ -26,69 +26,22 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 <details><summary>Perdoo Commands</summary>
 
-```
-Usage: Perdoo [OPTIONS] COMMAND [ARGS]...
-
-Commands:
-  import                  Import comics into your collection using Perdoo.
-  settings                Manage settings.
-  view                    View the ComicInfo/MetronInfo inside a Comic archive.
-
-Options:
-  --version               Show the version and exit.
-  --install-completion    Install completion for the current shell.
-  --show-completion       Show completion for the current shell, to copy it or customize the installation.
-  --help                  Show this message and exit.
-```
+  ![`uv run Perdoo --help`](docs/img/perdoo-commands.svg)
 
 </details>
 <details><summary>Perdoo Import</summary>
 
-```
-Usage: Perdoo import [OPTIONS] TARGET
-
-Arguments:
-  target                             PATH    Import comics from the specified file/folder. [required]
-
-Options:
-  --skip-convert                             Skip converting comics to the configured format.
-  --skip-clean                               Skip removing any files not listed in the 'image_extensions' setting.
-  --sync -s [Force|Outdated|Skip]            Sync ComicInfo/MetronInfo with online services. [default: Outdated]
-  --skip-rename                              Skip renaming comics based on their ComicInfo/MetronInfo.
-  --skip-organize                            Skip organize/moving comics to appropriate directories.
-  --debug                                    Enable debug mode to show extra information.
-  --help                                     Show this message and exit.
-```
+  ![`uv run Perdoo import --help`](docs/img/perdoo-import.svg)
 
 </details>
 <details><summary>Perdoo Settings</summary>
 
-```
-Usage: Perdoo settings [OPTIONS] [KEY] [VALUE]
-
-Arguments:
-  key        [KEY]      The config key to retrieve or modify.
-  value      [VALUE]    The value to set for the specified key.
-
-Options:
-  --reset               Reset the specified config key to its default value. If no key is provided, reset all settings.
-  --help                Show this message and exit.
-```
+  ![`uv run Perdoo settings --help`](docs/img/perdoo-settings.svg)
 
 </details>
 <details><summary>Perdoo View</summary>
 
-```
-Usage: Perdoo view [OPTIONS] TARGET
-
-Arguments:
-  target                FILE    Comic to view details of. [required]
-
-Options:
-  --hide-comic-info             Don't show the ComicInfo details.
-  --hide-metron-info            Don't show the MetronInfo details.
-  --help                        Show this message and exit.
-```
+  ![`uv run Perdoo view --help`](docs/img/perdoo-view.svg)
 
 </details>
 
