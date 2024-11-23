@@ -1,10 +1,10 @@
 __all__ = [
+    "GTIN",
     "AgeRating",
     "AlternativeName",
     "Arc",
     "Credit",
     "Format",
-    "GTIN",
     "Id",
     "InformationSource",
     "MetronInfo",

@@ -1,4 +1,4 @@
-__all__ = ["YesNo", "Manga", "AgeRating", "PageType", "Page", "ComicInfo"]
+__all__ = ["AgeRating", "ComicInfo", "Manga", "Page", "PageType", "YesNo"]
 
 from datetime import date
 from enum import Enum

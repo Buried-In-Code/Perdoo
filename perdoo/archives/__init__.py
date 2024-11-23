@@ -1,7 +1,7 @@
 __all__ = [
     "BaseArchive",
-    "CBRArchive",
     "CB7Archive",
+    "CBRArchive",
     "CBTArchive",
     "CBZArchive",
     "get_archive",

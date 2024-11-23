@@ -1,11 +1,11 @@
 __all__ = [
-    "SeriesSearch",
     "IssueSearch",
     "Search",
+    "SeriesSearch",
+    "delete_empty_folders",
+    "flatten_dict",
     "list_files",
     "sanitize",
-    "flatten_dict",
-    "delete_empty_folders",
 ]
 
 import logging

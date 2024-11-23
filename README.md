@@ -43,7 +43,7 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 </details>
 <details><summary>Perdoo View</summary>
-  
+
   <!-- RICH-CODEX hide_command: true -->
   ![`uv run Perdoo view --help`](docs/img/perdoo-view.svg)
 
