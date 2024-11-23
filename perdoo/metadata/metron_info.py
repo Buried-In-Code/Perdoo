@@ -52,7 +52,7 @@ class AgeRating(Enum):
 
 
 class Arc(PascalModel):
-    id: PositiveInt | None = attr(name="id", default=None)
+    id: str | None = attr(name="id", default=None)
     name: str = element()
     number: PositiveInt | None = element(default=None)
 
@@ -72,7 +72,7 @@ class Arc(PascalModel):
 
 class Resource(PascalModel, Generic[T]):
     value: T
-    id: PositiveInt | None = attr(name="id", default=None)
+    id: str | None = attr(name="id", default=None)
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -172,6 +172,9 @@ class InformationSource(Enum):
     ANILIST = "AniList"
     COMIC_VINE = "Comic Vine"
     GRAND_COMICS_DATABASE = "Grand Comics Database"
+    KITSU = "Kitsu"
+    MANGA_DEX = "MangaDex"
+    MANGA_UPDATES = "MangaUpdates"
     MARVEL = "Marvel"
     METRON = "Metron"
     MYANIMELIST = "MyAnimeList"
@@ -191,7 +194,7 @@ class InformationSource(Enum):
 class Id(PascalModel):
     primary: bool = attr(name="primary", default=False)
     source: InformationSource = attr(name="source")
-    value: PositiveInt
+    value: str
 
     def __lt__(self, other) -> int:  # noqa: ANN001
         if not isinstance(other, type(self)):
@@ -226,7 +229,7 @@ class Price(PascalModel):
 
 
 class Publisher(PascalModel):
-    id: PositiveInt | None = attr(name="id", default=None)
+    id: str | None = attr(name="id", default=None)
     imprint: Resource[str] | None = element(default=None)
     name: str = element()
 
@@ -262,12 +265,14 @@ class Series(PascalModel):
         path="AlternativeNames", entity=element(tag="AlternativeName", default_factory=list)
     )
     format: Format | None = element(default=None)
-    id: PositiveInt | None = attr(name="id", default=None)
+    id: str | None = attr(name="id", default=None)
+    issue_count: PositiveInt | None = element(default=None)
     lang: str = attr(name="lang", default="en")
     name: str = element()
     sort_name: str | None = element(default=None)
-    volume: int | None = element(default=None)
     start_year: int | None = element(default=None)
+    volume: PositiveInt | None = element(default=None)
+    volume_count: PositiveInt | None = element(default=None)
 
     @property
     def filename(self) -> str:
@@ -278,7 +283,7 @@ class Series(PascalModel):
 
 class Universe(PascalModel):
     designation: str | None = element(default=None)
-    id: PositiveInt | None = attr(name="id", default=None)
+    id: str | None = attr(name="id", default=None)
     name: str = element()
 
     def __lt__(self, other) -> int:  # noqa: ANN001
@@ -336,7 +341,7 @@ class MetronInfo(PascalModel):
     manga_volume: str | None = element(default=None)
     notes: str | None = element(default=None)
     number: str | None = element(default=None)
-    page_count: int = element(default=0)
+    page_count: PositiveInt = element(default=0)
     prices: list[Price] = wrapped(path="Prices", entity=element(tag="Price", default_factory=list))
     publisher: Publisher | None = element(default=None)
     reprints: list[Resource[str]] = wrapped(
@@ -361,7 +366,7 @@ class MetronInfo(PascalModel):
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:
-        return "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/MetronInfo.xsd"
+        return "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/schema/v1.0/MetronInfo.xsd"
 
     @property
     def filename(self) -> str:
