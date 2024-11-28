@@ -5,6 +5,7 @@ on:
     paths:
       - README.md
       - perdoo/__main__.py
+      - perdoo/cli/**
   workflow_dispatch:
 
 permissions:

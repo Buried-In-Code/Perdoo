@@ -1,5 +1,4 @@
 import logging
-from argparse import SUPPRESS
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -11,6 +10,7 @@ from typer import Argument, Context, Exit, Option, Typer
 
 from perdoo import __version__, setup_logging
 from perdoo.archives import CBRArchive, get_archive
+from perdoo.cli import archive_app, settings_app
 from perdoo.console import CONSOLE
 from perdoo.main import (
     clean_archive,
@@ -24,16 +24,11 @@ from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
 from perdoo.settings import Service, Services, Settings
-from perdoo.utils import (
-    IssueSearch,
-    Search,
-    SeriesSearch,
-    delete_empty_folders,
-    flatten_dict,
-    list_files,
-)
+from perdoo.utils import IssueSearch, Search, SeriesSearch, delete_empty_folders, list_files
 
 app = Typer(help="CLI tool for managing comic collections and settings.")
+app.add_typer(archive_app, name="archive")
+app.add_typer(settings_app, name="settings")
 LOGGER = logging.getLogger("perdoo")
 
 
@@ -65,68 +60,6 @@ def common(
     if version:
         CONSOLE.print(f"Perdoo v{__version__}")
         raise Exit
-
-
-@app.command(name="settings", help="Manage settings.")
-def config(
-    key: Annotated[
-        str | None, Argument(show_default=False, help="The config key to retrieve or modify.")
-    ] = None,
-    value: Annotated[
-        str | None, Argument(show_default=False, help="The value to set for the specified key.")
-    ] = SUPPRESS,
-    reset: Annotated[
-        bool,
-        Option(
-            "--reset",
-            help="Reset the specified config key to its default value. If no key is provided, reset all settings.",  # noqa: E501
-        ),
-    ] = False,
-) -> None:
-    if key:
-        settings = Settings.load()
-        if reset:
-            settings_dict = flatten_dict(content=Settings().model_dump())
-            if key in settings_dict:
-                settings.update(key=key, value=settings_dict[key])
-                settings.save()
-                CONSOLE.print(f"'{key}' Reset")
-            else:
-                CONSOLE.print(f"No Config key: '{key}'", style="logging.level.critical")
-        elif value is not SUPPRESS:
-            settings.update(key=key, value=value)
-            settings.save()
-            CONSOLE.print(f"Updated '{key}' to {value}")
-        else:
-            settings_dict = flatten_dict(content=settings.model_dump())
-            CONSOLE.print(settings_dict.get(key, f"No Config key: '{key}'"))
-    elif reset:
-        Settings().save()
-        CONSOLE.print("Settings reset")
-    else:
-        Settings.display()
-
-
-@app.command(help="View the ComicInfo/MetronInfo inside a Comic archive.")
-def view(
-    target: Annotated[
-        Path,
-        Argument(dir_okay=False, exists=True, show_default=False, help="Comic to view details of."),
-    ],
-    hide_comic_info: Annotated[
-        bool, Option("--hide-comic-info", help="Don't show the ComicInfo details.")
-    ] = False,
-    hide_metron_info: Annotated[
-        bool, Option("--hide-metron-info", help="Don't show the MetronInfo details.")
-    ] = False,
-) -> None:
-    archive = get_archive(target)
-    CONSOLE.print(f"Archive format: '{type(archive).__name__[:3]}'")
-    metron_info, comic_info = get_metadata(archive)
-    if not hide_comic_info:
-        comic_info.display()
-    if not hide_metron_info:
-        metron_info.display()
 
 
 def get_services(settings: Services) -> dict[Service, BaseService]:
@@ -251,8 +184,8 @@ def run(
             extras={
                 "target": target,
                 "flags.skip-convert": skip_convert,
-                "flags.skip-clean": skip_clean,
                 "flags.sync": sync,
+                "flags.skip-clean": skip_clean,
                 "flags.skip-rename": skip_rename,
                 "flags.skip-organize": skip_organize,
             }

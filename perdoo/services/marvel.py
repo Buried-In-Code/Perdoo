@@ -3,9 +3,9 @@ __all__ = ["Marvel"]
 import logging
 from datetime import datetime
 
-from esak.comic import Comic
 from esak.exceptions import ApiError
-from esak.series import Series
+from esak.schemas.comic import Comic
+from esak.schemas.series import Series
 from esak.session import Session as Esak
 from esak.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
