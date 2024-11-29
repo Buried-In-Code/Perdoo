@@ -9,7 +9,7 @@ from perdoo.archives import get_archive
 from perdoo.console import CONSOLE
 from perdoo.metadata import get_metadata
 
-app = Typer()
+app = Typer(help="Commands for inspecting and managing comic archive metadata.")
 
 
 @app.command(help="View the ComicInfo/MetronInfo inside a Comic archive.")

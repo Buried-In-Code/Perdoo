@@ -9,21 +9,21 @@ from perdoo.console import CONSOLE
 from perdoo.settings import Settings
 from perdoo.utils import flatten_dict
 
-app = Typer()
+app = Typer(help="Commands for managing and configuring application settings.")
 
 
-@app.command()
+@app.command(name="view", help="Display the current and default settings.")
 def view() -> None:
     settings = Settings.load()
     settings.display()
 
 
-@app.command(name="locate")
+@app.command(name="locate", help="Display the path to the settings file.")
 def locate() -> None:
     CONSOLE.print(Settings._file)  # noqa: SLF001
 
 
-@app.command(name="update")
+@app.command(name="update", help="Update the settings.")
 def update(
     key: Annotated[str | None, Argument(show_default=False, help="The setting to update.")] = None,
     value: Annotated[
