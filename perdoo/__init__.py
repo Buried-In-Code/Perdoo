@@ -1,13 +1,12 @@
 __all__ = [
     "__version__",
-    "ARCHIVE_EXTENSIONS",
-    "IMAGE_EXTENSIONS",
     "get_cache_root",
     "get_config_root",
     "get_data_root",
+    "get_state_root",
     "setup_logging",
 ]
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 import logging
 import os
@@ -17,9 +16,6 @@ from rich.logging import RichHandler
 from rich.traceback import install
 
 from perdoo.console import CONSOLE
-
-ARCHIVE_EXTENSIONS = (".cb7", ".cbr", ".cbt", ".cbz")
-IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp")
 
 
 def get_cache_root() -> Path:
@@ -43,14 +39,15 @@ def get_data_root() -> Path:
     return folder
 
 
-def get_project_root() -> Path:
-    return Path(__file__).parent.parent
+def get_state_root() -> Path:
+    data_home = os.getenv("XDG_STATE_HOME", default=str(Path.home() / ".local" / "state"))
+    folder = Path(data_home).resolve() / "perdoo"
+    folder.mkdir(exist_ok=True, parents=True)
+    return folder
 
 
 def setup_logging(debug: bool = False) -> None:
     install(show_locals=True, max_frames=6, console=CONSOLE)
-    log_folder = get_project_root() / "logs"
-    log_folder.mkdir(parents=True, exist_ok=True)
 
     console_handler = RichHandler(
         rich_tracebacks=True,
@@ -63,7 +60,7 @@ def setup_logging(debug: bool = False) -> None:
     )
     console_handler.setLevel(logging.DEBUG if debug else logging.INFO)
     console_handler.setFormatter(logging.Formatter("%(message)s"))
-    file_handler = logging.FileHandler(filename=log_folder / "perdoo.log")
+    file_handler = logging.FileHandler(filename=get_state_root() / "perdoo.log")
     file_handler.setLevel(logging.DEBUG)
     logging.basicConfig(
         format="[%(asctime)s] [%(levelname)-8s] {%(name)s} | %(message)s",

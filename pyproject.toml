@@ -2,6 +2,17 @@
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
+[dependency-groups]
+dev = [
+  "pre-commit >= 4.0.1"
+]
+tests = [
+  "pytest >= 8.3.3",
+  "pytest-cov >= 6.0.0",
+  "tox >= 4.23.2",
+  "tox-uv >= 1.16.0"
+]
+
 [project]
 authors = [
   {email = "BuriedInCode@tuta.io", name = "BuriedInCode"}
@@ -19,25 +30,25 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.13",
   "Typing :: Typed"
 ]
 dependencies = [
-  "esak >= 1.3.2",
-  "eval-type-backport >= 0.2.0 ; python_version < \"3.10\"",
+  "comicfn2dict >= 0.2.4",
+  "esak >= 2.0.0",
   "himon >= 0.6.1",
-  "mokkari >= 3.2.0 ; python_version >= \"3.10\"",
-  "mokkari@git+https://github.com/Buried-In-Code/mokkari ; python_version < \"3.10\"",
+  "lxml >= 5.3.0",
+  "mokkari >= 3.4.0",
   "natsort >= 8.4.0",
-  "pillow >= 10.4.0",
-  "pydantic >= 2.8.2",
+  "pillow >= 11.0.0",
+  "pydantic >= 2.10.1",
+  "pydantic-xml >= 2.14.0",
   "rarfile >= 4.2",
-  "rich >= 13.7.1",
-  "simyan >= 1.2.2",
-  "tomli >= 2.0.1 ; python_version < \"3.11\"",
-  "tomli-w >= 1.0.0",
-  "xmltodict >= 0.13.0"
+  "rich >= 13.9.3",
+  "simyan >= 1.3.0",
+  "tomli >= 2.1.0 ; python_version < \"3.11\"",
+  "tomli-w >= 1.1.0",
+  "typer >= 0.13.1"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -45,28 +56,29 @@ keywords = ["comic", "comics", "metadata", "tagger", "tagging"]
 license = {text = "MIT"}
 name = "perdoo"
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "py7zr >= 0.21.1"
+  "py7zr >= 0.22.0"
 ]
 
 [project.scripts]
-Perdoo = "perdoo.__main__:main"
+Perdoo = "perdoo.__main__:app"
 
 [project.urls]
 Homepage = "https://pypi.org/project/Perdoo"
 Issues = "https://github.com/Buried-In-Code/Perdoo/issues"
 Source = "https://github.com/Buried-In-Code/Perdoo"
 
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.hatch.build.targets.sdist]
+exclude = [".github/"]
 
 [tool.hatch.version]
 path = "perdoo/__init__.py"
 
 [tool.ruff]
+extend-exclude = ["perdoo/archives/zipfile_remove.py"]
 fix = true
 line-length = 100
 output-format = "grouped"
@@ -83,12 +95,11 @@ ignore = [
   "C901",
   "COM812",
   "D",
-  "D107",
   "DTZ",
-  "EM101",
-  "EM102",
-  "EXE",
+  "EM",
   "FBT",
+  "PLR0912",
+  "PLR0913",
   "PLR2004",
   "PLW2901",
   "TCH",
@@ -121,8 +132,3 @@ convention = "google"
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
-
-[tool.rye]
-dev-dependencies = [
-  "pre-commit >= 3.5.0"
-]

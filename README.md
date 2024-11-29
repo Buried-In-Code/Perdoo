@@ -5,9 +5,8 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
 [![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![Rye](https://img.shields.io/badge/Rye-informational?style=flat-square&logo=rye&labelColor=grey)](https://rye.astral.sh)
-[![Pre-Commit](https://img.shields.io/badge/Pre--Commit-informational?style=flat-square&logo=pre-commit&labelColor=grey)](https://github.com/pre-commit/pre-commit)
-[![Ruff](https://img.shields.io/badge/Ruff-informational?style=flat-square&logo=ruff&labelColor=grey)](https://github.com/astral-sh/ruff)
+[![Pre-Commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
+[![Ruff](https://img.shields.io/badge/ruff-enabled-brightgreen?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/graphs/contributors)
 
@@ -23,23 +22,50 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 1. Ensure you have [Pipx](https://pipxproject.github.io/pipx/) installed: `pipx --version`
 2. Install the project: `pipx install perdoo`
 
-### From Source
+## Usage
 
-1. Ensure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
-2. Clone the repository: `git clone https://github.com/Buried-In-Code/Perdoo`
-3. Install the project: `pip install .`
+<details><summary>Perdoo Commands</summary>
 
-## Execution
+  <!-- RICH-CODEX hide_command: true -->
+  ![`uv run Perdoo --help`](docs/img/perdoo-commands.svg)
 
-- `Perdoo <arguments>`
+</details>
+<details><summary>Perdoo import</summary>
 
-### Arguments
+  <!-- RICH-CODEX hide_command: true -->
+  ![`uv run Perdoo import --help`](docs/img/perdoo-import.svg)
 
-| Argument    | Type | Description                                                             |
-| ----------- | ---- | ----------------------------------------------------------------------- |
-| `--force`   | bool | Forces the sync of archives, regardless of when they were last updated. |
-| `--version` | bool | Displays the version of Perdoo running.                                 |
-| `--debug`   | bool | Displays extra/debug messages while running.                            |
+</details>
+
+### Perdoo archive Commands
+
+<details><summary>Perdoo archive view</summary>
+
+  <!-- RICH-CODEX hide_command: true -->
+  ![`uv run Perdoo archive view --help`](docs/img/perdoo-archive-view.svg)
+
+</details>
+
+### Perdoo settings Commands
+
+<details><summary>Perdoo settings view</summary>
+
+  <!-- RICH-CODEX hide_command: true -->
+  ![`uv run Perdoo settings view --help`](docs/img/perdoo-settings-view.svg)
+
+</details>
+<details><summary>Perdoo settings locate</summary>
+
+  <!-- RICH-CODEX hide_command: true -->
+  ![`uv run Perdoo settings locate --help`](docs/img/perdoo-settings-locate.svg)
+
+</details>
+<details><summary>Perdoo settings update</summary>
+
+  <!-- RICH-CODEX hide_command: true -->
+  ![`uv run Perdoo settings update --help`](docs/img/perdoo-settings-update.svg)
+
+</details>
 
 ## Supported Formats
 
@@ -48,19 +74,18 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 - .cbr
 - .cbt
 - .cbz
-- .cb7 _(Requires installing `cb7` dependencies: `pip install perdoo[cb7]`)_
+- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
 
 ### Output Extensions
 
 - .cbt
 - .cbz _(Default)_
-- .cb7 _(Requires installing `cb7` dependencies: `pip install perdoo[cb7]`)_
+- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
 
 ### Metadata Files
 
-- [Metadata.xml](https://github.com/Buried-In-Code/Schemas)
 - [MetronInfo.xml](https://github.com/Metron-Project/metroninfo)
-- Perdoo supports a slightly modified [ComicInfo.xml](https://github.com/anansi-project/comicinfo) to ignore field ordering. _See [Buried-In-Code/Schemas](https://github.com/Buried-In-Code/Schemas) for details._
+- Perdoo supports a slightly modified [ComicInfo.xml](https://github.com/anansi-project/comicinfo) to ignore field ordering.
 
 ## Services
 
@@ -79,14 +104,15 @@ Series with a volume greater than 1 will display its volume in the title.
 
 The files are named based on the format of the comic:
 
-- **_Default/Comic_**: `{Series Title}_#{Issue Number}.cbz`
+- **_Default_**: `{Series Title}_#{Issue Number}.cbz`
 - Annual: `{Series Title}_Annual_#{Issue Number}.cbz`
 - Digital Chapter: `{Series Title}_Chapter_#{Issue Number}.cbz`
-- Hardcover: `{Series Title}_#{Issue Number}_HC.cbz`
-- Trade Paperback: `{Series Title}_#{Issue Number}_TP.cbz`
 - Graphic Novel: `{Series Title}_#{Issue Number}_GN.cbz`
+- Hardcover: `{Series Title}_#{Issue Number}_HC.cbz`
+- Omnibus: `{Series Title}_#{Issue Number}.cbz`
+- Trade Paperback: `{Series Title}_#{Issue Number}_TPB.cbz`
 
-## Collection Folder Structure
+### Folder Structure
 
 ```
 Collection Root
@@ -95,16 +121,16 @@ Collection Root
 |  |  +-- Series_#001.cbz
 |  |  +-- Series_Annual_#01.cbz
 |  |  +-- Series_Chapter_#01.cbz
-|  |  +-- Series_#01_HC.cbz
-|  |  +-- Series_#01_TP.cbz
 |  |  +-- Series_#01_GN.cbz
+|  |  +-- Series_#01_HC.cbz
+|  |  +-- Series_#01_TPB.cbz
 |  +-- Series-v2
 |  |  +-- Series-v2_#001.cbz
 |  |  +-- Series-v2_Annual_#01.cbz
 |  |  +-- Series-v2_Chapter_#01.cbz
-|  |  +-- Series-v2_#01_HC.cbz
-|  |  +-- Series-v2_#01_TP.cbz
 |  |  +-- Series-v2_#01_GN.cbz
+|  |  +-- Series-v2_#01_HC.cbz
+|  |  +-- Series-v2_#01_TPB.cbz
 ```
 
 ## Socials

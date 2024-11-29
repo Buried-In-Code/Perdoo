@@ -10,7 +10,8 @@ logs/
 
 # =====Files=====
 *.iml
-.python-version
 *.log
-
-# =====Project=====
+.pdm-python
+.python-version
+pdm.lock
+uv.lock

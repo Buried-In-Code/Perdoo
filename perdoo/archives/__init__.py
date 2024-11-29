@@ -1,4 +1,12 @@
-__all__ = ["BaseArchive", "CB7Archive", "CBTArchive", "CBZArchive", "get_archive"]
+__all__ = [
+    "BaseArchive",
+    "CB7Archive",
+    "CBRArchive",
+    "CBTArchive",
+    "CBZArchive",
+    "get_archive",
+    "get_archive_class",
+]
 
 from pathlib import Path
 from tarfile import is_tarfile
@@ -30,3 +38,12 @@ def get_archive(path: Path) -> BaseArchive:
     if py7zr_loaded and is_7zfile:
         return CB7Archive(path=path)
     raise NotImplementedError(f"{path.name} is an unsupported archive")
+
+
+def get_archive_class(extension: str) -> type[BaseArchive]:
+    archive_types = {"cbz": CBZArchive, "cbr": CBRArchive, "cbt": CBTArchive}
+    if extension == "cb7" and py7zr_loaded:
+        return CB7Archive
+    if extension in archive_types:
+        return archive_types[extension]
+    raise NotImplementedError(f"{extension} is an unsupported archive")
