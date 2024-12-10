@@ -41,9 +41,15 @@ class Marvel(BaseService[Series, Comic]):
                 LOGGER.warning(
                     "Unable to find any Series with the Title and StartYear: '%s %s'", name, year
                 )
+            search = name
+            if volume:
+                search += f" v{volume}"
+            if year:
+                search += f" ({year})"
             index = create_menu(
                 options=[f"{x.id} | {x.title}" for x in options],
                 title="Marvel Series",
+                subtitle=f"Searching for Series '{search}'",
                 default="None of the Above",
             )
             if index != 0:
@@ -94,6 +100,7 @@ class Marvel(BaseService[Series, Comic]):
                     f"{x.id} | {x.series.name} #{x.issue_number} - {x.format}" for x in options
                 ],
                 title="Marvel Comic",
+                subtitle=f"Searching for Comic #{number}" if number else "",
                 default="None of the Above",
             )
             if index != 0:

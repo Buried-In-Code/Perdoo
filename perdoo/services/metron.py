@@ -57,6 +57,11 @@ class Metron(BaseService[Series, Issue]):
                     volume,
                     year,
                 )
+            search = name
+            if volume:
+                search += f" v{volume}"
+            if year:
+                search += f" ({year})"
             index = create_menu(
                 options=[
                     f"{x.id} | {x.display_name} v{x.volume}"
@@ -65,6 +70,7 @@ class Metron(BaseService[Series, Issue]):
                     for x in options
                 ],
                 title="Metron Series",
+                subtitle=f"Searching for Series '{search}'",
                 default="None of the Above",
             )
             if index != 0:
@@ -130,6 +136,7 @@ class Metron(BaseService[Series, Issue]):
             index = create_menu(
                 options=[f"{x.id} | {x.issue_name}" for x in options],
                 title="Metron Issue",
+                subtitle=f"Searching for Issue #{number}" if number else "",
                 default="None of the Above",
             )
             if index != 0:

@@ -46,6 +46,11 @@ class Comicvine(BaseService[Volume, Issue]):
                 LOGGER.warning(
                     "Unable to find any Volumes with the Name and StartYear: '%s %s'", name, year
                 )
+            search = name
+            if volume:
+                search += f" v{volume}"
+            if year:
+                search += f" ({year})"
             index = create_menu(
                 options=[
                     f"{x.id} | {x.publisher.name if x.publisher and x.publisher.name else ''}"
@@ -53,6 +58,7 @@ class Comicvine(BaseService[Volume, Issue]):
                     for x in options
                 ],
                 title="Comicvine Volume",
+                subtitle=f"Searching for Volume '{search}'",
                 default="None of the Above",
             )
             if index != 0:
@@ -107,6 +113,7 @@ class Comicvine(BaseService[Volume, Issue]):
             index = create_menu(
                 options=[f"{x.id} | {x.number} - {x.name or ''}" for x in options],
                 title="Comicvine Issue",
+                subtitle=f"Searching for Issue #{number}" if number else "",
                 default="None of the Above",
             )
             if index != 0:
