@@ -74,13 +74,13 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 - .cbr
 - .cbt
 - .cbz
-- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
+- .cb7
 
 ### Output Extensions
 
 - .cbt
 - .cbz _(Default)_
-- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
+- .cb7
 
 ### Metadata Files
 
