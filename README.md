@@ -5,8 +5,8 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
 [![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![Pre-Commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
-[![Ruff](https://img.shields.io/badge/ruff-enabled-brightgreen?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
+[![Pre-Commit](https://img.shields.io/badge/pre--commit-enabled-informational?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit)
+[![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/graphs/contributors)
 
@@ -19,7 +19,7 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ### Pipx
 
-1. Ensure you have [Pipx](https://pipxproject.github.io/pipx/) installed: `pipx --version`
+1. Ensure you have [Pipx](https://pipx.pypa.io/stable/) installed: `pipx --version`
 2. Install the project: `pipx install perdoo`
 
 ## Usage
