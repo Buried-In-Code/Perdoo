@@ -161,29 +161,29 @@ class Marvel(BaseService[Series, Comic]):
                 return Role.OTHER
 
         return MetronInfo(
-            ids=[Id(primary=True, source=InformationSource.MARVEL, value=issue.id)],
+            ids=[Id(primary=True, source=InformationSource.MARVEL, value=str(issue.id))],
             publisher=Publisher(name="Marvel"),
             series=Series(
-                id=series.id,
+                id=str(series.id),
                 name=series.title,
                 format=load_format(value=issue.format),
                 start_year=series.start_year,
             ),
             collection_title=issue.title,
             number=issue.issue_number,
-            stories=[Resource[str](id=x.id, value=x.name) for x in issue.stories],
+            stories=[Resource[str](id=str(x.id), value=x.name) for x in issue.stories],
             summary=issue.description,
             prices=[Price(country="US", value=issue.prices.print)] if issue.prices else [],
             store_date=issue.dates.on_sale,
             page_count=issue.page_count,
-            arcs=[Arc(id=x.id, name=x.name) for x in issue.events],
-            characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
+            arcs=[Arc(id=str(x.id), name=x.name) for x in issue.events],
+            characters=[Resource[str](id=str(x.id), value=x.name) for x in issue.characters],
             gtin=GTIN(isbn=issue.isbn, upc=issue.upc) if issue.isbn and issue.upc else None,
             age_rating=load_age_rating(value=series.rating),
             urls=[Url(primary=True, value=issue.urls.detail)],
             credits=[
                 Credit(
-                    creator=Resource[str](id=x.id, value=x.name),
+                    creator=Resource[str](id=str(x.id), value=x.name),
                     roles=[Resource[Role](value=load_role(value=x.role))],
                 )
                 for x in issue.creators

@@ -163,22 +163,22 @@ class Comicvine(BaseService[Volume, Issue]):
                 return Role.OTHER
 
         return MetronInfo(
-            ids=[Id(primary=True, source=InformationSource.COMIC_VINE, value=issue.id)],
-            publisher=Publisher(id=series.publisher.id, name=series.publisher.name),
-            series=Series(id=series.id, name=series.name, start_year=series.start_year),
+            ids=[Id(primary=True, source=InformationSource.COMIC_VINE, value=str(issue.id))],
+            publisher=Publisher(id=str(series.publisher.id), name=series.publisher.name),
+            series=Series(id=str(series.id), name=series.name, start_year=series.start_year),
             collection_title=issue.name,
             number=issue.number,
             summary=issue.summary,
             cover_date=issue.cover_date,
             store_date=issue.store_date,
-            arcs=[Arc(id=x.id, name=x.name) for x in issue.story_arcs],
-            characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
-            teams=[Resource[str](id=x.id, value=x.name) for x in issue.teams],
-            locations=[Resource[str](id=x.id, value=x.name) for x in issue.locations],
+            arcs=[Arc(id=str(x.id), name=x.name) for x in issue.story_arcs],
+            characters=[Resource[str](id=str(x.id), value=x.name) for x in issue.characters],
+            teams=[Resource[str](id=str(x.id), value=x.name) for x in issue.teams],
+            locations=[Resource[str](id=str(x.id), value=x.name) for x in issue.locations],
             urls=[Url(primary=True, value=issue.site_url)],
             credits=[
                 Credit(
-                    creator=Resource[str](id=x.id, value=x.name),
+                    creator=Resource[str](id=str(x.id), value=x.name),
                     roles=[
                         Resource[Role](value=load_role(value=r.strip()))
                         for r in re.split(r"[~\r\n,]+", x.roles)

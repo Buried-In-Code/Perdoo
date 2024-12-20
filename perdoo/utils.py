@@ -25,7 +25,6 @@ class SeriesSearch:
     volume: int | None = None
     year: int | None = None
     comicvine: int | None = None
-    league: int | None = None
     marvel: int | None = None
     metron: int | None = None
 
@@ -34,7 +33,6 @@ class SeriesSearch:
 class IssueSearch:
     number: str | None = None
     comicvine: int | None = None
-    league: int | None = None
     marvel: int | None = None
     metron: int | None = None
 
@@ -78,6 +76,15 @@ def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any
         else:
             items[new_key] = value
     return dict(humansorted(items.items(), alg=ns.NA | ns.G))
+
+
+def recursive_delete(path: Path) -> None:
+    for item in path.iterdir():
+        if item.is_dir():
+            recursive_delete(item)
+        else:
+            item.unlink()
+    path.rmdir()
 
 
 def delete_empty_folders(folder: Path) -> None:

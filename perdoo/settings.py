@@ -1,7 +1,6 @@
 __all__ = [
     "ComicInfo",
     "Comicvine",
-    "LeagueOfComicGeeks",
     "Marvel",
     "Metadata",
     "Metron",
@@ -71,12 +70,6 @@ class Comicvine(SettingsModel):
     api_key: str | None = None
 
 
-class LeagueOfComicGeeks(SettingsModel):
-    client_id: str | None = None
-    client_secret: str | None = None
-    access_token: str | None = None
-
-
 class Marvel(SettingsModel):
     public_key: str | None = None
     private_key: str | None = None
@@ -89,7 +82,6 @@ class Metron(SettingsModel):
 
 class Service(Enum):
     COMICVINE = "Comicvine"
-    LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
     MARVEL = "Marvel"
     METRON = "Metron"
 
@@ -106,7 +98,6 @@ class Service(Enum):
 
 class Services(SettingsModel):
     comicvine: Comicvine = Comicvine()
-    league_of_comic_geeks: LeagueOfComicGeeks = LeagueOfComicGeeks()
     marvel: Marvel = Marvel()
     metron: Metron = Metron()
     order: tuple[Service, ...] = (Service.METRON, Service.MARVEL, Service.COMICVINE)
