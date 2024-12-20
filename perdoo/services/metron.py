@@ -188,20 +188,22 @@ class Metron(BaseService[Series, Issue]):
             except ValueError:
                 return Role.OTHER
 
-        ids = [Id(primary=True, source=InformationSource.METRON, value=issue.id)]
+        ids = [Id(primary=True, source=InformationSource.METRON, value=str(issue.id))]
         if issue.cv_id:
-            ids.append(Id(source=InformationSource.COMIC_VINE, value=issue.cv_id))
+            ids.append(Id(source=InformationSource.COMIC_VINE, value=str(issue.cv_id)))
+        if issue.gcd_id:
+            ids.append(Id(source=InformationSource.GRAND_COMICS_DATABASE, value=str(issue.gcd_id)))
         return MetronInfo(
             ids=ids,
             publisher=Publisher(
-                id=series.publisher.id,
+                id=str(series.publisher.id),
                 name=series.publisher.name,
-                imprint=Resource[str](id=series.imprint.id, value=series.imprint.name)
+                imprint=Resource[str](id=str(series.imprint.id), value=series.imprint.name)
                 if series.imprint
                 else None,
             ),
             series=Series(
-                id=series.id,
+                id=str(series.id),
                 name=series.name,
                 sort_name=series.sort_name,
                 volume=series.volume,
@@ -216,21 +218,23 @@ class Metron(BaseService[Series, Issue]):
             cover_date=issue.cover_date,
             store_date=issue.store_date,
             page_count=issue.page_count or 0,
-            genres=[Resource[str](id=x.id, value=x.name) for x in issue.series.genres],
-            arcs=[Arc(id=x.id, name=x.name) for x in issue.arcs],
-            characters=[Resource[str](id=x.id, value=x.name) for x in issue.characters],
-            teams=[Resource[str](id=x.id, value=x.name) for x in issue.teams],
-            universes=[Universe(id=x.id, name=x.name) for x in issue.universes],
+            genres=[Resource[str](id=str(x.id), value=x.name) for x in issue.series.genres],
+            arcs=[Arc(id=str(x.id), name=x.name) for x in issue.arcs],
+            characters=[Resource[str](id=str(x.id), value=x.name) for x in issue.characters],
+            teams=[Resource[str](id=str(x.id), value=x.name) for x in issue.teams],
+            universes=[Universe(id=str(x.id), name=x.name) for x in issue.universes],
             gtin=GTIN(isbn=issue.isbn or None, upc=issue.upc or None)
             if issue.isbn or issue.upc
             else None,
             age_rating=AgeRating.load(value=issue.rating.name),
-            reprints=[Resource[str](id=x.id, value=x.issue) for x in issue.reprints],
+            reprints=[Resource[str](id=str(x.id), value=x.issue) for x in issue.reprints],
             urls=[Url(primary=True, value=issue.resource_url)],
             credits=[
                 Credit(
-                    creator=Resource[str](id=x.id, value=x.creator),
-                    roles=[Resource[Role](id=r.id, value=load_role(value=r.name)) for r in x.role],
+                    creator=Resource[str](id=str(x.id), value=x.creator),
+                    roles=[
+                        Resource[Role](id=str(r.id), value=load_role(value=r.name)) for r in x.role
+                    ],
                 )
                 for x in issue.credits
             ],

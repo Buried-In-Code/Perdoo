@@ -7,10 +7,10 @@ dev = [
   "pre-commit >= 4.0.1"
 ]
 tests = [
-  "pytest >= 8.3.3",
+  "pytest >= 8.3.4",
   "pytest-cov >= 6.0.0",
   "tox >= 4.23.2",
-  "tox-uv >= 1.16.0"
+  "tox-uv >= 1.16.1"
 ]
 
 [project]
@@ -38,17 +38,17 @@ dependencies = [
   "esak >= 2.0.0",
   "himon >= 0.6.1",
   "lxml >= 5.3.0",
-  "mokkari >= 3.4.0",
+  "mokkari >= 3.5.0",
   "natsort >= 8.4.0",
   "pillow >= 11.0.0",
-  "pydantic >= 2.10.1",
-  "pydantic-xml >= 2.14.0",
+  "pydantic >= 2.10.4",
+  "pydantic-xml >= 2.14.1",
   "rarfile >= 4.2",
-  "rich >= 13.9.3",
-  "simyan >= 1.3.0",
-  "tomli >= 2.1.0 ; python_version < \"3.11\"",
+  "rich >= 13.9.4",
+  "simyan >= 1.4.0",
+  "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.1.0",
-  "typer >= 0.13.1"
+  "typer >= 0.15.1"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -71,11 +71,20 @@ Homepage = "https://pypi.org/project/Perdoo"
 Issues = "https://github.com/Buried-In-Code/Perdoo/issues"
 Source = "https://github.com/Buried-In-Code/Perdoo"
 
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.run]
+source = ["perdoo"]
+
 [tool.hatch.build.targets.sdist]
 exclude = [".github/"]
 
 [tool.hatch.version]
 path = "perdoo/__init__.py"
+
+[tool.pytest.ini_options]
+addopts = ["--cov"]
 
 [tool.ruff]
 extend-exclude = ["perdoo/archives/zipfile_remove.py"]
@@ -96,7 +105,8 @@ ignore = [
   "COM812",
   "D",
   "DTZ",
-  "EM",
+  "EM101",
+  "EM102",
   "FBT",
   "PLR0912",
   "PLR0913",
@@ -132,3 +142,16 @@ convention = "google"
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
+
+[tool.tomlsort]
+all = true
+overrides."tool.tox.env_list".inline_arrays = false
+overrides."tool.tox.testenv.commands".inline_arrays = false
+
+[tool.tox]
+env_list = ["3.10", "3.11", "3.12", "3.13"]
+min_version = "4.22"
+
+[tool.tox.env_run_base]
+commands = [["pytest"]]
+dependency_groups = ["tests"]

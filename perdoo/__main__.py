@@ -8,7 +8,7 @@ from typing import Annotated
 from comicfn2dict import comicfn2dict
 from typer import Argument, Context, Exit, Option, Typer
 
-from perdoo import __version__, setup_logging
+from perdoo import __version__, get_cache_root, setup_logging
 from perdoo.archives import CBRArchive, get_archive
 from perdoo.cli import archive_app, settings_app
 from perdoo.console import CONSOLE
@@ -22,9 +22,16 @@ from perdoo.main import (
 )
 from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
 from perdoo.metadata.metron_info import InformationSource
-from perdoo.services import BaseService, Comicvine, League, Marvel, Metron
+from perdoo.services import BaseService, Comicvine, Marvel, Metron
 from perdoo.settings import Service, Services, Settings
-from perdoo.utils import IssueSearch, Search, SeriesSearch, delete_empty_folders, list_files
+from perdoo.utils import (
+    IssueSearch,
+    Search,
+    SeriesSearch,
+    delete_empty_folders,
+    list_files,
+    recursive_delete,
+)
 
 app = Typer(help="CLI tool for managing comic collections and settings.")
 app.add_typer(archive_app, name="archive")
@@ -66,8 +73,6 @@ def get_services(settings: Services) -> dict[Service, BaseService]:
     output = {}
     if settings.comicvine.api_key:
         output[Service.COMICVINE] = Comicvine(settings.comicvine)
-    if settings.league_of_comic_geeks.client_id and settings.league_of_comic_geeks.client_secret:
-        output[Service.LEAGUE_OF_COMIC_GEEKS] = League(settings.league_of_comic_geeks)
     if settings.marvel.public_key and settings.marvel.private_key:
         output[Service.MARVEL] = Marvel(settings.marvel)
     if settings.metron.username and settings.metron.password:
@@ -89,7 +94,6 @@ def get_search_details(
                 volume=metron_info.series.volume,
                 year=metron_info.series.start_year,
                 comicvine=series_id if source == InformationSource.COMIC_VINE else None,
-                league=series_id if source == InformationSource.LEAGUE_OF_COMIC_GEEKS else None,
                 marvel=series_id if source == InformationSource.MARVEL else None,
                 metron=series_id if source == InformationSource.METRON else None,
             ),
@@ -98,14 +102,6 @@ def get_search_details(
                 comicvine=next(
                     iter(
                         x.value for x in metron_info.ids if x.source == InformationSource.COMIC_VINE
-                    ),
-                    None,
-                ),
-                league=next(
-                    iter(
-                        x.value
-                        for x in metron_info.ids
-                        if x.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
                     ),
                     None,
                 ),
@@ -169,6 +165,16 @@ def run(
         bool,
         Option("--skip-organize", help="Skip organize/moving comics to appropriate directories."),
     ] = False,
+    clean_cache: Annotated[
+        bool,
+        Option(
+            "--clean",
+            "-c",
+            show_default=False,
+            help="Clean the cache before starting the synchronization process. "
+            "Removes all cached files.",
+        ),
+    ] = False,
     debug: Annotated[
         bool, Option("--debug", help="Enable debug mode to show extra information.")
     ] = False,
@@ -188,8 +194,12 @@ def run(
                 "flags.skip-clean": skip_clean,
                 "flags.skip-rename": skip_rename,
                 "flags.skip-organize": skip_organize,
+                "flags.clean-cache": clean_cache,
             }
         )
+    if clean_cache:
+        LOGGER.info("Cleaning Cache")
+        recursive_delete(path=get_cache_root())
     services = get_services(settings=settings.services)
     if not services and sync != SyncOption.SKIP:
         LOGGER.warning("No external services configured")
