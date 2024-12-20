@@ -24,6 +24,7 @@ class SeriesSearch:
     volume: int | None = None
     year: int | None = None
     comicvine: int | None = None
+    grand_comics_database: int | None = None
     marvel: int | None = None
     metron: int | None = None
 
@@ -32,6 +33,7 @@ class SeriesSearch:
 class IssueSearch:
     number: str | None = None
     comicvine: int | None = None
+    grand_comics_database: int | None = None
     marvel: int | None = None
     metron: int | None = None
 
