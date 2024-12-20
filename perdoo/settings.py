@@ -12,12 +12,11 @@ __all__ = [
 ]
 
 from enum import Enum
-from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, ClassVar, Literal
 
 import tomli_w as tomlwriter
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from rich.panel import Panel
 
 from perdoo import get_config_root, get_data_root
@@ -59,12 +58,6 @@ class Output(SettingsModel):
     format: Literal["cb7", "cbt", "cbz"] = "cbz"
     metadata: Metadata = Metadata()
 
-    @field_validator("format", mode="before")
-    def validate_format(cls, value: str) -> str:
-        if value == "cb7" and find_spec("py7zr") is None:
-            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
-        return value
-
 
 class Comicvine(SettingsModel):
     api_key: str | None = None
@@ -80,20 +73,10 @@ class Metron(SettingsModel):
     username: str | None = None
 
 
-class Service(Enum):
+class Service(str, Enum):
     COMICVINE = "Comicvine"
     MARVEL = "Marvel"
     METRON = "Metron"
-
-    @staticmethod
-    def load(value: str) -> "Service":
-        for entry in Service:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
-                return entry
-        raise ValueError(f"'{value}' isn't a valid Service")
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class Services(SettingsModel):
