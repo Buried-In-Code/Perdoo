@@ -75,6 +75,7 @@ class Metron(SettingsModel):
 
 class Service(str, Enum):
     COMICVINE = "Comicvine"
+    GRAND_COMICS_DATABASE = "Grand Comics Database"
     MARVEL = "Marvel"
     METRON = "Metron"
 
@@ -83,7 +84,12 @@ class Services(SettingsModel):
     comicvine: Comicvine = Comicvine()
     marvel: Marvel = Marvel()
     metron: Metron = Metron()
-    order: tuple[Service, ...] = (Service.METRON, Service.MARVEL, Service.COMICVINE)
+    order: tuple[Service, ...] = (
+        Service.METRON,
+        Service.MARVEL,
+        Service.GRAND_COMICS_DATABASE,
+        Service.COMICVINE,
+    )
 
 
 def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:

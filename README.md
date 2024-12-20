@@ -90,6 +90,7 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ## Services
 
 - [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) library.
+- [Grand Comics Database](https://www.comics.org) using the [Grayven](https://github.com/Buried-In-Code/Grayven) library.
 - [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) library.
 - [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
 
