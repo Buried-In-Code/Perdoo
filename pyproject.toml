@@ -10,7 +10,7 @@ tests = [
   "pytest >= 8.3.4",
   "pytest-cov >= 6.0.0",
   "tox >= 4.23.2",
-  "tox-uv >= 1.16.1"
+  "tox-uv >= 1.17.0"
 ]
 
 [project]
@@ -39,9 +39,8 @@ dependencies = [
   "lxml >= 5.3.0",
   "mokkari >= 3.5.0",
   "natsort >= 8.4.0",
-  "pillow >= 11.0.0",
-  "py7zr >= 0.22.0",
-  "pydantic >= 2.10.4",
+  "pillow >= 11.1.0",
+  "pydantic >= 2.10.5",
   "pydantic-xml >= 2.14.1",
   "rarfile >= 4.2",
   "rich >= 13.9.4",
@@ -57,6 +56,11 @@ license = {text = "MIT"}
 name = "perdoo"
 readme = "README.md"
 requires-python = ">= 3.10"
+
+[project.optional-dependencies]
+cb7 = [
+  "py7zr >= 0.22.0"
+]
 
 [project.scripts]
 Perdoo = "perdoo.__main__:app"
