@@ -6,15 +6,25 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Optional
 
-from py7zr import Bad7zFile, SevenZipFile
-
 from perdoo.archives._base import BaseArchive
 from perdoo.utils import list_files
+
+try:
+    from py7zr import Bad7zFile, SevenZipFile
+
+    py7zr_loaded = True
+except ImportError:
+    py7zr_loaded = False
 
 LOGGER = logging.getLogger(__name__)
 
 
 class CB7Archive(BaseArchive):
+    def __init__(self, path: Path):
+        if not py7zr_loaded:
+            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+        super().__init__(path=path)
+
     def list_filenames(self) -> list[str]:
         try:
             with SevenZipFile(self.path, "r") as archive:
@@ -42,6 +52,9 @@ class CB7Archive(BaseArchive):
 
     @classmethod
     def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path | None:
+        if not py7zr_loaded:
+            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+
         output_file = src.parent / f"{output_name}.cb7"
         try:
             with SevenZipFile(output_file, "w") as archive:
@@ -54,6 +67,9 @@ class CB7Archive(BaseArchive):
 
     @staticmethod
     def convert(old_archive: BaseArchive) -> Optional["CB7Archive"]:
+        if not py7zr_loaded:
+            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
+
         with TemporaryDirectory(prefix=f"{old_archive.path.stem}_") as temp_str:
             temp_folder = Path(temp_str)
             if not old_archive.extract_files(destination=temp_folder):
