@@ -40,7 +40,6 @@ dependencies = [
   "mokkari >= 3.5.0",
   "natsort >= 8.4.0",
   "pillow >= 11.0.0",
-  "py7zr >= 0.22.0",
   "pydantic >= 2.10.4",
   "pydantic-xml >= 2.14.1",
   "rarfile >= 4.2",
@@ -57,6 +56,11 @@ license = {text = "MIT"}
 name = "perdoo"
 readme = "README.md"
 requires-python = ">= 3.10"
+
+[project.optional-dependencies]
+cb7 = [
+  "py7zr >= 0.22.0"
+]
 
 [project.scripts]
 Perdoo = "perdoo.__main__:app"
