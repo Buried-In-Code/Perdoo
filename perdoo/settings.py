@@ -80,20 +80,10 @@ class Metron(SettingsModel):
     username: str | None = None
 
 
-class Service(Enum):
+class Service(str, Enum):
     COMICVINE = "Comicvine"
     MARVEL = "Marvel"
     METRON = "Metron"
-
-    @staticmethod
-    def load(value: str) -> "Service":
-        for entry in Service:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
-                return entry
-        raise ValueError(f"'{value}' isn't a valid Service")
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class Services(SettingsModel):

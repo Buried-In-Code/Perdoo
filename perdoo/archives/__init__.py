@@ -35,7 +35,7 @@ def get_archive(path: Path) -> BaseArchive:
         return CBRArchive(path=path)
     if is_tarfile(path):
         return CBTArchive(path=path)
-    if py7zr_loaded and is_7zfile:
+    if py7zr_loaded and is_7zfile(path):
         return CB7Archive(path=path)
     raise NotImplementedError(f"{path.name} is an unsupported archive")
 

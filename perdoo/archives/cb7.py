@@ -10,7 +10,7 @@ from perdoo.archives._base import BaseArchive
 from perdoo.utils import list_files
 
 try:
-    import py7zr
+    from py7zr import Bad7zFile, SevenZipFile
 
     py7zr_loaded = True
 except ImportError:
@@ -27,26 +27,26 @@ class CB7Archive(BaseArchive):
 
     def list_filenames(self) -> list[str]:
         try:
-            with py7zr.SevenZipFile(self.path, "r") as archive:
+            with SevenZipFile(self.path, "r") as archive:
                 return archive.getnames()
-        except py7zr.Bad7zFile:
+        except Bad7zFile:
             LOGGER.exception("Unable to read %s", self.path.name)
             return []
 
     def read_file(self, filename: str) -> bytes:
         try:
-            with py7zr.SevenZipFile(self.path, "r") as archive, archive.open(filename) as file:
+            with SevenZipFile(self.path, "r") as archive, archive.open(filename) as file:
                 return file.read()
-        except (py7zr.Bad7zFile, KeyError):
+        except (Bad7zFile, KeyError):
             LOGGER.exception("Unable to read %s", self.path.name)
             return b""
 
     def extract_files(self, destination: Path) -> bool:
         try:
-            with py7zr.SevenZipFile(self.path, "r") as archive:
+            with SevenZipFile(self.path, "r") as archive:
                 archive.extractall(path=destination)
             return True
-        except py7zr.Bad7zFile:
+        except Bad7zFile:
             LOGGER.exception("")
             return False
 
@@ -57,11 +57,11 @@ class CB7Archive(BaseArchive):
 
         output_file = src.parent / f"{output_name}.cb7"
         try:
-            with py7zr.SevenZipFile(output_file, "w") as archive:
+            with SevenZipFile(output_file, "w") as archive:
                 for file in files:
                     archive.write(file, arcname=file.name)
             return output_file
-        except py7zr.Bad7zFile:
+        except Bad7zFile:
             LOGGER.exception("")
             return None
 
