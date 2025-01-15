@@ -22,7 +22,7 @@ from perdoo.main import (
 )
 from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
 from perdoo.metadata.metron_info import InformationSource
-from perdoo.services import BaseService, Comicvine, Marvel, Metron
+from perdoo.services import BaseService, Comicvine, GrandComicsDatabase, Marvel, Metron
 from perdoo.settings import Service, Services, Settings
 from perdoo.utils import (
     IssueSearch,
@@ -73,6 +73,7 @@ def get_services(settings: Services) -> dict[Service, BaseService]:
     output = {}
     if settings.comicvine.api_key:
         output[Service.COMICVINE] = Comicvine(settings.comicvine)
+    output[Service.GRAND_COMICS_DATABASE] = GrandComicsDatabase()
     if settings.marvel.public_key and settings.marvel.private_key:
         output[Service.MARVEL] = Marvel(settings.marvel)
     if settings.metron.username and settings.metron.password:
@@ -94,6 +95,9 @@ def get_search_details(
                 volume=metron_info.series.volume,
                 year=metron_info.series.start_year,
                 comicvine=series_id if source == InformationSource.COMIC_VINE else None,
+                grand_comics_database=series_id
+                if source == InformationSource.GRAND_COMICS_DATABASE
+                else None,
                 marvel=series_id if source == InformationSource.MARVEL else None,
                 metron=series_id if source == InformationSource.METRON else None,
             ),
@@ -102,6 +106,14 @@ def get_search_details(
                 comicvine=next(
                     iter(
                         x.value for x in metron_info.ids if x.source == InformationSource.COMIC_VINE
+                    ),
+                    None,
+                ),
+                grand_comics_database=next(
+                    iter(
+                        x.value
+                        for x in metron_info.ids
+                        if x.source == InformationSource.GRAND_COMICS_DATABASE
                     ),
                     None,
                 ),

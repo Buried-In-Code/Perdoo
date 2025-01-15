@@ -5,6 +5,7 @@ __all__ = [
     "delete_empty_folders",
     "flatten_dict",
     "list_files",
+    "recursive_delete",
     "sanitize",
 ]
 
