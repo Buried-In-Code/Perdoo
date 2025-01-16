@@ -5,11 +5,9 @@ __all__ = [
     "delete_empty_folders",
     "flatten_dict",
     "list_files",
-    "sanitize",
 ]
 
 import logging
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -54,14 +52,6 @@ def list_files(path: Path, *extensions: str) -> list[Path]:
         elif file.is_dir():
             files.extend(list_files(file, *extensions))
     return humansorted(files, alg=ns.NA | ns.G | ns.P)
-
-
-def sanitize(value: str | None) -> str | None:
-    if not value:
-        return value
-    value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace("-", " "))
-    value = " ".join(value.split())
-    return value.replace(" ", "-")
 
 
 def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any]:

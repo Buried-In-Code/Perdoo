@@ -1,5 +1,6 @@
 __all__ = ["AgeRating", "ComicInfo", "Manga", "Page", "PageType", "YesNo"]
 
+from collections.abc import Callable
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -11,7 +12,7 @@ from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
-from perdoo.utils import sanitize
+from perdoo.settings import ComicInfoNaming
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -293,22 +294,24 @@ class ComicInfo(PascalModel):
     def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    @property
-    def series_filename(self) -> str | None:
-        if self.series:
-            return sanitize(
-                self.series
-                if not self.volume or self.volume == 1
-                else f"{self.series} v{self.volume}"
-            )
-        return None
+    def get_filename(self, settings: ComicInfoNaming) -> str:
+        from perdoo.metadata.naming import evaluate_pattern
 
-    @property
-    def filename(self) -> str | None:
-        identifier = ""
-        if self.number:
-            identifier = f"_#{self.number.zfill(3)}"
-        elif self.title:
-            identifier = f"_{sanitize(self.title)}"
+        return evaluate_pattern(pattern_map=PATTERN_MAP, pattern=settings.default, obj=self)
 
-        return f"{self.series_filename}{identifier}" if self.series_filename else None
+
+PATTERN_MAP: dict[str, Callable[[ComicInfo], str]] = {
+    "count": lambda x: x.count or "",
+    "cover-date": lambda x: x.cover_date or "",
+    "year": lambda x: x.year or "",
+    "month": lambda x: x.month or "",
+    "day": lambda x: x.day or "",
+    "format": lambda x: x.format or "",
+    "imprint": lambda x: x.imprint or "",
+    "lang": lambda x: x.language_iso or "",
+    "number": lambda x: x.number or "",
+    "publisher": lambda x: x.publisher or "",
+    "series": lambda x: x.series or "",
+    "title": lambda x: x.title or "",
+    "volume": lambda x: x.volume or "",
+}
