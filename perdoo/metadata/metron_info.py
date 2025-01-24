@@ -27,7 +27,7 @@ from pydantic import HttpUrl, NonNegativeInt, PositiveInt
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
-from perdoo.settings import MetronInfoNaming
+from perdoo.settings import Output
 
 T = TypeVar("T")
 
@@ -363,32 +363,10 @@ class MetronInfo(PascalModel):
     def schema_location(self) -> str:
         return "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/schema/v1.0/MetronInfo.xsd"
 
-    def get_filename(self, settings: MetronInfoNaming) -> str:
+    def get_filename(self, settings: Output) -> str:
         from perdoo.metadata.naming import evaluate_pattern
 
-        return {
-            Format.ANNUAL: evaluate_pattern(
-                pattern_map=PATTERN_MAP, pattern=settings.annual, obj=self
-            ),
-            Format.DIGITAL_CHAPTER: evaluate_pattern(
-                pattern_map=PATTERN_MAP, pattern=settings.digital_chapter, obj=self
-            ),
-            Format.GRAPHIC_NOVEL: evaluate_pattern(
-                pattern_map=PATTERN_MAP, pattern=settings.graphic_novel, obj=self
-            ),
-            Format.HARDCOVER: evaluate_pattern(
-                pattern_map=PATTERN_MAP, pattern=settings.hardcover, obj=self
-            ),
-            Format.OMNIBUS: evaluate_pattern(
-                pattern_map=PATTERN_MAP, pattern=settings.omnibus, obj=self
-            ),
-            Format.TRADE_PAPERBACK: evaluate_pattern(
-                pattern_map=PATTERN_MAP, pattern=settings.trade_paperback, obj=self
-            ),
-        }.get(
-            self.series.format,
-            evaluate_pattern(pattern_map=PATTERN_MAP, pattern=settings.default, obj=self),
-        )
+        return evaluate_pattern(pattern_map=PATTERN_MAP, pattern=settings.naming, obj=self)
 
 
 FORMAT_MAP: dict[Format, str] = {
@@ -396,36 +374,37 @@ FORMAT_MAP: dict[Format, str] = {
     Format.DIGITAL_CHAPTER: "Chapter",
     Format.GRAPHIC_NOVEL: "GN",
     Format.HARDCOVER: "HC",
+    Format.LIMITED_SERIES: "Limited",
     Format.OMNIBUS: "OB",
+    Format.ONE_SHOT: "OS",
+    Format.SINGLE_ISSUE: "Issue",
     Format.TRADE_PAPERBACK: "TPB",
 }
 
-PATTERN_MAP: dict[str, Callable[[MetronInfo], str]] = {
-    "publisher-id": lambda x: x.publisher.id or "" if x.publisher else "",
-    "publisher-imprint": lambda x: x.publisher.imprint.value
-    if x.publisher and x.publisher.imprint
-    else "",
-    "publisher-name": lambda x: x.publisher.name if x.publisher else "",
-    "series-format": lambda x: x.series.format.value if x.series.format else "",
-    "series-fmt": lambda x: FORMAT_MAP.get(x.series.format, ""),
-    "series-id": lambda x: x.series.id or "",
-    "series-issue-count": lambda x: x.series.issue_count or "",
-    "series-lang": lambda x: x.series.lang,
+PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {
+    "cover-date": lambda x: x.cover_date,
+    "cover-day": lambda x: x.cover_date.day if x.cover_date else None,
+    "cover-month": lambda x: x.cover_date.month if x.cover_date else None,
+    "cover-year": lambda x: x.cover_date.year if x.cover_date else None,
+    "fmt": lambda x: FORMAT_MAP.get(x.series.format),
+    "format": lambda x: x.series.format.value if x.series.format else None,
+    "id": lambda x: next(iter(i.value for i in x.ids if i.primary), None),
+    "imprint": lambda x: x.publisher.imprint.value if x.publisher and x.publisher.imprint else None,
+    "isbn": lambda x: x.gtin.isbn if x.gtin else None,
+    "issue-count": lambda x: x.series.issue_count,
+    "issue-title": lambda x: x.collection_title,
+    "lang": lambda x: x.series.lang,
+    "number": lambda x: x.number,
+    "publisher-id": lambda x: x.publisher.id if x.publisher else None,
+    "publisher-name": lambda x: x.publisher.name if x.publisher else None,
+    "series-id": lambda x: x.series.id,
     "series-name": lambda x: x.series.name,
-    "series-sort-name": lambda x: x.series.sort_name or "",
-    "series-year": lambda x: x.series.start_year or "",
-    "series-volume": lambda x: x.series.volume or "",
-    "title": lambda x: x.collection_title or "",
-    "cover-date": lambda x: x.cover_date or "",
-    "cover-year": lambda x: x.cover_date.year if x.cover_date else "",
-    "cover-month": lambda x: x.cover_date.month if x.cover_date else "",
-    "cover-day": lambda x: x.cover_date.day if x.cover_date else "",
-    "id": lambda x: next(iter(i.value for i in x.ids if i.primary), None) or "",
-    "number": lambda x: x.number or "",
+    "series-sort-name": lambda x: x.series.sort_name,
+    "series-year": lambda x: x.series.start_year,
     "store-date": lambda x: x.store_date or "",
     "store-year": lambda x: x.store_date.year if x.store_date else "",
     "store-month": lambda x: x.store_date.month if x.store_date else "",
     "store-day": lambda x: x.store_date.day if x.store_date else "",
-    "gtin-isbn": lambda x: x.gtin.isbn or "" if x.gtin else "",
-    "gtin-upc": lambda x: x.gtin.upc or "" if x.gtin else "",
+    "upc": lambda x: x.gtin.upc if x.gtin else None,
+    "volume": lambda x: x.series.volume,
 }

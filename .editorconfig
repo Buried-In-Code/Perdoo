@@ -9,9 +9,25 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 max_line_length = 100
 
+[{*.html,*.jte,*.kte,*.jinja}]
+indent_size = 4
+insert_final_newline = false
+max_line_length = off
+
+[*.json]
+insert_final_newline = false
+
 [*.md]
 trim_trailing_whitespace = false
 max_line_length = off
 
 [*.py]
 indent_size = 4
+
+[{*.xml,*.xsd}]
+indent_size = 4
+insert_final_newline = false
+max_line_length = off
+
+[{*.yaml,*.yml}]
+indent_style = tab

@@ -1,12 +1,9 @@
 __all__ = [
     "ComicInfo",
-    "ComicInfoNaming",
     "Comicvine",
     "Marvel",
-    "Metadata",
     "Metron",
     "MetronInfo",
-    "MetronInfoNaming",
     "Output",
     "Service",
     "Services",
@@ -42,66 +39,23 @@ class SettingsModel(
     pass
 
 
-class ComicInfoNaming(SettingsModel):
-    default: str = "{publisher}/{series}-v{volume}/{series}-v{volume}_#{number:3}"
-
-
 class ComicInfo(SettingsModel):
     create: bool = True
     handle_pages: bool = True
-    naming: ComicInfoNaming = ComicInfoNaming()
-
-
-class MetronInfoNaming(SettingsModel):
-    annual: str = (
-        "{publisher-name}"
-        "/{series-name}-v{series-volume}"
-        "/{series-name}-v{series-volume}_Annual_#{number:2}"
-    )
-    default: str = (
-        "{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_#{number:3}"
-    )
-    digital_chapter: str = (
-        "{publisher-name}"
-        "/{series-name}-v{series-volume}"
-        "/{series-name}-v{series-volume}_Chapter_#{number:3}"
-    )
-    graphic_novel: str = (
-        "{publisher-name}"
-        "/{series-name}-v{series-volume}"
-        "/{series-name}-v{series-volume}_#{number:2}_GN"
-    )
-    hardcover: str = (
-        "{publisher-name}"
-        "/{series-name}-v{series-volume}"
-        "/{series-name}-v{series-volume}_#{number:2}_HC"
-    )
-    omnibus: str = (
-        "{publisher-name}"
-        "/{series-name}-v{series-volume}"
-        "/{series-name}-v{series-volume}_#{number:2}_OB"
-    )
-    trade_paperback: str = (
-        "{publisher-name}"
-        "/{series-name}-v{series-volume}"
-        "/{series-name}-v{series-volume}_#{number:2}_TPB"
-    )
 
 
 class MetronInfo(SettingsModel):
     create: bool = True
-    naming: MetronInfoNaming = MetronInfoNaming()
-
-
-class Metadata(SettingsModel):
-    comic_info: ComicInfo = ComicInfo()
-    metron_info: MetronInfo = MetronInfo()
 
 
 class Output(SettingsModel):
+    comic_info: ComicInfo = ComicInfo()
     folder: Path = get_data_root()
     format: Literal["cb7", "cbt", "cbz"] = "cbz"
-    metadata: Metadata = Metadata()
+    metron_info: MetronInfo = MetronInfo()
+    naming: str = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_{fmt}_#{number:3}"
+    )
 
     @field_validator("format", mode="before")
     def validate_format(cls, value: str) -> str:

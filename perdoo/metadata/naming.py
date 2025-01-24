@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 def sanitize(value: str | None) -> str | None:
     if not value:
         return value
+    value = str(value)
     value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace("-", " "))
     value = " ".join(value.split())
     return value.replace(" ", "-")
@@ -34,7 +35,7 @@ def evaluate_pattern(
 
         if padding and (isinstance(value, int) or (isinstance(value, str) and value.isdigit())):
             return f"{int(value):0{padding}}"
-        return sanitize(value=str(value))
+        return sanitize(value=value) or ""
 
     pattern_regex = re.compile(r"{(?P<key>[a-zA-Z-]+)(?::(?P<padding>\d+))?}")
     return pattern_regex.sub(replace_match, pattern)

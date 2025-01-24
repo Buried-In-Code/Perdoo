@@ -12,7 +12,7 @@ from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
-from perdoo.settings import ComicInfoNaming
+from perdoo.settings import Output
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -294,24 +294,36 @@ class ComicInfo(PascalModel):
     def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    def get_filename(self, settings: ComicInfoNaming) -> str:
+    def get_filename(self, settings: Output) -> str:
         from perdoo.metadata.naming import evaluate_pattern
 
-        return evaluate_pattern(pattern_map=PATTERN_MAP, pattern=settings.default, obj=self)
+        return evaluate_pattern(pattern_map=PATTERN_MAP, pattern=settings.naming, obj=self)
 
 
-PATTERN_MAP: dict[str, Callable[[ComicInfo], str]] = {
-    "count": lambda x: x.count or "",
-    "cover-date": lambda x: x.cover_date or "",
-    "year": lambda x: x.year or "",
-    "month": lambda x: x.month or "",
-    "day": lambda x: x.day or "",
-    "format": lambda x: x.format or "",
-    "imprint": lambda x: x.imprint or "",
-    "lang": lambda x: x.language_iso or "",
-    "number": lambda x: x.number or "",
-    "publisher": lambda x: x.publisher or "",
-    "series": lambda x: x.series or "",
-    "title": lambda x: x.title or "",
-    "volume": lambda x: x.volume or "",
+PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
+    "cover-date": lambda x: x.cover_date,
+    "cover-day": lambda x: x.day,
+    "cover-month": lambda x: x.month,
+    "cover-year": lambda x: x.year,
+    "fmt": lambda x: x.format,
+    "format": lambda x: x.format,
+    "id": lambda _: None,
+    "imprint": lambda x: x.imprint,
+    "isbn": lambda _: None,
+    "issue-count": lambda x: x.count,
+    "issue-title": lambda x: x.title,
+    "lang": lambda x: x.language_iso,
+    "number": lambda x: x.number,
+    "publisher-id": lambda _: None,
+    "publisher-name": lambda x: x.publisher,
+    "series-id": lambda _: None,
+    "series-name": lambda x: x.series,
+    "series-sort-name": lambda _: None,
+    "series-year": lambda x: x.volume if x.volume > 1900 else None,
+    "store-date": lambda _: None,
+    "store-day": lambda _: None,
+    "store-month": lambda _: None,
+    "store-year": lambda _: None,
+    "upc": lambda _: None,
+    "volume": lambda x: x.volume if x.volume < 1900 else None,
 }

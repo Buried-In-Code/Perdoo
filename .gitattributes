@@ -32,13 +32,6 @@
 *.tgz      binary
 *.zip      binary
 
-# C#
-*.cs       text diff=csharp
-*.cshtml   text diff=html
-*.csproj   text eol=crlf
-*.csx      text diff=csharp
-*.sln      text eol=crlf
-
 # Java
 *.gradle        text diff=java
 *.gradle.kts    text diff=kotlin

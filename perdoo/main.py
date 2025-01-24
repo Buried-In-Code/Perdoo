@@ -63,8 +63,8 @@ def save_metadata(
     entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo | None], settings: Settings
 ) -> None:
     metron_info, comic_info = metadata
-    if comic_info and settings.output.metadata.comic_info.create:
-        if settings.output.metadata.comic_info.handle_pages:
+    if comic_info and settings.output.comic_info.create:
+        if settings.output.comic_info.handle_pages:
             LOGGER.info("Processing ComicInfo Page data")
             _load_page_info(
                 image_extensions=settings.image_extensions, entry=entry, comic_info=comic_info
@@ -73,7 +73,7 @@ def save_metadata(
             comic_info.pages = []
         LOGGER.info("Writing 'ComicInfo.xml' to '%s'", entry.path.name)
         entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
-    if metron_info and settings.output.metadata.metron_info.create:
+    if metron_info and settings.output.metron_info.create:
         LOGGER.info("Writing 'MetronInfo.xml' to '%s'", entry.path.name)
         entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
 
@@ -117,9 +117,9 @@ def rename_file(
 ) -> None:
     metron_info, comic_info = metadata
     new_filepath = (
-        metron_info.get_filename(settings=settings.output.metadata.metron_info.naming)
+        metron_info.get_filename(settings=settings.output)
         if metron_info
-        else comic_info.get_filename(settings=settings.output.metadata.comic_info.naming)
+        else comic_info.get_filename(settings=settings.output)
         if comic_info
         else None
     )
