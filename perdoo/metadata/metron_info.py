@@ -392,7 +392,6 @@ PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {
     "imprint": lambda x: x.publisher.imprint.value if x.publisher and x.publisher.imprint else None,
     "isbn": lambda x: x.gtin.isbn if x.gtin else None,
     "issue-count": lambda x: x.series.issue_count,
-    "issue-title": lambda x: x.collection_title,
     "lang": lambda x: x.series.lang,
     "number": lambda x: x.number,
     "publisher-id": lambda x: x.publisher.id if x.publisher else None,
@@ -405,6 +404,7 @@ PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {
     "store-year": lambda x: x.store_date.year if x.store_date else "",
     "store-month": lambda x: x.store_date.month if x.store_date else "",
     "store-day": lambda x: x.store_date.day if x.store_date else "",
+    "title": lambda x: x.collection_title,
     "upc": lambda x: x.gtin.upc if x.gtin else None,
     "volume": lambda x: x.series.volume,
 }

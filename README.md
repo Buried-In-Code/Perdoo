@@ -97,74 +97,40 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 File naming and organization uses a pattern-based approach, it tries to name based on the MetronInfo data with a fallback to ComicInfo.
 
-### Defaults
-
-**MetronInfo Patterns**
-
-- **_Default_**: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_#{number:3}`
-- Annual: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_Annual_#{number:2}`
-- Digital Chapter: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_Chapter_#{number:3}`
-- Graphic Novel: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_#{number:2}_GN`
-- Hardcover: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_#{number:2}_HC`
-- Omnibus: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_#{number:2}_OB`
-- Trade Paperback: `{publisher-name}/{series-name}-v{series-volume}/{series-name}-v{series-volume}_#{number:2}_TPB`
-
-**ComicInfo Patterns**
-
-- **_Default_**: `{publisher}/{series}-v{volume}/{series}-v{volume}_#{number:3}`
+**_Default_**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_{fmt}_#{number:3}`
 
 ### Options
 
-- **Padding**: Integer fields, such as `{number}`, can include optional zero-padding by specifying the width (e.g. `{number:3}` for three digits).
+- **Padding**: Int and Int-like fields, such as `{number}`, can include optional zero-padding by specifying the width (e.g. `{number:3}` for three digits).
 - **Sanitization**: All metadata values are sanitized to remove characters outside the set `0-9a-zA-Z&!-`. Custom characters can still be added directly to patterns.
 
-**MetronInfo Placeholders**
-
-| Pattern Key            | Description                                                       |
-| ---------------------- | ----------------------------------------------------------------- |
-| `{publisher-id}`       | The publisher's unique id.                                        |
-| `{publisher-imprint}`  | The publisher's imprint.                                          |
-| `{publisher-name}`     | The full name of the publisher.                                   |
-| `{series-format}`      | The full format name of the series.                               |
-| `{series-fmt}`         | Short format name (`Annual`, `Chapter`, `GN`, `HC`, `OB`, `TPB`). |
-| `{series-id}`          | The series' unique id.                                            |
-| `{series-issue-count}` | The total number of issues in the series.                         |
-| `{series-lang}`        | The 2-letter language code.                                       |
-| `{series-name}`        | The full name of the series.                                      |
-| `{series-sort-name}`   | Sort-friendly name (omits leading "The", "A", etc...).            |
-| `{series-year}`        | The year the series started.                                      |
-| `{series-volume}`      | The volume of the series.                                         |
-| `{title}`              | The issue title.                                                  |
-| `{cover-date}`         | The issue cover date in `yyyy-mm-dd` format.                      |
-| `{cover-year}`         | The year from the issue cover date.                               |
-| `{cover-month}`        | The month from the issue cover date.                              |
-| `{cover-day}`          | The day from the issue cover date.                                |
-| `{id}`                 | The primary id of the issue.                                      |
-| `{number}`             | The issue number.                                                 |
-| `{store-date}`         | The store date of the issue in `yyyy-mm-dd` format.               |
-| `{store-year}`         | The year from the issue store date.                               |
-| `{store-month}`        | The month from the issue store date.                              |
-| `{store-day}`          | The day from the issue store date.                                |
-| `{gtin-isbn}`          | The issue's ISBN.                                                 |
-| `{gtin-upc}`           | The issue's UPC.                                                  |
-
-**ComicInfo Placeholders**
-
-| Pattern Key    | Description                               |
-| -------------- | ----------------------------------------- |
-| `{count}`      | The total number of issues in the series. |
-| `{cover-date}` | Issue cover date in `yyyy-mm-dd` format.  |
-| `{year}`       | The year from the issue cover date.       |
-| `{month}`      | The month from the issue cover date.      |
-| `{day}`        | The day from the issue cover date.        |
-| `{format}`     | The full format name of the issue.        |
-| `{imprint}`    | The publisher's imprint.                  |
-| `{lang}`       | The 2-letter language code.               |
-| `{number}`     | The issue number.                         |
-| `{publisher}`  | The full name of the publisher.           |
-| `{series}`     | The full name of the series.              |
-| `{title}`      | The issue title.                          |
-| `{volume}`     | The volume of the series.                 |
+| Pattern Key          | Description                                                       						     |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `{cover-date}`       | The issue cover date in `yyyy-mm-dd` format.                      						     |
+| `{cover-day}`        | The day from the issue cover date.                                						     |
+| `{cover-month}`      | The month from the issue cover date.                              						     |
+| `{cover-year}`       | The year from the issue cover date.                               						     |
+| `{fmt}`              | Short format name (`Annual`, `Chapter`, `GN`, `HC`, `Limited`, `OB`, `OS`, `Issue`, `TPB`). |
+| `{format}`           | The full format name of the series.                                                         |
+| `{id}`               | The primary id of the issue.                                      						     |
+| `{imprint}`          | The publisher's imprint.                                          						     |
+| `{isbn}`             | The issue's ISBN.                                                                           |
+| `{issue-count}`      | The total number of issues in the series.                         						     |
+| `{lang}`             | The 2-letter language code.                                                                 |
+| `{number}`           | The issue number.                                                                           |
+| `{publisher-id}`     | The publisher's unique id.                                        						     |
+| `{publisher-name}`   | The full name of the publisher.                                                             |
+| `{series-id}`        | The series' unique id.                                                                      |
+| `{series-name}`      | The full name of the series.                                                                |
+| `{series-sort-name}` | Sort-friendly name (omits leading "The", "A", etc...).                                      |
+| `{series-year}`      | The year the series started.                                                                |
+| `{store-date}`       | The store date of the issue in `yyyy-mm-dd` format.                                         |
+| `{store-day}`        | The day from the issue store date.                                                          |
+| `{store-month}`      | The month from the issue store date.                                                        |
+| `{store-year}`       | The year from the issue store date.                                                         |
+| `{title}`            | The issue title.                                                                            |
+| `{upc}`              | The issue's UPC.                                                                            |
+| `{volume}`           | The volume of the series.                                                                   |
 
 ## Socials
 

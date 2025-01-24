@@ -311,7 +311,6 @@ PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
     "imprint": lambda x: x.imprint,
     "isbn": lambda _: None,
     "issue-count": lambda x: x.count,
-    "issue-title": lambda x: x.title,
     "lang": lambda x: x.language_iso,
     "number": lambda x: x.number,
     "publisher-id": lambda _: None,
@@ -324,6 +323,7 @@ PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
     "store-day": lambda _: None,
     "store-month": lambda _: None,
     "store-year": lambda _: None,
+    "title": lambda x: x.title,
     "upc": lambda _: None,
     "volume": lambda x: x.volume if x.volume < 1900 else None,
 }
