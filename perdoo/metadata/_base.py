@@ -1,5 +1,8 @@
-__all__ = ["PascalModel"]
+__all__ = ["PascalModel", "sanitize"]
 
+import logging
+import re
+from collections.abc import Callable
 from pathlib import Path
 
 from pydantic.alias_generators import to_pascal
@@ -13,6 +16,17 @@ try:
     from typing import Self  # Python >= 3.11
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
+
+LOGGER = logging.getLogger(__name__)
+
+
+def sanitize(value: str | None) -> str | None:
+    if not value:
+        return value
+    value = str(value)
+    value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace("-", " "))
+    value = " ".join(value.split())
+    return value.replace(" ", "-")
 
 
 class PascalModel(
@@ -46,3 +60,20 @@ class PascalModel(
         ]
 
         CONSOLE.print(Panel.fit("\n".join(content_vals), title=type(self).__name__))
+
+    def evaluate_pattern(self, pattern_map: dict[str, Callable[[Self], str]], pattern: str) -> str:
+        def replace_match(match: re.Match) -> str:
+            key = match.group("key")
+            padding = match.group("padding")
+
+            if key not in pattern_map:
+                LOGGER.warning("Unknown pattern: %s", key)
+                return key
+            value = pattern_map[key](self)
+
+            if padding and (isinstance(value, int) or (isinstance(value, str) and value.isdigit())):
+                return f"{int(value):0{padding}}"
+            return sanitize(value=value) or ""
+
+        pattern_regex = re.compile(r"{(?P<key>[a-zA-Z-]+)(?::(?P<padding>\d+))?}")
+        return pattern_regex.sub(replace_match, pattern)

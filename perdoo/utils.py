@@ -2,6 +2,7 @@ __all__ = [
     "IssueSearch",
     "Search",
     "SeriesSearch",
+    "blank_is_none",
     "delete_empty_folders",
     "flatten_dict",
     "list_files",
@@ -85,3 +86,8 @@ def delete_empty_folders(folder: Path) -> None:
         if not any(folder.iterdir()):
             folder.rmdir()
             LOGGER.info("Deleted empty folder: %s", folder)
+
+
+def blank_is_none(value: str) -> str | None:
+    """Enforces blank strings to be None."""
+    return value if value else None

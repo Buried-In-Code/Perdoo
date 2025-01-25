@@ -117,9 +117,9 @@ def rename_file(
 ) -> None:
     metron_info, comic_info = metadata
     new_filepath = (
-        metron_info.get_filename(settings=settings.output)
+        metron_info.get_filename(settings=settings.output.naming)
         if metron_info
-        else comic_info.get_filename(settings=settings.output)
+        else comic_info.get_filename(settings=settings.output.naming)
         if comic_info
         else None
     )

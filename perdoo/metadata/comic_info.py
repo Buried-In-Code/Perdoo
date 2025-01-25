@@ -12,7 +12,7 @@ from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
-from perdoo.settings import Output
+from perdoo.settings import Naming
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -294,10 +294,23 @@ class ComicInfo(PascalModel):
     def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    def get_filename(self, settings: Output) -> str:
-        from perdoo.metadata.naming import evaluate_pattern
+    def get_filename(self, settings: Naming) -> str:
+        from perdoo.metadata.metron_info import Format
 
-        return evaluate_pattern(pattern_map=PATTERN_MAP, pattern=settings.naming, obj=self)
+        return self.evaluate_pattern(
+            pattern_map=PATTERN_MAP,
+            pattern={
+                Format.ANNUAL.value: settings.annual or settings.default,
+                Format.DIGITAL_CHAPTER.value: settings.digital_chapter or settings.default,
+                Format.GRAPHIC_NOVEL.value: settings.graphic_novel or settings.default,
+                Format.HARDCOVER.value: settings.hardcover or settings.default,
+                Format.LIMITED_SERIES.value: settings.limited_series or settings.default,
+                Format.OMNIBUS.value: settings.omnibus or settings.default,
+                Format.ONE_SHOT.value: settings.one_shot or settings.default,
+                Format.SINGLE_ISSUE.value: settings.single_issue or settings.default,
+                Format.TRADE_PAPERBACK.value: settings.trade_paperback or settings.default,
+            }.get(self.format, settings.default),
+        )
 
 
 PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
@@ -305,7 +318,6 @@ PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
     "cover-day": lambda x: x.day,
     "cover-month": lambda x: x.month,
     "cover-year": lambda x: x.year,
-    "fmt": lambda x: x.format,
     "format": lambda x: x.format,
     "id": lambda _: None,
     "imprint": lambda x: x.imprint,

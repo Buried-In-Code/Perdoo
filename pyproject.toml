@@ -4,13 +4,13 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.0.1"
+  "pre-commit >= 4.1.0"
 ]
 tests = [
   "pytest >= 8.3.4",
   "pytest-cov >= 6.0.0",
-  "tox >= 4.23.2",
-  "tox-uv >= 1.17.0"
+  "tox >= 4.24.1",
+  "tox-uv >= 1.20.1"
 ]
 
 [project]
@@ -37,16 +37,16 @@ dependencies = [
   "comicfn2dict >= 0.2.4",
   "esak >= 2.0.0",
   "lxml >= 5.3.0",
-  "mokkari >= 3.5.0",
+  "mokkari >= 3.6.0",
   "natsort >= 8.4.0",
   "pillow >= 11.1.0",
-  "pydantic >= 2.10.5",
+  "pydantic >= 2.10.6",
   "pydantic-xml >= 2.14.1",
   "rarfile >= 4.2",
   "rich >= 13.9.4",
   "simyan >= 1.4.0",
   "tomli >= 2.2.1 ; python_version < '3.11'",
-  "tomli-w >= 1.1.0",
+  "tomli-w >= 1.2.0",
   "typer >= 0.15.1"
 ]
 description = "Unify and organize your comic collection."
