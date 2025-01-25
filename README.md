@@ -111,7 +111,7 @@ Naming is done based on the Comic Format, set the value to `""` and it will fall
 
 ### Options
 
-- **Padding**: Int and Int-like fields, such as `{number}`, can include optional zero-padding by specifying the width (e.g. `{number:3}` for three digits).
+- **Padding**: Int and Int-like fields, such as `{number}`, can include optional zero-padding by specifying the length (e.g. `{number:3}` will pad 0's to be atleast 3 digits long, `12` => `012`).
 - **Sanitization**: All metadata values are sanitized to remove characters outside the set `0-9a-zA-Z&!-`. Custom characters can still be added directly to patterns.
 
 | Pattern Key          | Description                                            |
@@ -125,7 +125,7 @@ Naming is done based on the Comic Format, set the value to `""` and it will fall
 | `{imprint}`          | The publisher's imprint.                               |
 | `{isbn}`             | The issue's ISBN.                                      |
 | `{issue-count}`      | The total number of issues in the series.              |
-| `{lang}`             | The 2-letter language code.                            |
+| `{lang}`             | The issue's language.                                  |
 | `{number}`           | The issue number.                                      |
 | `{publisher-id}`     | The publisher's unique id.                             |
 | `{publisher-name}`   | The full name of the publisher.                        |
