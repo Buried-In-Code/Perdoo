@@ -55,17 +55,17 @@ def setup_logging(debug: bool = False) -> None:
         omit_repeated_times=False,
         show_level=True,
         show_time=False,
-        show_path=False,
+        show_path=True,
         console=CONSOLE,
     )
     console_handler.setLevel(logging.DEBUG if debug else logging.INFO)
     console_handler.setFormatter(logging.Formatter("%(message)s"))
     file_handler = logging.FileHandler(filename=get_state_root() / "perdoo.log")
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.DEBUG if debug else logging.INFO)
     logging.basicConfig(
         format="[%(asctime)s] [%(levelname)-8s] {%(name)s} | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        level=logging.DEBUG,
+        level=logging.DEBUG if debug else logging.INFO,
         handlers=[console_handler, file_handler],
     )
 

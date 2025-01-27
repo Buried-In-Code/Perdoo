@@ -2,9 +2,9 @@ __all__ = [
     "ComicInfo",
     "Comicvine",
     "Marvel",
-    "Metadata",
     "Metron",
     "MetronInfo",
+    "Naming",
     "Output",
     "Service",
     "Services",
@@ -14,15 +14,15 @@ __all__ = [
 from enum import Enum
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal
 
 import tomli_w as tomlwriter
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, BeforeValidator, field_validator
 from rich.panel import Panel
 
 from perdoo import get_config_root, get_data_root
 from perdoo.console import CONSOLE
-from perdoo.utils import flatten_dict
+from perdoo.utils import blank_is_none, flatten_dict
 
 try:
     import tomllib as tomlreader  # Python >= 3.11
@@ -49,15 +49,37 @@ class MetronInfo(SettingsModel):
     create: bool = True
 
 
-class Metadata(SettingsModel):
-    comic_info: ComicInfo = ComicInfo()
-    metron_info: MetronInfo = MetronInfo()
+class Naming(SettingsModel):
+    default: str = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
+    annual: Annotated[str | None, BeforeValidator(blank_is_none)] = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Annual_#{number:2}"
+    )
+    digital_chapter: Annotated[str | None, BeforeValidator(blank_is_none)] = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Chapter_#{number:3}"
+    )
+    graphic_novel: Annotated[str | None, BeforeValidator(blank_is_none)] = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_GN_#{number:2}"
+    )
+    hardcover: Annotated[str | None, BeforeValidator(blank_is_none)] = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_HC_#{number:2}"
+    )
+    limited_series: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+    omnibus: Annotated[str | None, BeforeValidator(blank_is_none)] = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_OB_#{number:2}"
+    )
+    one_shot: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+    single_issue: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+    trade_paperback: Annotated[str | None, BeforeValidator(blank_is_none)] = (
+        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_TPB_#{number:2}"
+    )
 
 
 class Output(SettingsModel):
+    comic_info: ComicInfo = ComicInfo()
     folder: Path = get_data_root()
     format: Literal["cb7", "cbt", "cbz"] = "cbz"
-    metadata: Metadata = Metadata()
+    metron_info: MetronInfo = MetronInfo()
+    naming: Naming = Naming()
 
     @field_validator("format", mode="before")
     def validate_format(cls, value: str) -> str:
@@ -67,17 +89,17 @@ class Output(SettingsModel):
 
 
 class Comicvine(SettingsModel):
-    api_key: str | None = None
+    api_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
 
 
 class Marvel(SettingsModel):
-    public_key: str | None = None
-    private_key: str | None = None
+    public_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+    private_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
 
 
 class Metron(SettingsModel):
-    password: str | None = None
-    username: str | None = None
+    password: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+    username: Annotated[str | None, BeforeValidator(blank_is_none)] = None
 
 
 class Service(str, Enum):

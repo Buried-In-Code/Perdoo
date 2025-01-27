@@ -2,14 +2,13 @@ __all__ = [
     "IssueSearch",
     "Search",
     "SeriesSearch",
+    "blank_is_none",
     "delete_empty_folders",
     "flatten_dict",
     "list_files",
-    "sanitize",
 ]
 
 import logging
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -56,14 +55,6 @@ def list_files(path: Path, *extensions: str) -> list[Path]:
     return humansorted(files, alg=ns.NA | ns.G | ns.P)
 
 
-def sanitize(value: str | None) -> str | None:
-    if not value:
-        return value
-    value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace("-", " "))
-    value = " ".join(value.split())
-    return value.replace(" ", "-")
-
-
 def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any]:
     items = {}
     for key, value in content.items():
@@ -95,3 +86,8 @@ def delete_empty_folders(folder: Path) -> None:
         if not any(folder.iterdir()):
             folder.rmdir()
             LOGGER.info("Deleted empty folder: %s", folder)
+
+
+def blank_is_none(value: str) -> str | None:
+    """Enforces blank strings to be None."""
+    return value if value else None

@@ -12,14 +12,7 @@ from perdoo import __version__, get_cache_root, setup_logging
 from perdoo.archives import CBRArchive, get_archive
 from perdoo.cli import archive_app, settings_app
 from perdoo.console import CONSOLE
-from perdoo.main import (
-    clean_archive,
-    convert_file,
-    organize_file,
-    rename_file,
-    save_metadata,
-    sync_metadata,
-)
+from perdoo.main import clean_archive, convert_file, rename_file, save_metadata, sync_metadata
 from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services import BaseService, Comicvine, Marvel, Metron
@@ -159,11 +152,10 @@ def run(
     ] = False,
     skip_rename: Annotated[
         bool,
-        Option("--skip-rename", help="Skip renaming comics based on their ComicInfo/MetronInfo."),
-    ] = False,
-    skip_organize: Annotated[
-        bool,
-        Option("--skip-organize", help="Skip organize/moving comics to appropriate directories."),
+        Option(
+            "--skip-rename",
+            help="Skip organizing and renaming comics based on their MetronInfo/ComicInfo.",
+        ),
     ] = False,
     clean_cache: Annotated[
         bool,
@@ -193,7 +185,6 @@ def run(
                 "flags.sync": sync,
                 "flags.skip-clean": skip_clean,
                 "flags.skip-rename": skip_rename,
-                "flags.skip-organize": skip_organize,
                 "flags.clean-cache": clean_cache,
             }
         )
@@ -246,17 +237,8 @@ def run(
         save_metadata(entry=entry, metadata=metadata, settings=settings)
 
         if not skip_rename:
-            with CONSOLE.status("Renaming to match metadata", spinner="simpleDotsScrolling"):
-                rename_file(entry=entry, metadata=metadata, settings=settings)
-
-        if not skip_organize:
-            with CONSOLE.status("Organizing based on metadata", spinner="simpleDotsScrolling"):
-                organize_file(
-                    entry=entry,
-                    metadata=metadata,
-                    root=settings.output.folder,
-                    target=target.parent,
-                )
+            with CONSOLE.status("Renaming based on metadata", spinner="simpleDotsScrolling"):
+                rename_file(entry=entry, metadata=metadata, settings=settings, target=target.parent)
 
     with CONSOLE.status("Cleaning up empty folders"):
         delete_empty_folders(folder=target)

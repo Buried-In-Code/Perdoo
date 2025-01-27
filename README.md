@@ -9,6 +9,9 @@
 [![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/graphs/contributors)
+[![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Perdoo/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
+[![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Perdoo/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml)
+
 
 Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.\
 Perdoo standardizes all your digital comics into a unified format (cb7, cbt, or cbz).\
@@ -93,44 +96,53 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 - [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) library.
 - [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
 
-## File Organization
+## File Renaming and Organization
 
-### Series Naming
+File naming and organization uses a pattern-based approach, it tries to name based on the MetronInfo data with a fallback to ComicInfo.
+Naming is done based on the Comic Format, set the value to `""` and it will fallback to the default setting.
 
-Series with a volume greater than 1 will display its volume in the title.
+- **_Default_**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}`
+- **Annual**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Annual_#{number:2}`
+- **Digital Chapter**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Chapter_#{number:3}`
+- **Graphic Novel**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_GN_#{number:2}`
+- **Hardcover**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_HC_#{number:2}`
+- **Limited Series**: `""` _Falls back to Default_
+- **Omnibus**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_OB_#{number:2}`
+- **One-Shot**: `""` _Falls back to Default_
+- **Single Issue**: `""` _Falls back to Default_
+- **Trade Paperback**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_TPB_#{number:2}`
 
-### Comic Naming
+### Options
 
-The files are named based on the format of the comic:
+- **Padding**: Int and Int-like fields, such as `{number}`, can include optional zero-padding by specifying the length (e.g. `{number:3}` will pad 0's to be atleast 3 digits long, `12` => `012`).
+- **Sanitization**: All metadata values are sanitized to remove characters outside the set `0-9a-zA-Z&!-`. Custom characters can still be added directly to patterns.
 
-- **_Default_**: `{Series Title}_#{Issue Number}.cbz`
-- Annual: `{Series Title}_Annual_#{Issue Number}.cbz`
-- Digital Chapter: `{Series Title}_Chapter_#{Issue Number}.cbz`
-- Graphic Novel: `{Series Title}_#{Issue Number}_GN.cbz`
-- Hardcover: `{Series Title}_#{Issue Number}_HC.cbz`
-- Omnibus: `{Series Title}_#{Issue Number}.cbz`
-- Trade Paperback: `{Series Title}_#{Issue Number}_TPB.cbz`
-
-### Folder Structure
-
-```
-Collection Root
-+-- Publisher
-|  +-- Series
-|  |  +-- Series_#001.cbz
-|  |  +-- Series_Annual_#01.cbz
-|  |  +-- Series_Chapter_#01.cbz
-|  |  +-- Series_#01_GN.cbz
-|  |  +-- Series_#01_HC.cbz
-|  |  +-- Series_#01_TPB.cbz
-|  +-- Series-v2
-|  |  +-- Series-v2_#001.cbz
-|  |  +-- Series-v2_Annual_#01.cbz
-|  |  +-- Series-v2_Chapter_#01.cbz
-|  |  +-- Series-v2_#01_GN.cbz
-|  |  +-- Series-v2_#01_HC.cbz
-|  |  +-- Series-v2_#01_TPB.cbz
-```
+| Pattern Key          | Description                                            |
+| -------------------- | ------------------------------------------------------ |
+| `{cover-date}`       | The issue cover date in `yyyy-mm-dd` format.           |
+| `{cover-day}`        | The day from the issue cover date.                     |
+| `{cover-month}`      | The month from the issue cover date.                   |
+| `{cover-year}`       | The year from the issue cover date.                    |
+| `{format}`           | The full format name of the series.                    |
+| `{id}`               | The primary id of the issue.                           |
+| `{imprint}`          | The publisher's imprint.                               |
+| `{isbn}`             | The issue's ISBN.                                      |
+| `{issue-count}`      | The total number of issues in the series.              |
+| `{lang}`             | The issue's language.                                  |
+| `{number}`           | The issue number.                                      |
+| `{publisher-id}`     | The publisher's unique id.                             |
+| `{publisher-name}`   | The full name of the publisher.                        |
+| `{series-id}`        | The series' unique id.                                 |
+| `{series-name}`      | The full name of the series.                           |
+| `{series-sort-name}` | Sort-friendly name (omits leading "The", "A", etc...). |
+| `{series-year}`      | The year the series started.                           |
+| `{store-date}`       | The store date of the issue in `yyyy-mm-dd` format.    |
+| `{store-day}`        | The day from the issue store date.                     |
+| `{store-month}`      | The month from the issue store date.                   |
+| `{store-year}`       | The year from the issue store date.                    |
+| `{title}`            | The issue title.                                       |
+| `{upc}`              | The issue's UPC.                                       |
+| `{volume}`           | The volume of the series.                              |
 
 ## Socials
 
