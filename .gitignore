@@ -11,6 +11,7 @@ logs/
 # =====Files=====
 *.iml
 *.log
+.coverage
 .envrc
 .pdm-python
 .python-version

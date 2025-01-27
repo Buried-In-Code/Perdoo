@@ -8,7 +8,7 @@ from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.metadata.comic_info import Page
 from perdoo.services import BaseService
 from perdoo.settings import Service, Settings
-from perdoo.utils import Search, list_files, sanitize
+from perdoo.utils import Search, list_files
 
 LOGGER = logging.getLogger("perdoo")
 
@@ -63,8 +63,8 @@ def save_metadata(
     entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo | None], settings: Settings
 ) -> None:
     metron_info, comic_info = metadata
-    if comic_info and settings.output.metadata.comic_info.create:
-        if settings.output.metadata.comic_info.handle_pages:
+    if comic_info and settings.output.comic_info.create:
+        if settings.output.comic_info.handle_pages:
             LOGGER.info("Processing ComicInfo Page data")
             _load_page_info(
                 image_extensions=settings.image_extensions, entry=entry, comic_info=comic_info
@@ -73,7 +73,7 @@ def save_metadata(
             comic_info.pages = []
         LOGGER.info("Writing 'ComicInfo.xml' to '%s'", entry.path.name)
         entry.write_file("ComicInfo.xml", comic_info.to_bytes().decode())
-    if metron_info and settings.output.metadata.metron_info.create:
+    if metron_info and settings.output.metron_info.create:
         LOGGER.info("Writing 'MetronInfo.xml' to '%s'", entry.path.name)
         entry.write_file("MetronInfo.xml", metron_info.to_bytes().decode())
 
@@ -110,22 +110,40 @@ def _rename_images_in_archive(
 
 
 def rename_file(
-    entry: BaseArchive, metadata: tuple[MetronInfo | None, ComicInfo | None], settings: Settings
+    entry: BaseArchive,
+    metadata: tuple[MetronInfo | None, ComicInfo | None],
+    settings: Settings,
+    target: Path,
 ) -> None:
     metron_info, comic_info = metadata
-    new_filename = (
-        metron_info.filename if metron_info else comic_info.filename if comic_info else None
+    new_filepath = (
+        metron_info.get_filename(settings=settings.output.naming)
+        if metron_info
+        else comic_info.get_filename(settings=settings.output.naming)
+        if comic_info
+        else None
     )
-
-    if new_filename is None:
+    if new_filepath is None:
         LOGGER.warning("Not enough information to rename '%s', skipping", entry.path.stem)
         return
+    output = settings.output.folder / f"{new_filepath}.{settings.output.format}"
 
-    if new_filename != entry.path.stem:
-        renamed_file = entry.path.with_stem(new_filename)
-        LOGGER.info("Renaming '%s' to '%s'", entry.path.stem, renamed_file.stem)
-        shutil.move(entry.path, renamed_file)
-        entry.path = renamed_file
+    if output == entry.path:
+        return
+    if output.exists():
+        LOGGER.warning("'%s' already exists, skipping", output.relative_to(settings.output.folder))
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    LOGGER.info(
+        "Renaming '%s' to '%s'",
+        entry.path.relative_to(target),
+        output.relative_to(settings.output.folder.parent),
+    )
+    shutil.move(entry.path, output)
+    entry.path = output
+
+    new_filename = output.stem
 
     if all(
         x.startswith(new_filename)
@@ -137,46 +155,3 @@ def rename_file(
     _rename_images_in_archive(
         image_extensions=settings.image_extensions, entry=entry, filename=new_filename
     )
-
-
-def _construct_new_file_path(
-    metadata: tuple[MetronInfo | None, ComicInfo | None], root: Path
-) -> Path | None:
-    metron_info, comic_info = metadata
-    output = root
-    if metron_info:
-        if metron_info.publisher:
-            output /= sanitize(metron_info.publisher.name)
-        output /= metron_info.series.filename
-    elif comic_info:
-        if comic_info.publisher:
-            output /= sanitize(comic_info.publisher)
-        if comic_info.series_filename:
-            output /= comic_info.series_filename
-    return output
-
-
-def organize_file(
-    entry: BaseArchive,
-    metadata: tuple[MetronInfo | None, ComicInfo | None],
-    root: Path,
-    target: Path,
-) -> None:
-    new_file_path = _construct_new_file_path(metadata=metadata, root=root)
-
-    if not new_file_path or new_file_path == root:
-        LOGGER.warning("Not enough information to organize '%s', skipping", entry.path.stem)
-        return
-    if new_file_path == entry.path.parent:
-        return
-
-    new_file_path.mkdir(parents=True, exist_ok=True)
-    organized_file = new_file_path / entry.path.name
-    if organized_file.exists():
-        LOGGER.warning("'%s' already exists, skipping", organized_file.relative_to(root))
-        return
-    LOGGER.info(
-        "Moving '%s' to '%s'", entry.path.relative_to(target), organized_file.relative_to(root)
-    )
-    shutil.move(entry.path, organized_file)
-    entry.path = organized_file

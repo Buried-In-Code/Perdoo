@@ -1,5 +1,6 @@
 __all__ = ["AgeRating", "ComicInfo", "Manga", "Page", "PageType", "YesNo"]
 
+from collections.abc import Callable
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -11,7 +12,7 @@ from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
-from perdoo.utils import sanitize
+from perdoo.settings import Naming
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -293,22 +294,48 @@ class ComicInfo(PascalModel):
     def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    @property
-    def series_filename(self) -> str | None:
-        if self.series:
-            return sanitize(
-                self.series
-                if not self.volume or self.volume == 1
-                else f"{self.series} v{self.volume}"
-            )
-        return None
+    def get_filename(self, settings: Naming) -> str:
+        from perdoo.metadata.metron_info import Format
 
-    @property
-    def filename(self) -> str | None:
-        identifier = ""
-        if self.number:
-            identifier = f"_#{self.number.zfill(3)}"
-        elif self.title:
-            identifier = f"_{sanitize(self.title)}"
+        return self.evaluate_pattern(
+            pattern_map=PATTERN_MAP,
+            pattern={
+                Format.ANNUAL.value: settings.annual or settings.default,
+                Format.DIGITAL_CHAPTER.value: settings.digital_chapter or settings.default,
+                Format.GRAPHIC_NOVEL.value: settings.graphic_novel or settings.default,
+                Format.HARDCOVER.value: settings.hardcover or settings.default,
+                Format.LIMITED_SERIES.value: settings.limited_series or settings.default,
+                Format.OMNIBUS.value: settings.omnibus or settings.default,
+                Format.ONE_SHOT.value: settings.one_shot or settings.default,
+                Format.SINGLE_ISSUE.value: settings.single_issue or settings.default,
+                Format.TRADE_PAPERBACK.value: settings.trade_paperback or settings.default,
+            }.get(self.format, settings.default),
+        )
 
-        return f"{self.series_filename}{identifier}" if self.series_filename else None
+
+PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
+    "cover-date": lambda x: x.cover_date,
+    "cover-day": lambda x: x.day,
+    "cover-month": lambda x: x.month,
+    "cover-year": lambda x: x.year,
+    "format": lambda x: x.format,
+    "id": lambda _: None,
+    "imprint": lambda x: x.imprint,
+    "isbn": lambda _: None,
+    "issue-count": lambda x: x.count,
+    "lang": lambda x: x.language_iso,
+    "number": lambda x: x.number,
+    "publisher-id": lambda _: None,
+    "publisher-name": lambda x: x.publisher,
+    "series-id": lambda _: None,
+    "series-name": lambda x: x.series,
+    "series-sort-name": lambda _: None,
+    "series-year": lambda x: x.volume if x.volume > 1900 else None,
+    "store-date": lambda _: None,
+    "store-day": lambda _: None,
+    "store-month": lambda _: None,
+    "store-year": lambda _: None,
+    "title": lambda x: x.title,
+    "upc": lambda _: None,
+    "volume": lambda x: x.volume if x.volume < 1900 else None,
+}
