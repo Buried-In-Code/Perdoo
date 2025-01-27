@@ -9,6 +9,9 @@
 [![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Perdoo.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/graphs/contributors)
+[![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Perdoo/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
+[![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Perdoo/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml)
+
 
 Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.\
 Perdoo standardizes all your digital comics into a unified format (cb7, cbt, or cbz).\
