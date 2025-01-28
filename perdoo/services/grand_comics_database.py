@@ -11,6 +11,7 @@ from grayven.schemas.issue import Issue
 from grayven.schemas.series import Series
 from grayven.sqlite_cache import SQLiteCache
 from natsort import humansorted, ns
+from pydantic import HttpUrl
 from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
@@ -97,7 +98,8 @@ class GrandComicsDatabase(BaseService[Series, Issue]):
             )
             if not options:
                 LOGGER.warning(
-                    "Unable to find any Issues with the Series Name, Series Year, and Number: '%s %s %s'",
+                    "Unable to find any Issues with the Series Name, Series Year, and Number"
+                    ": '%s %s %s'",
                     series_name,
                     series_year,
                     number,
@@ -221,21 +223,63 @@ class GrandComicsDatabase(BaseService[Series, Issue]):
                 start_year=series.year_began,
             ),
             store_date=issue.on_sale_date,
-            urls=[Url(primary=True, value=f"https://www.comics.org/issue/{issue.id}/")],
+            urls=[Url(primary=True, value=HttpUrl(f"https://www.comics.org/issue/{issue.id}/"))],
         )
 
     def _process_comic_info(self, series: Series, issue: Issue) -> ComicInfo | None:
+        try:
+            publisher = self.session.get_publisher(id=series.publisher_id)
+        except ServiceError:
+            publisher = None
+
         comic_info = ComicInfo()
 
-        comic_info.character_list = [x for story in issue.story_set for x in story.characters.split(";") if story.characters]
+        comic_info.character_list = [
+            x for story in issue.story_set for x in story.characters.split(";") if story.characters
+        ]
         comic_info.credits = {
-            "Writer": [x.strip() for story in issue.story_set for x in story.script.split(";") if story.script],
-            "Penciller": [x.strip() for story in issue.story_set for x in story.pencils.split(";") if story.pencils],
-            "Inker": [x.strip() for story in issue.story_set for x in story.inks.split(";") if story.inks],
-            "Colorist": [x.strip() for story in issue.story_set for x in story.colors.split(";") if story.colors],
-            "Letterer": [x.strip() for story in issue.story_set for x in story.letters.split(";") if story.letters],
-            "Editor": [x.strip() for story in issue.story_set for x in story.editing.split(";") if story.editing],
+            "Writer": [
+                x.strip()
+                for story in issue.story_set
+                for x in story.script.split(";")
+                if story.script
+            ],
+            "Penciller": [
+                x.strip()
+                for story in issue.story_set
+                for x in story.pencils.split(";")
+                if story.pencils
+            ],
+            "Inker": [
+                x.strip() for story in issue.story_set for x in story.inks.split(";") if story.inks
+            ],
+            "Colorist": [
+                x.strip()
+                for story in issue.story_set
+                for x in story.colors.split(";")
+                if story.colors
+            ],
+            "Letterer": [
+                x.strip()
+                for story in issue.story_set
+                for x in story.letters.split(";")
+                if story.letters
+            ],
+            "Editor": [
+                x.strip()
+                for story in issue.story_set
+                for x in story.editing.split(";")
+                if story.editing
+            ],
         }
+        comic_info.cover_date = issue.on_sale_date
+        comic_info.genre_list = [
+            x for story in issue.story_set for x in story.genre.split(";") if story.genre
+        ]
+        comic_info.language_iso = series.language
+        comic_info.page_count = int(issue.page_count)
+        comic_info.publisher = publisher.name if publisher else None
+        comic_info.series = series.name
 
         return comic_info
 

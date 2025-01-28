@@ -14,8 +14,7 @@ app = Typer(help="Commands for managing and configuring application settings.")
 
 @app.command(name="view", help="Display the current and default settings.")
 def view() -> None:
-    settings = Settings.load()
-    settings.display()
+    Settings.load().display()
 
 
 @app.command(name="locate", help="Display the path to the settings file.")
