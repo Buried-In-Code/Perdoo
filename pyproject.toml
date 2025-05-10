@@ -4,13 +4,13 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.1.0"
+  "pre-commit >= 4.2.0"
 ]
 tests = [
-  "pytest >= 8.3.4",
-  "pytest-cov >= 6.0.0",
-  "tox >= 4.24.1",
-  "tox-uv >= 1.20.1"
+  "pytest >= 8.3.5",
+  "pytest-cov >= 6.1.1",
+  "tox >= 4.25",
+  "tox-uv >= 1.25.0"
 ]
 
 [project]
@@ -34,20 +34,20 @@ classifiers = [
   "Typing :: Typed"
 ]
 dependencies = [
-  "comicfn2dict >= 0.2.4",
+  "comicfn2dict >= 0.2.5",
   "esak >= 2.0.0",
-  "lxml >= 5.3.0",
-  "mokkari >= 3.6.0",
+  "lxml >= 5.4.0",
+  "mokkari >= 3.10.0",
   "natsort >= 8.4.0",
-  "pillow >= 11.1.0",
-  "pydantic >= 2.10.6",
-  "pydantic-xml >= 2.14.1",
+  "pillow >= 11.2.1",
+  "pydantic >= 2.11.4",
+  "pydantic-xml >= 2.16.0",
   "rarfile >= 4.2",
-  "rich >= 13.9.4",
+  "rich >= 14.0.0",
   "simyan >= 1.4.0",
   "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.15.1"
+  "typer >= 0.15.3"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
