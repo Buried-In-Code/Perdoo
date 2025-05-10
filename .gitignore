@@ -16,4 +16,3 @@ logs/
 .pdm-python
 .python-version
 pdm.lock
-uv.lock
