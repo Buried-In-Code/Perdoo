@@ -17,6 +17,7 @@ __all__ = [
     "Url",
 ]
 
+import logging
 from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
@@ -29,6 +30,12 @@ from pydantic_xml import attr, computed_attr, element, wrapped
 from perdoo.metadata._base import PascalModel
 from perdoo.settings import Naming
 
+try:
+    from typing import Self  # Python >= 3.11
+except ImportError:
+    from typing_extensions import Self  # Python < 3.11
+
+LOGGER = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -42,11 +49,12 @@ class AgeRating(Enum):
     ADULT = "Adult"
 
     @staticmethod
-    def load(value: str) -> "AgeRating":
+    def load(value: str) -> Self:
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid AgeRating")
+        LOGGER.warning("'%s' isn't a valid AgeRating", value)
+        return AgeRating.UNKNOWN
 
     def __str__(self) -> str:
         return self.value
@@ -134,11 +142,12 @@ class Role(Enum):
     OTHER = "Other"
 
     @staticmethod
-    def load(value: str) -> "Role":
+    def load(value: str) -> Self:
         for entry in Role:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid Role")
+        LOGGER.warning("'%s' isn't a valid Role", value)
+        return Role.OTHER
 
     def __str__(self) -> str:
         return self.value
@@ -182,7 +191,7 @@ class InformationSource(Enum):
     LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
 
     @staticmethod
-    def load(value: str) -> "InformationSource":
+    def load(value: str) -> Self:
         for entry in InformationSource:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry

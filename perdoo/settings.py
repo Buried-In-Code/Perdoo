@@ -25,6 +25,11 @@ from perdoo.console import CONSOLE
 from perdoo.utils import blank_is_none, flatten_dict
 
 try:
+    from typing import Self  # Python >= 3.11
+except ImportError:
+    from typing_extensions import Self  # Python < 3.11
+
+try:
     import tomllib as tomlreader  # Python >= 3.11
 except ModuleNotFoundError:
     import tomli as tomlreader  # Python < 3.11
@@ -140,7 +145,7 @@ class Settings(SettingsModel):
     services: Services = Services()
 
     @classmethod
-    def load(cls) -> "Settings":
+    def load(cls) -> Self:
         if not cls._file.exists():
             cls().save()
         with cls._file.open("rb") as stream:
