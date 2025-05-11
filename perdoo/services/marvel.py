@@ -9,6 +9,7 @@ from esak.schemas.series import Series
 from esak.session import Session as Esak
 from esak.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
+from requests.exceptions import ConnectionError, HTTPError  # noqa: A004
 from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
@@ -59,10 +60,13 @@ class Marvel(BaseService[Series, Comic]):
                 return self._search_series(name=name, volume=volume, year=None)
             if Confirm.ask("Search Again", console=CONSOLE):
                 return self._search_series(name=None, volume=None, year=None)
-            return None
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ConnectionError as err:
+            LOGGER.error(err)
+        except HTTPError as err:
+            LOGGER.error(err)
+        except ApiError as err:
+            LOGGER.error(err)
+        return None
 
     def fetch_series(self, search: SeriesSearch) -> Series | None:
         series_id = search.marvel or self._search_series(
@@ -74,9 +78,18 @@ class Marvel(BaseService[Series, Comic]):
             series = self.session.series(_id=series_id)
             search.marvel = series_id
             return series
-        except ApiError:
-            LOGGER.exception("")
+        except ConnectionError as err:
+            LOGGER.error(err)
             return None
+        except HTTPError as err:
+            LOGGER.error(err)
+            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        if search.marvel:
+            search.marvel = None
+            return self.fetch_series(search=search)
+        return None
 
     def _search_issue(self, series_id: int, number: str | None) -> int | None:
         try:
@@ -108,10 +121,13 @@ class Marvel(BaseService[Series, Comic]):
             if number:
                 LOGGER.info("Searching again without the IssueNumber")
                 return self._search_issue(series_id=series_id, number=None)
-            return None
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ConnectionError as err:
+            LOGGER.error(err)
+        except HTTPError as err:
+            LOGGER.error(err)
+        except ApiError as err:
+            LOGGER.error(err)
+        return None
 
     def fetch_issue(self, series_id: int, search: IssueSearch) -> Comic | None:
         issue_id = search.marvel or self._search_issue(series_id=series_id, number=search.number)
@@ -121,9 +137,18 @@ class Marvel(BaseService[Series, Comic]):
             issue = self.session.comic(_id=issue_id)
             search.marvel = issue_id
             return issue
-        except ApiError:
-            LOGGER.exception("")
+        except ConnectionError as err:
+            LOGGER.error(err)
             return None
+        except HTTPError as err:
+            LOGGER.error(err)
+            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        if search.marvel:
+            search.marvel = None
+            return self.fetch_issue(series_id=series_id, search=search)
+        return None
 
     def _process_metron_info(self, series: Series, issue: Comic) -> MetronInfo | None:
         from perdoo.metadata.metron_info import (
