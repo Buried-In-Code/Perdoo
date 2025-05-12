@@ -201,7 +201,7 @@ def run(
         try:
             entries.append(get_archive(file))
         except NotImplementedError as nie:  # noqa: PERF203
-            LOGGER.error("%s, Skipping", nie)  # noqa: TRY400
+            LOGGER.error("%s, Skipping", nie)
 
     for index, entry in enumerate(entries):
         CONSOLE.rule(

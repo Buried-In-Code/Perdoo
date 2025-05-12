@@ -34,6 +34,7 @@ classifiers = [
   "Typing :: Typed"
 ]
 dependencies = [
+  "click < 8.2.0",
   "comicfn2dict >= 0.2.5",
   "esak >= 2.0.0",
   "lxml >= 5.4.0",
@@ -113,7 +114,8 @@ ignore = [
   "PLW2901",
   "TCH",
   "TRY003",
-  "TRY300"
+  "TRY300",
+  "TRY400"
 ]
 select = ["ALL"]
 

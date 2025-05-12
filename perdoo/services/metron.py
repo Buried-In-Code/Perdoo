@@ -34,10 +34,9 @@ class Metron(BaseService[Series, Issue]):
             series = self.session.series_list({"cv_id": comicvine_id})
             if series and len(series) >= 1:
                 return series[0].id
-            return None
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        return None
 
     def _search_series(self, name: str | None, volume: int | None, year: int | None) -> int | None:
         name = name or Prompt.ask("Series Name", console=CONSOLE)
@@ -83,10 +82,9 @@ class Metron(BaseService[Series, Issue]):
                 return self._search_series(name=name, volume=None, year=None)
             if Confirm.ask("Search Again", console=CONSOLE):
                 return self._search_series(name=None, volume=None, year=None)
-            return None
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        return None
 
     def fetch_series(self, search: SeriesSearch) -> Series | None:
         series_id = (
@@ -100,9 +98,12 @@ class Metron(BaseService[Series, Issue]):
             series = self.session.series(_id=series_id)
             search.metron = series_id
             return series
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        if search.metron:
+            search.metron = None
+            return self.fetch_series(search=search)
+        return None
 
     def _search_issue_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
@@ -111,10 +112,9 @@ class Metron(BaseService[Series, Issue]):
             issues = self.session.issues_list({"cv_id": comicvine_id})
             if issues and len(issues) >= 1:
                 return issues[0].id
-            return None
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        return None
 
     def _search_issue(self, series_id: int, number: str | None) -> int | None:
         try:
@@ -144,10 +144,9 @@ class Metron(BaseService[Series, Issue]):
             if number:
                 LOGGER.info("Searching again without the Number")
                 return self._search_issue(series_id=series_id, number=None)
-            return None
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        return None
 
     def fetch_issue(self, series_id: int, search: IssueSearch) -> Issue | None:
         issue_id = (
@@ -161,9 +160,12 @@ class Metron(BaseService[Series, Issue]):
             issue = self.session.issue(_id=issue_id)
             search.metron = issue_id
             return issue
-        except ApiError:
-            LOGGER.exception("")
-            return None
+        except ApiError as err:
+            LOGGER.error(err)
+        if search.metron:
+            search.metron = None
+            return self.fetch_issue(series_id=series_id, search=search)
+        return None
 
     def _process_metron_info(self, series: Series, issue: Issue) -> MetronInfo | None:
         from perdoo.metadata.metron_info import (

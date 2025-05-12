@@ -1,10 +1,10 @@
 __all__ = ["AgeRating", "ComicInfo", "Manga", "Page", "PageType", "YesNo"]
 
+import logging
 from collections.abc import Callable
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 from natsort import humansorted, ns
 from PIL import Image
@@ -13,6 +13,14 @@ from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
 from perdoo.settings import Naming
+
+try:
+    from typing import Self  # Python >= 3.11
+except ImportError:
+    from typing_extensions import Self  # Python < 3.11
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def str_to_list(value: str | None) -> list[str]:
@@ -33,11 +41,12 @@ class YesNo(Enum):
     YES = "Yes"
 
     @staticmethod
-    def load(value: str) -> "YesNo":
+    def load(value: str) -> Self:
         for entry in YesNo:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid YesNo")
+        LOGGER.warning("'%s' isn't a valid YesNo", value)
+        return YesNo.UNKNOWN
 
     def __str__(self) -> str:
         return self.value
@@ -50,11 +59,12 @@ class Manga(Enum):
     YES_AND_RIGHT_TO_LEFT = "YesAndRightToLeft"
 
     @staticmethod
-    def load(value: str) -> "Manga":
+    def load(value: str) -> Self:
         for entry in Manga:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid Manga")
+        LOGGER.warning("'%s' isn't a valid Manga", value)
+        return Manga.UNKNOWN
 
     def __str__(self) -> str:
         return self.value
@@ -78,11 +88,12 @@ class AgeRating(Enum):
     X18 = "X18+"
 
     @staticmethod
-    def load(value: str) -> "AgeRating":
+    def load(value: str) -> Self:
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid AgeRating")
+        LOGGER.warning("'%s' isn't a valid AgeRating", value)
+        return AgeRating.UNKNOWN
 
     def __str__(self) -> str:
         return self.value
@@ -102,11 +113,12 @@ class PageType(Enum):
     DELETED = "Deleted"
 
     @staticmethod
-    def load(value: str) -> "PageType":
+    def load(value: str) -> Self:
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
-        raise ValueError(f"'{value}' isn't a valid PageType")
+        LOGGER.warning("'%s' isn't a valid PageType", value)
+        return PageType.OTHER
 
     def __str__(self) -> str:
         return self.value
@@ -136,7 +148,7 @@ class Page(PascalModel):
         return hash((type(self), self.image))
 
     @staticmethod
-    def from_path(file: Path, index: int, is_final_page: bool, page: Optional["Page"]) -> "Page":
+    def from_path(file: Path, index: int, is_final_page: bool, page: Self | None) -> Self:
         if page:
             page_type = page.type
         elif index == 0:

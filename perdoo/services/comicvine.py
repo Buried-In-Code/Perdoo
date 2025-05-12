@@ -68,13 +68,11 @@ class Comicvine(BaseService[Volume, Issue]):
                 return self._search_series(name=name, volume=volume, year=None)
             if Confirm.ask("Search Again", console=CONSOLE):
                 return self._search_series(name=None, volume=None, year=None)
-            return None
-        except ServiceError:
-            LOGGER.exception("")
-            return None
+        except ServiceError as err:
+            LOGGER.error(err)
         except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
-            return None
+            LOGGER.error("Unable to get response from Comicvine")
+        return None
 
     def fetch_series(self, search: SeriesSearch) -> Volume | None:
         series_id = search.comicvine or self._search_series(
@@ -86,12 +84,15 @@ class Comicvine(BaseService[Volume, Issue]):
             series = self.session.get_volume(volume_id=series_id)
             search.comicvine = series_id
             return series
-        except ServiceError:
-            LOGGER.exception("")
-            return None
+        except ServiceError as err:
+            LOGGER.error(err)
         except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
+            LOGGER.error("Unable to get response from Comicvine")
             return None
+        if search.comicvine:
+            search.comicvine = None
+            return self.fetch_series(search=search)
+        return None
 
     def _search_issue(self, series_id: int, number: str | None) -> int | None:
         try:
@@ -121,13 +122,11 @@ class Comicvine(BaseService[Volume, Issue]):
             if number:
                 LOGGER.info("Searching again without the IssueNumber")
                 return self._search_issue(series_id=series_id, number=None)
-            return None
-        except ServiceError:
-            LOGGER.exception("")
-            return None
+        except ServiceError as err:
+            LOGGER.error(err)
         except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
-            return None
+            LOGGER.error("Unable to get response from Comicvine")
+        return None
 
     def fetch_issue(self, series_id: int, search: IssueSearch) -> Issue | None:
         issue_id = search.comicvine or self._search_issue(series_id=series_id, number=search.number)
@@ -137,12 +136,15 @@ class Comicvine(BaseService[Volume, Issue]):
             issue = self.session.get_issue(issue_id=issue_id)
             search.comicvine = issue_id
             return issue
-        except ServiceError:
-            LOGGER.exception("")
-            return None
+        except ServiceError as err:
+            LOGGER.error(err)
         except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")  # noqa: TRY400
+            LOGGER.error("Unable to get response from Comicvine")
             return None
+        if search.comicvine:
+            search.comicvine = None
+            return self.fetch_series(series_id=series_id, search=search)
+        return None
 
     def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
         from perdoo.metadata.metron_info import (

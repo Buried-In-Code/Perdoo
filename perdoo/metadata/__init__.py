@@ -32,9 +32,9 @@ def get_metadata(
             metron_info = cast(MetronInfo, metron_info)
     except ValidationError as ve:
         if debug:
-            LOGGER.error("'%s' contains an invalid MetronInfo file: %s", archive.path.name, ve)  # noqa: TRY400
+            LOGGER.error("'%s' contains an invalid MetronInfo file: %s", archive.path.name, ve)
         else:
-            LOGGER.error("'%s' contains an invalid MetronInfo file", archive.path.name)  # noqa: TRY400
+            LOGGER.error("'%s' contains an invalid MetronInfo file", archive.path.name)
     comic_info = None
     try:
         comic_info = read_meta_file(cls=ComicInfo, filename="ComicInfo.xml") or read_meta_file(
@@ -44,7 +44,7 @@ def get_metadata(
             comic_info = cast(ComicInfo, comic_info)
     except ValidationError as ve:
         if debug:
-            LOGGER.error("'%s' contains an invalid ComicInfo file: %s", archive.path.name, ve)  # noqa: TRY400
+            LOGGER.error("'%s' contains an invalid ComicInfo file: %s", archive.path.name, ve)
         else:
-            LOGGER.error("'%s' contains an invalid ComicInfo file", archive.path.name)  # noqa: TRY400
+            LOGGER.error("'%s' contains an invalid ComicInfo file", archive.path.name)
     return metron_info, comic_info
