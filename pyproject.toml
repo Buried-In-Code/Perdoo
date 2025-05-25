@@ -34,21 +34,20 @@ classifiers = [
   "Typing :: Typed"
 ]
 dependencies = [
-  "click < 8.2.0",
   "comicfn2dict >= 0.2.5",
   "esak >= 2.0.0",
   "lxml >= 5.4.0",
   "mokkari >= 3.10.0",
   "natsort >= 8.4.0",
   "pillow >= 11.2.1",
-  "pydantic >= 2.11.4",
-  "pydantic-xml >= 2.16.0",
+  "pydantic >= 2.11.5",
+  "pydantic-xml >= 2.17.0",
   "rarfile >= 4.2",
   "rich >= 14.0.0",
   "simyan >= 1.4.0",
   "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.15.3"
+  "typer >= 0.15.4"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
