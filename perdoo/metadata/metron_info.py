@@ -413,5 +413,5 @@ PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {
     "store-day": lambda x: x.store_date.day if x.store_date else "",
     "title": lambda x: x.collection_title,
     "upc": lambda x: x.gtin.upc if x.gtin else None,
-    "volume": lambda x: x.series.volume,
+    "volume": lambda x: x.series.volume or 1,
 }

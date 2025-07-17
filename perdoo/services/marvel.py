@@ -151,7 +151,7 @@ class Marvel(BaseService[Series, Comic]):
         return None
 
     def _process_metron_info(self, series: Series, issue: Comic) -> MetronInfo | None:
-        from perdoo.metadata.metron_info import (
+        from perdoo.metadata.metron_info import (  # noqa: PLC0415
             GTIN,
             AgeRating,
             Arc,
@@ -217,7 +217,7 @@ class Marvel(BaseService[Series, Comic]):
         )
 
     def _process_comic_info(self, series: Series, issue: Comic) -> ComicInfo | None:
-        from perdoo.metadata.comic_info import AgeRating
+        from perdoo.metadata.comic_info import AgeRating  # noqa: PLC0415
 
         def load_age_rating(value: str) -> AgeRating:
             try:

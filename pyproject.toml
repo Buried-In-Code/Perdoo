@@ -7,10 +7,10 @@ dev = [
   "pre-commit >= 4.2.0"
 ]
 tests = [
-  "pytest >= 8.3.5",
-  "pytest-cov >= 6.1.1",
-  "tox >= 4.25.0",
-  "tox-uv >= 1.25.0"
+  "pytest >= 8.4.1",
+  "pytest-cov >= 6.2.1",
+  "tox >= 4.27.0",
+  "tox-uv >= 1.26.1"
 ]
 
 [project]
@@ -35,19 +35,19 @@ classifiers = [
 ]
 dependencies = [
   "comicfn2dict >= 0.2.5",
+  "darkseid >= 6.0.0",
   "esak >= 2.0.0",
-  "lxml >= 5.4.0",
-  "mokkari >= 3.10.0",
+  "lxml >= 6.0.0",
+  "mokkari >= 3.13.0",
   "natsort >= 8.4.0",
-  "pillow >= 11.2.1",
-  "pydantic >= 2.11.5",
-  "pydantic-xml >= 2.17.0",
-  "rarfile >= 4.2",
+  "pillow >= 10.4.0",
+  "pydantic >= 2.11.7",
+  "pydantic-xml >= 2.17.3",
   "rich >= 14.0.0",
-  "simyan >= 1.4.0",
+  "simyan >= 1.5.0",
   "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.15.4"
+  "typer >= 0.16.0",
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -59,11 +59,12 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "py7zr >= 0.22.0"
+  "darkseid[7zip] >= 6.0.0"
 ]
 
 [project.scripts]
 Perdoo = "perdoo.__main__:app"
+perdoo = "perdoo.__main__:app"
 
 [project.urls]
 Homepage = "https://pypi.org/project/Perdoo"
@@ -147,7 +148,7 @@ keep-runtime-typing = true
 [tool.tomlsort]
 all = true
 overrides."tool.tox.env_list".inline_arrays = false
-overrides."tool.tox.testenv.commands".inline_arrays = false
+overrides."tool.tox.env_run_base.commands".inline_arrays = false
 
 [tool.tox]
 env_list = ["3.10", "3.11", "3.12", "3.13"]

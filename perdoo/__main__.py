@@ -6,15 +6,16 @@ from platform import python_version
 from typing import Annotated
 
 from comicfn2dict import comicfn2dict
+from darkseid.comic import SUPPORTED_IMAGE_EXTENSIONS
 from typer import Argument, Context, Exit, Option, Typer
 
 from perdoo import __version__, get_cache_root, setup_logging
-from perdoo.archives import CBRArchive, get_archive
 from perdoo.cli import archive_app, settings_app
+from perdoo.comic import Comic, ComicArchiveError, ComicMetadataError
 from perdoo.console import CONSOLE
-from perdoo.main import clean_archive, convert_file, rename_file, save_metadata, sync_metadata
-from perdoo.metadata import ComicInfo, MetronInfo, get_metadata
-from perdoo.metadata.metron_info import InformationSource
+from perdoo.metadata import ComicInfo, MetronInfo
+from perdoo.metadata.comic_info import Page
+from perdoo.metadata.metron_info import Id, InformationSource
 from perdoo.services import BaseService, Comicvine, Marvel, Metron
 from perdoo.settings import Service, Services, Settings
 from perdoo.utils import (
@@ -40,7 +41,7 @@ class SyncOption(Enum):
     @staticmethod
     def load(value: str) -> "SyncOption":
         for entry in SyncOption:
-            if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
+            if entry.value.casefold() == value.casefold():
                 return entry
         raise ValueError(f"'{value}' isn't a valid SyncOption")
 
@@ -73,54 +74,93 @@ def get_services(settings: Services) -> dict[Service, BaseService]:
     return output
 
 
+def _load_comics(target: Path) -> list[Comic]:
+    comics = []
+    files = list_files(target) if target.is_dir() else [target]
+    for file in files:
+        try:
+            comics.append(Comic(file=file))
+        except (ComicArchiveError, ComicMetadataError) as err:  # noqa: PERF203
+            LOGGER.error("Failed to load '%s' as a Comic: %s", file, err)
+    return comics
+
+
+def _get_id_value(ids: list[Id], source: InformationSource) -> str | None:
+    return next((x.value for x in ids if x.source == source), None)
+
+
+def _create_search_from_metron(metron_info: MetronInfo) -> Search:
+    series_id = metron_info.series.id
+    source = next((x.source for x in metron_info.ids if x.primary), None)
+    return Search(
+        series=SeriesSearch(
+            name=metron_info.series.name,
+            volume=metron_info.series.volume,
+            year=metron_info.series.start_year,
+            comicvine=series_id if source == InformationSource.COMIC_VINE else None,
+            marvel=series_id if source == InformationSource.MARVEL else None,
+            metron=series_id if source == InformationSource.METRON else None,
+        ),
+        issue=IssueSearch(
+            number=metron_info.number,
+            comicvine=_get_id_value(metron_info.ids, InformationSource.COMIC_VINE),
+            marvel=_get_id_value(metron_info.ids, InformationSource.MARVEL),
+            metron=_get_id_value(metron_info.ids, InformationSource.METRON),
+        ),
+    )
+
+
+def _create_search_from_comic_info(comic_info: ComicInfo) -> Search:
+    volume = comic_info.volume if comic_info.volume else None
+    year = volume if volume and volume > 1900 else None
+    volume = volume if volume and volume < 1900 else None
+    return Search(
+        series=SeriesSearch(name=comic_info.series, volume=volume, year=year),
+        issue=IssueSearch(number=comic_info.number),
+    )
+
+
+def _create_search_from_filename(fallback_title: str) -> Search:
+    series_name = comicfn2dict(fallback_title).get("series", fallback_title).replace("-", " ")
+    return Search(series=SeriesSearch(name=series_name), issue=IssueSearch())
+
+
 def get_search_details(
     metadata: tuple[MetronInfo | None, ComicInfo | None], fallback_title: str
 ) -> Search:
     metron_info, comic_info = metadata
-
     if metron_info and metron_info.series and metron_info.series.name:
-        series_id = metron_info.series.id
-        source = next(iter(x.source for x in metron_info.ids if x.primary), None)
-        return Search(
-            series=SeriesSearch(
-                name=metron_info.series.name,
-                volume=metron_info.series.volume,
-                year=metron_info.series.start_year,
-                comicvine=series_id if source == InformationSource.COMIC_VINE else None,
-                marvel=series_id if source == InformationSource.MARVEL else None,
-                metron=series_id if source == InformationSource.METRON else None,
-            ),
-            issue=IssueSearch(
-                number=metron_info.number,
-                comicvine=next(
-                    iter(
-                        x.value for x in metron_info.ids if x.source == InformationSource.COMIC_VINE
-                    ),
-                    None,
-                ),
-                marvel=next(
-                    iter(x.value for x in metron_info.ids if x.source == InformationSource.MARVEL),
-                    None,
-                ),
-                metron=next(
-                    iter(x.value for x in metron_info.ids if x.source == InformationSource.METRON),
-                    None,
-                ),
-            ),
-        )
+        return _create_search_from_metron(metron_info)
     if comic_info and comic_info.series:
-        return Search(
-            series=SeriesSearch(
-                name=comic_info.series,
-                volume=comic_info.volume
-                if comic_info.volume and comic_info.volume < 1900
-                else None,
-                year=comic_info.volume if comic_info.volume and comic_info.volume > 1900 else None,
-            ),
-            issue=IssueSearch(number=comic_info.number),
-        )
-    series_name = comicfn2dict(fallback_title).get("series", fallback_title).replace("-", " ")
-    return Search(series=SeriesSearch(name=series_name), issue=IssueSearch())
+        return _create_search_from_comic_info(comic_info)
+    return _create_search_from_filename(fallback_title)
+
+
+def load_page_info(entry: Comic, comic_info: ComicInfo) -> list[Page]:
+    pages = set()
+    image_files = [
+        x
+        for x in entry.archive.get_filename_list()
+        if Path(x).suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS
+    ]
+    for idx, file in enumerate(image_files):
+        img_file = Path(file)
+        is_final_page = idx == len(image_files) - 1
+        page = next((x for x in comic_info.pages if x.image == idx), None)
+        pages.add(Page.from_path(file=img_file, index=idx, is_final_page=is_final_page, page=page))
+    return sorted(pages)
+
+
+def sync_metadata(
+    search: Search, services: dict[Service, BaseService | None], settings: Settings
+) -> tuple[MetronInfo | None, ComicInfo | None]:
+    for service_name in settings.services.order:
+        if service := services.get(service_name):
+            LOGGER.info("Searching %s for matching issue", type(service).__name__)
+            metron_info, comic_info = service.fetch(search=search)
+            if metron_info or comic_info:
+                return metron_info, comic_info
+    return None, None
 
 
 @app.command(name="import", help="Import comics into your collection using Perdoo.")
@@ -178,8 +218,8 @@ def run(
     settings = Settings.load()
     settings.save()
     if debug:
-        Settings.display(
-            extras={
+        CONSOLE.print(
+            {
                 "target": target,
                 "flags.skip-convert": skip_convert,
                 "flags.sync": sync,
@@ -196,28 +236,18 @@ def run(
         LOGGER.warning("No external services configured")
         sync = SyncOption.SKIP
 
-    entries = []
-    for file in list_files(target) if target.is_dir() else [target]:
-        try:
-            entries.append(get_archive(file))
-        except NotImplementedError as nie:  # noqa: PERF203
-            LOGGER.error("%s, Skipping", nie)
-
-    for index, entry in enumerate(entries):
+    comics = _load_comics(target=target)
+    for index, entry in enumerate(comics):
         CONSOLE.rule(
-            f"[{index + 1}/{len(entries)}] Importing {entry.path.name}",
+            f"[{index + 1}/{len(comics)}] Importing {entry.path.name}",
             align="left",
             style="subtitle",
         )
         if not skip_convert:
-            with CONSOLE.status(
-                f"Converting to '{settings.output.format}'", spinner="simpleDotsScrolling"
-            ):
-                entry = convert_file(entry, output_format=settings.output.format)
-        if entry is None or isinstance(entry, CBRArchive):
-            continue
+            with CONSOLE.status("Converting to 'CBZ'", spinner="simpleDotsScrolling"):
+                entry.convert_to_cbz()
 
-        metadata = get_metadata(archive=entry, debug=debug)
+        metadata: tuple[MetronInfo | None, ComicInfo | None] = (entry.metron_info, entry.comic_info)
 
         if sync != SyncOption.SKIP:
             search = get_search_details(metadata=metadata, fallback_title=entry.path.stem)
@@ -233,12 +263,20 @@ def run(
 
         if not skip_clean:
             with CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"):
-                clean_archive(entry=entry, settings=settings)
-        save_metadata(entry=entry, metadata=metadata, settings=settings)
+                entry.clean_archive()
+        if settings.output.metron_info.create:
+            entry.write_metadata(metadata=metadata[0])
+        if settings.output.comic_info.create:
+            metadata[1].pages = (
+                load_page_info(entry=entry, comic_info=metadata[1])
+                if settings.output.comic_info.handle_pages
+                else []
+            )
+            entry.write_metadata(metadata=metadata[1])
 
         if not skip_rename:
             with CONSOLE.status("Renaming based on metadata", spinner="simpleDotsScrolling"):
-                rename_file(entry=entry, metadata=metadata, settings=settings, target=target.parent)
+                entry.rename(naming=settings.output.naming, output_folder=settings.output.folder)
 
     with CONSOLE.status("Cleaning up empty folders"):
         delete_empty_folders(folder=target)
