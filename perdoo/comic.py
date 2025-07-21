@@ -11,14 +11,7 @@ import shutil
 from pathlib import Path
 from typing import Final, Literal, TypeVar
 
-from darkseid.archivers import (
-    PY7ZR_AVAILABLE,
-    Archiver,
-    ArchiverFactory,
-    SevenZipArchiver,
-    TarArchiver,
-    ZipArchiver,
-)
+from darkseid.archivers import PY7ZR_AVAILABLE, Archiver, ArchiverFactory, TarArchiver, ZipArchiver
 from darkseid.comic import (
     COMIC_RACK_FILENAME,
     METRON_INFO_FILENAME,
@@ -80,6 +73,8 @@ class Comic:
 
     def _setup_archive(self, file: Path) -> None:
         if PY7ZR_AVAILABLE:
+            from darkseid.archivers import SevenZipArchiver  # noqa: PLC0415
+
             ArchiverFactory.register_archiver(self._7Z_EXTENSION, SevenZipArchiver)
         try:
             self._archiver: Archiver = ArchiverFactory.create_archiver(path=file)
