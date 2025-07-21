@@ -34,8 +34,13 @@ def comic_info() -> ComicInfo:
 
 
 def test_convert_to_cbz(cbt_comic: Comic) -> None:
-    cbt_comic.convert_to_cbz()
+    cbt_comic.convert(extension="cbz")
     assert cbt_comic.path.suffix == ".cbz"
+
+
+def test_convert_to_cbt(cbz_comic: Comic) -> None:
+    cbz_comic.convert(extension="cbt")
+    assert cbz_comic.path.suffix == ".cbt"
 
 
 def test_clean_archive(cbz_comic: Comic) -> None:

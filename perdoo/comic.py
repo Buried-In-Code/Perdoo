@@ -1,15 +1,22 @@
-__all__ = ["Comic", "ComicArchiveError", "ComicMetadataError", "MetadataFormat"]
+__all__ = [
+    "SUPPORTED_IMAGE_EXTENSIONS",
+    "Comic",
+    "ComicArchiveError",
+    "ComicMetadataError",
+    "MetadataFormat",
+]
 
 import logging
 import shutil
 from pathlib import Path
-from typing import Final, TypeVar
+from typing import Final, Literal, TypeVar
 
 from darkseid.archivers import (
     PY7ZR_AVAILABLE,
     Archiver,
     ArchiverFactory,
     SevenZipArchiver,
+    TarArchiver,
     ZipArchiver,
 )
 from darkseid.comic import (
@@ -98,11 +105,15 @@ class Comic:
         else:
             raise ComicMetadataError(f"Unsupported metadata format: {metadata_format}")
 
-    def convert_to_cbz(self) -> None:
-        if self.is_cbz():
+    def convert(self, extension: Literal["cbt", "cbz"]) -> None:
+        check, archiver = {
+            "cbt": (self.is_cbt, TarArchiver),
+            "cbz": (self.is_cbz, ZipArchiver),
+        }.get(extension)
+        if check():
             return
-        output_file = self.path.with_suffix(".cbz")
-        with self.archive as source, ZipArchiver(path=output_file) as destination:
+        output_file = self.path.with_suffix(f".{extension}")
+        with self.archive as source, archiver(path=output_file) as destination:
             LOGGER.debug("Converting '%s' to '%s'", source.path.name, destination.path.name)
             if destination.copy_from_archive(other_archive=source):
                 self._archiver = destination
@@ -176,7 +187,7 @@ class Comic:
             "Renaming '%s' to '%s'", self.path.name, output.relative_to(output_folder.parent)
         )
         shutil.move(self.path, output)
-        self._archiver = ZipArchiver(path=output)
+        self.archive._path = output  # noqa: SLF001
 
         new_filename = self.path.stem
         if all(

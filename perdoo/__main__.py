@@ -6,12 +6,11 @@ from platform import python_version
 from typing import Annotated
 
 from comicfn2dict import comicfn2dict
-from darkseid.comic import SUPPORTED_IMAGE_EXTENSIONS
 from typer import Argument, Context, Exit, Option, Typer
 
 from perdoo import __version__, get_cache_root, setup_logging
 from perdoo.cli import archive_app, settings_app
-from perdoo.comic import Comic, ComicArchiveError, ComicMetadataError
+from perdoo.comic import SUPPORTED_IMAGE_EXTENSIONS, Comic, ComicArchiveError, ComicMetadataError
 from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.metadata.comic_info import Page
@@ -244,8 +243,10 @@ def run(
             style="subtitle",
         )
         if not skip_convert:
-            with CONSOLE.status("Converting to 'CBZ'", spinner="simpleDotsScrolling"):
-                entry.convert_to_cbz()
+            with CONSOLE.status(
+                f"Converting to '{settings.output.format}'", spinner="simpleDotsScrolling"
+            ):
+                entry.convert(extension=settings.output.format)
 
         metadata: tuple[MetronInfo | None, ComicInfo | None] = (entry.metron_info, entry.comic_info)
 

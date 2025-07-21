@@ -13,7 +13,7 @@ __all__ = [
 
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, ClassVar
+from typing import Annotated, Any, ClassVar, Literal
 
 import tomli_w as tomlwriter
 from pydantic import BeforeValidator
@@ -74,6 +74,7 @@ class Naming(SettingsModel):
 class Output(SettingsModel):
     comic_info: ComicInfo = ComicInfo()
     folder: Path = get_data_root()
+    format: Literal["cbt", "cbz"] = "cbz"
     metron_info: MetronInfo = MetronInfo()
     naming: Naming = Naming()
 
