@@ -5,10 +5,10 @@ from perdoo.settings import Naming
 
 
 def test_sanitize() -> None:
-    assert sanitize("Example Title!") == "Example-Title!"
-    assert sanitize("Example/Title: 123") == "ExampleTitle-123"
-    assert sanitize("!@#$%^&*()[]{};':,.<>?/") == "!&"
-    assert sanitize(None) is None
+    assert sanitize("Example Title!", seperator="-") == "Example-Title!"
+    assert sanitize("Example/Title: 123", seperator="-") == "ExampleTitle-123"
+    assert sanitize("!@#$%^&*()[]{};':,.<>?/", seperator="-") == "!&"
+    assert sanitize(None, seperator="-") is None
 
 
 def test_metron_info_default_naming() -> None:
