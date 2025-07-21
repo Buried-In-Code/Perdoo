@@ -386,6 +386,7 @@ class MetronInfo(PascalModel):
                 Format.SINGLE_ISSUE: settings.single_issue or settings.default,
                 Format.TRADE_PAPERBACK: settings.trade_paperback or settings.default,
             }.get(self.series.format, settings.default),
+            seperator=settings.seperator,
         )
 
 

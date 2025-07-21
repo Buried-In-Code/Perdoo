@@ -47,7 +47,7 @@ dependencies = [
   "simyan >= 1.5.1",
   "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.16.0",
+  "typer >= 0.16.0"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]

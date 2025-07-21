@@ -322,6 +322,7 @@ class ComicInfo(PascalModel):
                 Format.SINGLE_ISSUE.value: settings.single_issue or settings.default,
                 Format.TRADE_PAPERBACK.value: settings.trade_paperback or settings.default,
             }.get(self.format, settings.default),
+            seperator=settings.seperator,
         )
 
 

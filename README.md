@@ -12,7 +12,6 @@
 [![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Perdoo/testing.yaml?branch=main&logo=Github&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
 [![Github Action - Publishing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Perdoo/publishing.yaml?branch=main&logo=Github&label=Publishing&style=flat-square)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml)
 
-
 Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.\
 Perdoo standardizes all your digital comics into a unified format (cbz).\
 It adds and/or updates metadata files using supported services.\
@@ -135,6 +134,92 @@ Naming is done based on the Comic Format, set the value to `""` and it will fall
 | `{title}`            | The issue title.                                       |
 | `{upc}`              | The issue's UPC.                                       |
 | `{volume}`           | The volume of the series.                              |
+
+## Settings
+
+To set Perdoo setting details, update the file: `~/.config/perdoo/settings.toml`.
+File will be created on first run.
+
+### Example File
+
+```toml
+[output]
+folder = "~/.local/share/perdoo"
+format = "cbz"
+
+[output.comic_info]
+create = true
+handle_pages = true
+
+[output.metron_info]
+create = true
+
+[output.naming]
+seperator = "-"
+default = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
+annual = ""
+digital_chapter = ""
+graphic_novel = ""
+hardcover = ""
+limited_series = ""
+omnibus = ""
+one_shot = ""
+single_issue = ""
+trade_paperback = ""
+
+[services]
+order = ["Metron", "Marvel", "Comicvine"]
+
+[services.comicvine]
+api_key = "<Comicvine API Key>"
+
+[services.marvel]
+public_key = "<Marvel Public Key>"
+private_key = "<Marvel Private Key>"
+
+[services.metron]
+username = "<Metron Username>"
+password = "<Metron Password>"
+
+```
+
+### Details
+
+- `output.folder`
+  The folder where the output files will be stored.
+  Defaults to `~/.local/share/perdoo`.
+
+- `output.format`
+  The output file format for the comic archives.
+  Defaults to `cbz`.
+
+- `output.comic_info.create`
+  Whether to create a ComicInfo.xml file in the output archive.
+  Defaults to `true`.
+
+- `output.comic_info.handle_pages`
+  Whether to handle page data in the ComicInfo.xml file.
+  Defaults to `true`.
+
+- `output.metron_info.create`
+  Whether to create a MetronInfo.xml file in the output archive.
+  Defaults to `true`.
+
+- `output.naming.seperator`
+  The word separator used in the output file names.
+  Defaults to `-`.
+  Options are `-`, `_`, `.`, or ` ` (space).
+
+- `output.naming.*`
+  The naming patterns for different comic formats.
+  Each pattern can be customized or left empty to use the default setting.
+  The patterns support various metadata fields as described in the above "File Renaming and Organization" section.
+
+- `services.order`
+  The order in which the services will be used for metadata retrieval.
+  Metadata will be fetched from the first service that returns a result.
+  Don't include the service name in the list if you don't want to use it.
+  Defaults to `["Metron", "Marvel", "Comicvine"]`, options are `Metron`, `Marvel` and `Comicvine`.
 
 ## Socials
 

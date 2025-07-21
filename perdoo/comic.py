@@ -156,9 +156,9 @@ class Comic:
             pad_count = len(str(len(files))) if files else 1
             for idx, filename in enumerate(files):
                 img_file = Path(filename)
-                new_file = img_file.with_name(f"{base_name}_{str(idx).zfill(pad_count)}")
+                new_file = img_file.with_stem(f"{base_name}_{str(idx).zfill(pad_count)}")
                 if new_file.stem != img_file.stem:
-                    LOGGER.info("Renaming '%s' to '%s'", img_file.stem, new_file.stem)
+                    LOGGER.info("Renaming '%s' to '%s'", img_file.name, new_file.name)
                     file_contents = source.read_file(archive_file=filename)
                     source.remove_files(filename_list=[filename])
                     source.write_file(archive_file=new_file.name, data=file_contents)
