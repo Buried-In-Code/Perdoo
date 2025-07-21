@@ -307,7 +307,7 @@ class ComicInfo(PascalModel):
         self.story_arc = list_to_str(value=value)
 
     def get_filename(self, settings: Naming) -> str:
-        from perdoo.metadata.metron_info import Format
+        from perdoo.metadata.metron_info import Format  # noqa: PLC0415
 
         return self.evaluate_pattern(
             pattern_map=PATTERN_MAP,

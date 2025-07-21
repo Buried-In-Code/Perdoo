@@ -1,4 +1,5 @@
 __all__ = [
+    "BaseModel",
     "IssueSearch",
     "Search",
     "SeriesSearch",
@@ -6,6 +7,7 @@ __all__ = [
     "delete_empty_folders",
     "flatten_dict",
     "list_files",
+    "recursive_delete",
 ]
 
 import logging
@@ -14,8 +16,28 @@ from pathlib import Path
 from typing import Any
 
 from natsort import humansorted, ns
+from pydantic import BaseModel as PydanticModel
+from rich.panel import Panel
+
+from perdoo.console import CONSOLE
 
 LOGGER = logging.getLogger(__name__)
+
+
+class BaseModel(
+    PydanticModel,
+    populate_by_name=True,
+    str_strip_whitespace=True,
+    validate_assignment=True,
+    revalidate_instances="always",
+    extra="forbid",
+):
+    def display(self) -> None:
+        content = flatten_dict(content=self.model_dump())
+        content_vals = [
+            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in content.items()
+        ]
+        CONSOLE.print(Panel.fit("\n".join(content_vals), title=type(self).__name__))
 
 
 @dataclass

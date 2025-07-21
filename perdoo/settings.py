@@ -12,17 +12,16 @@ __all__ = [
 ]
 
 from enum import Enum
-from importlib.util import find_spec
 from pathlib import Path
 from typing import Annotated, Any, ClassVar, Literal
 
 import tomli_w as tomlwriter
-from pydantic import BaseModel, BeforeValidator, field_validator
+from pydantic import BeforeValidator
 from rich.panel import Panel
 
 from perdoo import get_config_root, get_data_root
 from perdoo.console import CONSOLE
-from perdoo.utils import blank_is_none, flatten_dict
+from perdoo.utils import BaseModel, blank_is_none, flatten_dict
 
 try:
     from typing import Self  # Python >= 3.11
@@ -35,14 +34,7 @@ except ModuleNotFoundError:
     import tomli as tomlreader  # Python < 3.11
 
 
-class SettingsModel(
-    BaseModel,
-    populate_by_name=True,
-    str_strip_whitespace=True,
-    validate_assignment=True,
-    extra="ignore",
-):
-    pass
+class SettingsModel(BaseModel, extra="ignore"): ...
 
 
 class ComicInfo(SettingsModel):
@@ -82,15 +74,9 @@ class Naming(SettingsModel):
 class Output(SettingsModel):
     comic_info: ComicInfo = ComicInfo()
     folder: Path = get_data_root()
-    format: Literal["cb7", "cbt", "cbz"] = "cbz"
+    format: Literal["cbt", "cbz"] = "cbz"
     metron_info: MetronInfo = MetronInfo()
     naming: Naming = Naming()
-
-    @field_validator("format", mode="before")
-    def validate_format(cls, value: str) -> str:
-        if value == "cb7" and find_spec("py7zr") is None:
-            raise ImportError("Install Perdoo with the cb7 dependency group to use CB7 files.")
-        return value
 
 
 class Comicvine(SettingsModel):
@@ -111,6 +97,9 @@ class Service(str, Enum):
     COMICVINE = "Comicvine"
     MARVEL = "Marvel"
     METRON = "Metron"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Services(SettingsModel):
@@ -140,9 +129,12 @@ def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
 class Settings(SettingsModel):
     _file: ClassVar[Path] = get_config_root() / "settings.toml"
 
-    image_extensions: tuple[str, ...] = (".jpg", ".jpeg", ".png", ".webp", ".jxl")
     output: Output = Output()
     services: Services = Services()
+
+    @property
+    def path(self) -> Path:
+        return self._file
 
     @classmethod
     def load(cls) -> Self:
@@ -152,42 +144,28 @@ class Settings(SettingsModel):
             content = tomlreader.load(stream)
         return cls(**content)
 
-    def save(self) -> None:
-        with self._file.open("wb") as stream:
-            content = self.model_dump(by_alias=False, exclude_defaults=True)
+    def save(self) -> Self:
+        with self.path.open("wb") as stream:
+            content = self.model_dump(by_alias=False)
             content = _stringify_values(content=content)
             tomlwriter.dump(content, stream)
-
-    def update(self, key: str, value: Any) -> None:  # noqa: ANN401
-        keys = key.split(".")
-        target = self
-        for entry in keys[:-1]:
-            target = getattr(target, entry)
-        setattr(target, keys[-1], value)
+        return self
 
     @classmethod
-    def display(cls, extras: dict[str, Any] | None = None) -> None:
-        if extras is None:
-            extras = {}
+    def display(cls) -> None:
         default = flatten_dict(content=cls().model_dump())
         file_overrides = flatten_dict(content=cls.load().model_dump())
         default_vals = [
             f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]"
-            if file_overrides[k] == v
+            if k in file_overrides and file_overrides[k] == v
             else f"[dim][repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/][/]"
             for k, v in default.items()
         ]
         override_vals = [
             f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]"
             for k, v in file_overrides.items()
-            if default[k] != v
-        ]
-        extra_vals = [
-            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in extras.items()
+            if k not in default or default[k] != v
         ]
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default"))
-        if override_vals:
-            CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
-        if extra_vals:
-            CONSOLE.print(Panel.fit("\n".join(extra_vals), title="Extras"))
+        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))

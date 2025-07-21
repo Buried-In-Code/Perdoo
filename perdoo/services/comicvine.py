@@ -143,11 +143,11 @@ class Comicvine(BaseService[Volume, Issue]):
             return None
         if search.comicvine:
             search.comicvine = None
-            return self.fetch_series(series_id=series_id, search=search)
+            return self.fetch_issue(series_id=series_id, search=search)
         return None
 
     def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
-        from perdoo.metadata.metron_info import (
+        from perdoo.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
             Id,

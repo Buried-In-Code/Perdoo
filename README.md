@@ -14,7 +14,7 @@
 
 
 Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.\
-Perdoo standardizes all your digital comics into a unified format (cb7, cbt, or cbz).\
+Perdoo standardizes all your digital comics into a unified format (cbz).\
 It adds and/or updates metadata files using supported services.\
 Unlike other tagging tools, Perdoo employs a manual approach when metadata files are absent, prompting users to enter the necessary Publisher/Series/Issue details for search purposes.
 
@@ -63,12 +63,6 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
   ![`uv run Perdoo settings locate --help`](docs/img/perdoo-settings-locate.svg)
 
 </details>
-<details><summary>Perdoo settings update</summary>
-
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo settings update --help`](docs/img/perdoo-settings-update.svg)
-
-</details>
 
 ## Supported Formats
 
@@ -81,9 +75,7 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ### Output Extensions
 
-- .cbt
-- .cbz _(Default)_
-- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
+- .cbz
 
 ### Metadata Files
 
