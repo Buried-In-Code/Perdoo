@@ -42,10 +42,11 @@ def test_clean_archive(cbz_comic: Comic) -> None:
     cbz_comic._archiver.get_filename_list = MagicMock(  # noqa: SLF001
         return_value=["image1.jpg", "info.txt", "ComicInfo.xml", "cover.png"]
     )
-    cbz_comic._archiver.remove_file = MagicMock()  # noqa: SLF001
+    cbz_comic._archiver.remove_files = MagicMock()  # noqa: SLF001
 
     cbz_comic.clean_archive()
-    cbz_comic._archiver.remove_file.assert_called_once_with(archive_file="info.txt")  # noqa: SLF001
+    cbz_comic._archiver.remove_files.assert_called_once()  # noqa: SLF001
+    cbz_comic._archiver.remove_files.assert_called_once_with(filename_list=["info.txt"])  # noqa: SLF001
 
 
 def test_write_comicinfo(cbz_comic: Comic, comic_info: ComicInfo) -> None:

@@ -5,7 +5,13 @@ import shutil
 from pathlib import Path
 from typing import Final, TypeVar
 
-from darkseid.archivers import Archiver, ArchiverFactory, ZipArchiver
+from darkseid.archivers import (
+    PY7ZR_AVAILABLE,
+    Archiver,
+    ArchiverFactory,
+    SevenZipArchiver,
+    ZipArchiver,
+)
 from darkseid.comic import (
     COMIC_RACK_FILENAME,
     METRON_INFO_FILENAME,
@@ -17,9 +23,6 @@ from darkseid.comic import (
 
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.settings import Naming
-
-PY7ZR_AVAILABLE = False
-SevenZipArchiver = None
 
 LOGGER = logging.getLogger(__name__)
 T = TypeVar("T", bound=ComicInfo | MetronInfo)
@@ -112,7 +115,7 @@ class Comic:
                     filepath.name not in {COMIC_RACK_FILENAME, METRON_INFO_FILENAME}
                     and filepath.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS
                 ):
-                    source.remove_file(archive_file=filename)
+                    source.remove_files(filename_list=[filename])
                     LOGGER.info("Removed '%s' from '%s'", filename, source.path.name)
 
     def write_metadata(self, metadata: ComicInfo | MetronInfo | None) -> None:
@@ -151,7 +154,7 @@ class Comic:
                 if new_file.stem != img_file.stem:
                     LOGGER.info("Renaming '%s' to '%s'", img_file.stem, new_file.stem)
                     file_contents = source.read_file(archive_file=filename)
-                    source.remove_file(archive_file=filename)
+                    source.remove_files(filename_list=[filename])
                     source.write_file(archive_file=new_file.name, data=file_contents)
 
     def rename(self, naming: Naming, output_folder: Path) -> None:

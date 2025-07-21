@@ -9,7 +9,7 @@ dev = [
 tests = [
   "pytest >= 8.4.1",
   "pytest-cov >= 6.2.1",
-  "tox >= 4.27.0",
+  "tox >= 4.28.0",
   "tox-uv >= 1.26.1"
 ]
 
@@ -35,16 +35,16 @@ classifiers = [
 ]
 dependencies = [
   "comicfn2dict >= 0.2.5",
-  "darkseid >= 6.0.0",
+  "darkseid >= 7.0.0",
   "esak >= 2.0.0",
   "lxml >= 6.0.0",
   "mokkari >= 3.13.0",
   "natsort >= 8.4.0",
-  "pillow >= 10.4.0",
+  "pillow >= 11.3.0",
   "pydantic >= 2.11.7",
   "pydantic-xml >= 2.17.3",
   "rich >= 14.0.0",
-  "simyan >= 1.5.0",
+  "simyan >= 1.5.1",
   "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
   "typer >= 0.16.0",
@@ -59,7 +59,7 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "darkseid[7zip] >= 6.0.0"
+  "darkseid[7zip] >= 7.0.0"
 ]
 
 [project.scripts]
