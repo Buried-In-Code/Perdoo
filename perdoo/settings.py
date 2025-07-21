@@ -47,6 +47,7 @@ class MetronInfo(SettingsModel):
 
 
 class Naming(SettingsModel):
+    seperator: Literal["-", "_", ".", " "] = "-"
     default: str = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
     annual: Annotated[str | None, BeforeValidator(blank_is_none)] = (
         "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Annual_#{number:2}"
