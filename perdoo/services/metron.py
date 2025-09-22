@@ -9,10 +9,12 @@ from mokkari.schemas.series import Series
 from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
+from prompt_toolkit.styles import Style
+from questionary import Choice, select
 from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
-from perdoo.console import CONSOLE, create_menu
+from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
@@ -20,6 +22,7 @@ from perdoo.settings import Metron as MetronSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
+DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 
 class Metron(BaseService[Series, Issue]):
@@ -49,31 +52,39 @@ class Metron(BaseService[Series, Issue]):
             options = sorted(
                 self.session.series_list(params=params), key=lambda x: (x.display_name, x.volume)
             )
-            if not options:
+            if options:
+                search = name
+                if volume:
+                    search += f" v{volume}"
+                if year:
+                    search += f" ({year})"
+                choices = [
+                    Choice(
+                        title=[
+                            ("class:dim", f"{x.id} | "),
+                            ("class:title", f"{x.display_name} v{x.volume}"),
+                        ],
+                        description=f"https://metron.cloud/series/{x.id}",
+                        value=x,
+                    )
+                    for x in options
+                ]
+                choices.append(DEFAULT_CHOICE)
+                selected = select(
+                    f"Searching for Metron Series '{search}'",
+                    default=DEFAULT_CHOICE,
+                    choices=choices,
+                    style=Style([("dim", "dim")]),
+                ).ask()
+                if selected and selected != DEFAULT_CHOICE.title:
+                    return selected.id
+            else:
                 LOGGER.warning(
                     "Unable to find any Series with the Name, Volume and YearBegan: '%s %s %s'",
                     name,
                     volume,
                     year,
                 )
-            search = name
-            if volume:
-                search += f" v{volume}"
-            if year:
-                search += f" ({year})"
-            index = create_menu(
-                options=[
-                    f"{x.id} | {x.display_name} v{x.volume}"
-                    if x.volume > 1
-                    else f"{x.id} | {x.display_name}"
-                    for x in options
-                ],
-                title="Metron Series",
-                subtitle=f"Searching for Series '{search}'",
-                default="None of the Above",
-            )
-            if index != 0:
-                return options[index - 1].id
             if year:
                 LOGGER.info("Searching again without the YearBegan")
                 return self._search_series(name=name, volume=volume, year=None)
@@ -127,20 +138,30 @@ class Metron(BaseService[Series, Issue]):
                 key=lambda x: (x.number, x.issue_name),
                 alg=ns.NA | ns.G,
             )
-            if not options:
+            if options:
+                choices = [
+                    Choice(
+                        title=[("class:dim", f"{x.id} | "), ("class:title", x.issue_name)],
+                        description=f"https://metron.cloud/issues/{x.id}",
+                        value=x,
+                    )
+                    for x in options
+                ]
+                choices.append(DEFAULT_CHOICE)
+                selected = select(
+                    f"Searching for Metron Issue #{number}",
+                    default=DEFAULT_CHOICE,
+                    choices=choices,
+                    style=Style([("dim", "dim")]),
+                ).ask()
+                if selected and selected != DEFAULT_CHOICE.title:
+                    return selected.id
+            else:
                 LOGGER.warning(
                     "Unable to find any Issues with the SeriesId and Number: '%s %s'",
                     series_id,
                     number,
                 )
-            index = create_menu(
-                options=[f"{x.id} | {x.issue_name}" for x in options],
-                title="Metron Issue",
-                subtitle=f"Searching for Issue #{number}" if number else "",
-                default="None of the Above",
-            )
-            if index != 0:
-                return options[index - 1].id
             if number:
                 LOGGER.info("Searching again without the Number")
                 return self._search_issue(series_id=series_id, number=None)
