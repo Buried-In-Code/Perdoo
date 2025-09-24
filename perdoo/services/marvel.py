@@ -9,17 +9,20 @@ from esak.schemas.series import Series
 from esak.session import Session as Esak
 from esak.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
+from prompt_toolkit.styles import Style
+from questionary import Choice, select
 from requests.exceptions import ConnectionError, HTTPError  # noqa: A004
 from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
-from perdoo.console import CONSOLE, create_menu
+from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.services._base import BaseService
 from perdoo.settings import Marvel as MarvelSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
+DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 
 class Marvel(BaseService[Series, Comic]):
@@ -38,23 +41,33 @@ class Marvel(BaseService[Series, Comic]):
             options = sorted(
                 self.session.series_list(params=params), key=lambda x: (x.title, x.start_year)
             )
-            if not options:
+            if options:
+                search = name
+                if volume:
+                    search += f" v{volume}"
+                if year:
+                    search += f" ({year})"
+                choices = [
+                    Choice(
+                        title=[("class:dim", f"{x.id} | "), ("class:title", x.title)],
+                        description=f"<Marvel Url>/series/{x.id}",
+                        value=x,
+                    )
+                    for x in options
+                ]
+                choices.append(DEFAULT_CHOICE)
+                selected = select(
+                    f"Searching for Marvel Series '{search}'",
+                    default=DEFAULT_CHOICE,
+                    choices=choices,
+                    style=Style([("dim", "dim")]),
+                ).ask()
+                if selected and selected != DEFAULT_CHOICE.title:
+                    return selected.id
+            else:
                 LOGGER.warning(
                     "Unable to find any Series with the Title and StartYear: '%s %s'", name, year
                 )
-            search = name
-            if volume:
-                search += f" v{volume}"
-            if year:
-                search += f" ({year})"
-            index = create_menu(
-                options=[f"{x.id} | {x.title}" for x in options],
-                title="Marvel Series",
-                subtitle=f"Searching for Series '{search}'",
-                default="None of the Above",
-            )
-            if index != 0:
-                return options[index - 1].id
             if year:
                 LOGGER.info("Searching again without the StartYear")
                 return self._search_series(name=name, volume=volume, year=None)
@@ -102,22 +115,33 @@ class Marvel(BaseService[Series, Comic]):
                 key=lambda x: x.issue_number,
                 alg=ns.NA | ns.G,
             )
-            if not options:
+            if options:
+                choices = [
+                    Choice(
+                        title=[
+                            ("class:dim", f"{x.id} | "),
+                            ("class:title", f"{x.series.name} #{x.issue_number} - {x.format}"),
+                        ],
+                        description=f"<Marvel Url>/comics/{x.id}",
+                        value=x,
+                    )
+                    for x in options
+                ]
+                choices.append(DEFAULT_CHOICE)
+                selected = select(
+                    f"Searching for Marvel Comic '#{number}'",
+                    default=DEFAULT_CHOICE,
+                    choices=choices,
+                    style=Style([("dim", "dim")]),
+                ).ask()
+                if selected and selected != DEFAULT_CHOICE.title:
+                    return selected.id
+            else:
                 LOGGER.warning(
                     "Unable to find any Comics with the Series and IssueNumber: '%s %s'",
                     series_id,
                     number,
                 )
-            index = create_menu(
-                options=[
-                    f"{x.id} | {x.series.name} #{x.issue_number} - {x.format}" for x in options
-                ],
-                title="Marvel Comic",
-                subtitle=f"Searching for Comic #{number}" if number else "",
-                default="None of the Above",
-            )
-            if index != 0:
-                return options[index - 1].id
             if number:
                 LOGGER.info("Searching again without the IssueNumber")
                 return self._search_issue(series_id=series_id, number=None)

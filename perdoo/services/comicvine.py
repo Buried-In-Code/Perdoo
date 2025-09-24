@@ -5,6 +5,8 @@ import re
 from datetime import datetime
 
 from natsort import humansorted, ns
+from prompt_toolkit.styles import Style
+from questionary import Choice, select
 from requests.exceptions import JSONDecodeError
 from rich.prompt import Confirm, Prompt
 from simyan.comicvine import Comicvine as Simyan
@@ -14,7 +16,7 @@ from simyan.schemas.volume import Volume
 from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
-from perdoo.console import CONSOLE, create_menu
+from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
@@ -22,6 +24,7 @@ from perdoo.settings import Comicvine as ComicvineSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
+DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 
 class Comicvine(BaseService[Volume, Issue]):
@@ -42,27 +45,39 @@ class Comicvine(BaseService[Volume, Issue]):
             )
             if year:
                 options = [x for x in options if x.start_year == year]
-            if not options:
+            if options:
+                search = name
+                if volume:
+                    search += f" v{volume}"
+                if year:
+                    search += f" ({year})"
+                choices = [
+                    Choice(
+                        title=[
+                            (
+                                "class:dim",
+                                f"{x.id} | {x.publisher.name if x.publisher and x.publisher.name else ''} | ",  # noqa: E501
+                            ),
+                            ("class:title", f"{x.name} ({x.start_year})"),
+                        ],
+                        description=f"https://comicvine.gamespot.com/volumes/4050-{x.id}",
+                        value=x,
+                    )
+                    for x in options
+                ]
+                choices.append(DEFAULT_CHOICE)
+                selected = select(
+                    f"Searching for Comicvine Volume '{search}'",
+                    default=DEFAULT_CHOICE,
+                    choices=choices,
+                    style=Style([("dim", "dim")]),
+                ).ask()
+                if selected and selected != DEFAULT_CHOICE.title:
+                    return selected.id
+            else:
                 LOGGER.warning(
                     "Unable to find any Volumes with the Name and StartYear: '%s %s'", name, year
                 )
-            search = name
-            if volume:
-                search += f" v{volume}"
-            if year:
-                search += f" ({year})"
-            index = create_menu(
-                options=[
-                    f"{x.id} | {x.publisher.name if x.publisher and x.publisher.name else ''}"
-                    f" | {x.name} ({x.start_year})"
-                    for x in options
-                ],
-                title="Comicvine Volume",
-                subtitle=f"Searching for Volume '{search}'",
-                default="None of the Above",
-            )
-            if index != 0:
-                return options[index - 1].id
             if year:
                 LOGGER.info("Searching again without the StartYear")
                 return self._search_series(name=name, volume=volume, year=None)
@@ -111,14 +126,33 @@ class Comicvine(BaseService[Volume, Issue]):
                     series_id,
                     number,
                 )
-            index = create_menu(
-                options=[f"{x.id} | {x.number} - {x.name or ''}" for x in options],
-                title="Comicvine Issue",
-                subtitle=f"Searching for Issue #{number}" if number else "",
-                default="None of the Above",
-            )
-            if index != 0:
-                return options[index - 1].id
+            if options:
+                choices = [
+                    Choice(
+                        title=[
+                            ("class:dim", f"{x.id} | "),
+                            ("class:title", f"{x.number} - {x.name or ''}"),
+                        ],
+                        description=f"https://comicvine.gamespot.com/issues/4000-{x.id}",
+                        value=x,
+                    )
+                    for x in options
+                ]
+                choices.append(DEFAULT_CHOICE)
+                selected = select(
+                    f"Searching for Comicvine Issue #{number}",
+                    default=DEFAULT_CHOICE,
+                    choices=choices,
+                    style=Style([("dim", "dim")]),
+                ).ask()
+                if selected and selected != DEFAULT_CHOICE.title:
+                    return selected.id
+            else:
+                LOGGER.warning(
+                    "Unable to find any Issues with the Volume and IssueNumber: '%s %s'",
+                    series_id,
+                    number,
+                )
             if number:
                 LOGGER.info("Searching again without the IssueNumber")
                 return self._search_issue(series_id=series_id, number=None)

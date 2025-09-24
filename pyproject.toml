@@ -4,13 +4,13 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.2.0"
+  "pre-commit >= 4.3.0"
 ]
 tests = [
-  "pytest >= 8.4.1",
-  "pytest-cov >= 6.2.1",
-  "tox >= 4.28.0",
-  "tox-uv >= 1.26.1"
+  "pytest >= 8.4.2",
+  "pytest-cov >= 7.0.0",
+  "tox >= 4.30.2",
+  "tox-uv >= 1.28.0"
 ]
 
 [project]
@@ -22,11 +22,8 @@ classifiers = [
   "Environment :: Console",
   "Framework :: Pydantic :: 2",
   "Intended Audience :: End Users/Desktop",
-  "License :: OSI Approved :: MIT License",
   "Natural Language :: English",
-  "Operating System :: MacOS",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX :: Linux",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -35,31 +32,33 @@ classifiers = [
 ]
 dependencies = [
   "comicfn2dict >= 0.2.5",
-  "darkseid >= 7.0.0",
+  "darkseid >= 7.1.0",
   "esak >= 2.0.0",
-  "lxml >= 6.0.0",
-  "mokkari >= 3.13.0",
+  "lxml >= 6.0.2",
+  "mokkari >= 3.13.1",
   "natsort >= 8.4.0",
   "pillow >= 11.3.0",
-  "pydantic >= 2.11.7",
+  "pydantic >= 2.11.9",
   "pydantic-xml >= 2.17.3",
-  "rich >= 14.0.0",
+  "questionary >= 2.1.1",
+  "rich >= 14.1.0",
   "simyan >= 1.5.1",
   "tomli >= 2.2.1 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.16.0"
+  "typer >= 0.19.1"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
 keywords = ["comic", "comics", "metadata", "tagger", "tagging"]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 name = "perdoo"
 readme = "README.md"
 requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "darkseid[7zip] >= 7.0.0"
+  "darkseid[7zip] >= 7.1.0"
 ]
 
 [project.scripts]
@@ -87,7 +86,6 @@ path = "perdoo/__init__.py"
 addopts = ["--cov"]
 
 [tool.ruff]
-extend-exclude = ["perdoo/archives/zipfile_remove.py"]
 fix = true
 line-length = 100
 output-format = "grouped"

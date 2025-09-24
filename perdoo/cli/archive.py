@@ -27,6 +27,12 @@ def view(
     comic = Comic(file=target)
     CONSOLE.print(f"Archive format: '{comic.path.suffix}'")
     if not hide_metron_info:
-        comic.metron_info.display()
+        if not comic.metron_info:
+            CONSOLE.print("No MetronInfo found")
+        else:
+            comic.metron_info.display()
     if not hide_comic_info:
-        comic.comic_info.display()
+        if not comic.comic_info:
+            CONSOLE.print("No ComicInfo found")
+        else:
+            comic.comic_info.display()

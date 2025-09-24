@@ -265,9 +265,9 @@ def run(
         if not skip_clean:
             with CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"):
                 entry.clean_archive()
-        if settings.output.metron_info.create:
+        if settings.output.metron_info.create and metadata[0]:
             entry.write_metadata(metadata=metadata[0])
-        if settings.output.comic_info.create:
+        if settings.output.comic_info.create and metadata[1]:
             metadata[1].pages = (
                 load_page_info(entry=entry, comic_info=metadata[1])
                 if settings.output.comic_info.handle_pages
