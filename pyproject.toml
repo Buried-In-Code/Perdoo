@@ -7,9 +7,9 @@ dev = [
   "pre-commit >= 4.3.0"
 ]
 tests = [
-  "pytest >= 8.4.2",
+  "pytest >= 8.4.0",
   "pytest-cov >= 7.0.0",
-  "tox >= 4.30.2",
+  "tox >= 4.30.0",
   "tox-uv >= 1.28.0"
 ]
 
@@ -28,24 +28,25 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Typing :: Typed"
 ]
 dependencies = [
-  "comicfn2dict >= 0.2.5",
+  "comicfn2dict >= 0.2.0",
   "darkseid >= 7.1.0",
   "esak >= 2.0.0",
-  "lxml >= 6.0.2",
-  "mokkari >= 3.13.1",
+  "lxml >= 6.0.0",
+  "mokkari >= 3.13.0",
   "natsort >= 8.4.0",
   "pillow >= 11.3.0",
-  "pydantic >= 2.11.9",
-  "pydantic-xml >= 2.17.3",
-  "questionary >= 2.1.1",
+  "pydantic >= 2.12.0",
+  "pydantic-xml >= 2.17.0",
+  "questionary >= 2.1.0",
   "rich >= 14.1.0",
-  "simyan >= 1.5.1",
-  "tomli >= 2.2.1 ; python_version < '3.11'",
+  "simyan >= 1.5.0",
+  "tomli >= 2.2.0 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.19.1"
+  "typer >= 0.19.0"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -149,7 +150,7 @@ overrides."tool.tox.env_list".inline_arrays = false
 overrides."tool.tox.env_run_base.commands".inline_arrays = false
 
 [tool.tox]
-env_list = ["3.10", "3.11", "3.12", "3.13"]
+env_list = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 min_version = "4.22"
 
 [tool.tox.env_run_base]
