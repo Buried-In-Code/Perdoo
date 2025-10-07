@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
-from rich.prompt import Confirm
 
 from perdoo.services.metron import DEFAULT_CHOICE, Metron
 from perdoo.settings import Metron as MetronSettings
@@ -39,7 +38,7 @@ def test_search_series(service: Metron, series_mock: Series) -> None:
         patch("perdoo.services.metron.select") as select_mock,
     ):
         select_mock.return_value.ask.return_value = series_mock
-        found = service._search_series(name="Venom", volume=None, year=None)  # noqa: SLF001
+        found = service._search_series(name="Venom", volume=None, year=None, filename="Venom")  # noqa: SLF001
     assert found == series_mock.id
 
 
@@ -47,26 +46,28 @@ def test_search_series_default(service: Metron, series_mock: Series) -> None:
     with (
         patch.object(service.session, "series_list", return_value=[series_mock, series_mock]),
         patch("perdoo.services.metron.select") as select_mock,
-        patch.object(Confirm, "ask", return_value=False),
+        patch("perdoo.services.metron.confirm") as confirm_mock,
     ):
         select_mock.return_value.ask.return_value = DEFAULT_CHOICE.title
-        found = service._search_series(name="Venom", volume=None, year=None)  # noqa: SLF001
+        confirm_mock.return_value.ask.return_value = False
+        found = service._search_series(name="Venom", volume=None, year=None, filename="Venom")  # noqa: SLF001
     assert found is None
 
 
 def test_search_series_no_results(service: Metron) -> None:
     with (
         patch.object(service.session, "series_list", return_value=[]),
-        patch.object(Confirm, "ask", return_value=False),
+        patch("perdoo.services.metron.confirm") as confirm_mock,
     ):
-        found = service._search_series(name="Venom", volume=None, year=None)  # noqa: SLF001
+        confirm_mock.return_value.ask.return_value = False
+        found = service._search_series(name="Venom", volume=None, year=None, filename="Venom")  # noqa: SLF001
     assert found is None
 
 
 def test_fetch_series(service: Metron, series_mock: Series) -> None:
     with patch.object(service.session, "series", return_value=series_mock):
         mock_search = SeriesSearch(name="Venom", metron=series_mock.id)
-        found = service.fetch_series(search=mock_search)
+        found = service.fetch_series(search=mock_search, filename="Venom")
     assert found == series_mock
 
 
@@ -81,7 +82,7 @@ def test_search_issues(service: Metron, issue_mock: Issue) -> None:
         patch("perdoo.services.metron.select") as mock_select,
     ):
         mock_select.return_value.ask.return_value = issue_mock
-        found = service._search_issue(series_id=466, number="1")  # noqa: SLF001
+        found = service._search_issue(series_id=466, number="1", filename="Venom")  # noqa: SLF001
     assert found == issue_mock.id
 
 
@@ -91,18 +92,18 @@ def test_search_issues_default(service: Metron, issue_mock: Issue) -> None:
         patch("perdoo.services.metron.select") as select_mock,
     ):
         select_mock.return_value.ask.return_value = DEFAULT_CHOICE.title
-        found = service._search_issue(series_id=466, number="1")  # noqa: SLF001
+        found = service._search_issue(series_id=466, number="1", filename="Venom")  # noqa: SLF001
     assert found is None
 
 
 def test_search_issues_no_results(service: Metron) -> None:
     with patch.object(service.session, "issues_list", return_value=[]):
-        found = service._search_issue(series_id=466, number="1")  # noqa: SLF001
+        found = service._search_issue(series_id=466, number="1", filename="Venom")  # noqa: SLF001
     assert found is None
 
 
 def test_fetch_issue(service: Metron, issue_mock: Issue) -> None:
     with patch.object(service.session, "issue", return_value=issue_mock):
         mock_search = IssueSearch(metron=issue_mock.id)
-        found = service.fetch_issue(series_id=466, search=mock_search)
+        found = service.fetch_issue(series_id=466, search=mock_search, filename="Venom")
     assert found == issue_mock
