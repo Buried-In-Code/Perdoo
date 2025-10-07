@@ -45,23 +45,24 @@ class SeriesSearch:
     name: str
     volume: int | None = None
     year: int | None = None
-    comicvine: int | None = None
-    marvel: int | None = None
-    metron: int | None = None
+    comicvine: str | None = None
+    marvel: str | None = None
+    metron: str | None = None
 
 
 @dataclass
 class IssueSearch:
     number: str | None = None
-    comicvine: int | None = None
-    marvel: int | None = None
-    metron: int | None = None
+    comicvine: str | None = None
+    marvel: str | None = None
+    metron: str | None = None
 
 
 @dataclass
 class Search:
     series: SeriesSearch
     issue: IssueSearch
+    filename: str | None = None
 
 
 def list_files(path: Path, *extensions: str) -> list[Path]:

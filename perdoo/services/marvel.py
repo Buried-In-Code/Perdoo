@@ -10,12 +10,10 @@ from esak.session import Session as Esak
 from esak.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
 from prompt_toolkit.styles import Style
-from questionary import Choice, select
+from questionary import Choice, confirm, select, text
 from requests.exceptions import ConnectionError, HTTPError  # noqa: A004
-from rich.prompt import Confirm, Prompt
 
 from perdoo import get_cache_root
-from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.services._base import BaseService
 from perdoo.settings import Marvel as MarvelSettings
@@ -32,8 +30,10 @@ class Marvel(BaseService[Series, Comic]):
             public_key=settings.public_key, private_key=settings.private_key, cache=cache
         )
 
-    def _search_series(self, name: str | None, volume: int | None, year: int | None) -> int | None:
-        name = name or Prompt.ask("Series Name", console=CONSOLE)
+    def _search_series(
+        self, name: str | None, volume: int | None, year: int | None, filename: str
+    ) -> int | None:
+        name = name or text(message="Series Name").ask()
         try:
             params = {"title": name}
             if year:
@@ -50,14 +50,16 @@ class Marvel(BaseService[Series, Comic]):
                 choices = [
                     Choice(
                         title=[("class:dim", f"{x.id} | "), ("class:title", x.title)],
-                        description=f"<Marvel Url>/series/{x.id}",
+                        description=f"https://www.marvel.com/comics/series/{x.id}",
                         value=x,
                     )
                     for x in options
                 ]
                 choices.append(DEFAULT_CHOICE)
                 selected = select(
-                    f"Searching for Marvel Series '{search}'",
+                    f"Searching Marvel for Series matching '{filename}'"
+                    if not year
+                    else f"Searching Marvel for Series '{search}'",
                     default=DEFAULT_CHOICE,
                     choices=choices,
                     style=Style([("dim", "dim")]),
@@ -65,14 +67,12 @@ class Marvel(BaseService[Series, Comic]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Series with the Title and StartYear: '%s %s'", name, year
-                )
+                LOGGER.warning("Unable to find any Series for the file: '%s'", filename)
             if year:
                 LOGGER.info("Searching again without the StartYear")
-                return self._search_series(name=name, volume=volume, year=None)
-            if Confirm.ask("Search Again", console=CONSOLE):
-                return self._search_series(name=None, volume=None, year=None)
+                return self._search_series(name=name, volume=volume, year=None, filename=filename)
+            if confirm(message="Search Again", default=False).ask():
+                return self._search_series(name=None, volume=None, year=None, filename=filename)
         except ConnectionError as err:
             LOGGER.error(err)
         except HTTPError as err:
@@ -81,9 +81,9 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.error(err)
         return None
 
-    def fetch_series(self, search: SeriesSearch) -> Series | None:
+    def fetch_series(self, search: SeriesSearch, filename: str) -> Series | None:
         series_id = search.marvel or self._search_series(
-            name=search.name, volume=search.volume, year=search.year
+            name=search.name, volume=search.volume, year=search.year, filename=filename
         )
         if not series_id:
             return None
@@ -101,10 +101,10 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.error(err)
         if search.marvel:
             search.marvel = None
-            return self.fetch_series(search=search)
+            return self.fetch_series(search=search, filename=filename)
         return None
 
-    def _search_issue(self, series_id: int, number: str | None) -> int | None:
+    def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
         try:
             options = humansorted(
                 self.session.comics_list(
@@ -122,14 +122,16 @@ class Marvel(BaseService[Series, Comic]):
                             ("class:dim", f"{x.id} | "),
                             ("class:title", f"{x.series.name} #{x.issue_number} - {x.format}"),
                         ],
-                        description=f"<Marvel Url>/comics/{x.id}",
+                        description=f"https://www.marvel.com/comics/issue/{x.id}",
                         value=x,
                     )
                     for x in options
                 ]
                 choices.append(DEFAULT_CHOICE)
                 selected = select(
-                    f"Searching for Marvel Comic '#{number}'",
+                    f"Searching Marvel for Comics matching '{filename}'"
+                    if not number
+                    else f"Searching Marvel for Comics with number '{number}'",
                     default=DEFAULT_CHOICE,
                     choices=choices,
                     style=Style([("dim", "dim")]),
@@ -137,14 +139,10 @@ class Marvel(BaseService[Series, Comic]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Comics with the Series and IssueNumber: '%s %s'",
-                    series_id,
-                    number,
-                )
+                LOGGER.warning("Unable to find any Comics for the file: '%s'", filename)
             if number:
                 LOGGER.info("Searching again without the IssueNumber")
-                return self._search_issue(series_id=series_id, number=None)
+                return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ConnectionError as err:
             LOGGER.error(err)
         except HTTPError as err:
@@ -153,8 +151,10 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.error(err)
         return None
 
-    def fetch_issue(self, series_id: int, search: IssueSearch) -> Comic | None:
-        issue_id = search.marvel or self._search_issue(series_id=series_id, number=search.number)
+    def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Comic | None:
+        issue_id = search.marvel or self._search_issue(
+            series_id=series_id, number=search.number, filename=filename
+        )
         if not issue_id:
             return None
         try:
@@ -171,7 +171,7 @@ class Marvel(BaseService[Series, Comic]):
             LOGGER.error(err)
         if search.marvel:
             search.marvel = None
-            return self.fetch_issue(series_id=series_id, search=search)
+            return self.fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
     def _process_metron_info(self, series: Series, issue: Comic) -> MetronInfo | None:
@@ -275,11 +275,11 @@ class Marvel(BaseService[Series, Comic]):
             except ApiError:
                 pass
 
-        series = self.fetch_series(search=search.series)
+        series = self.fetch_series(search=search.series, filename=search.filename)
         if not series:
             return None, None
 
-        issue = self.fetch_issue(series_id=series.id, search=search.issue)
+        issue = self.fetch_issue(series_id=series.id, search=search.issue, filename=search.filename)
         if not issue:
             return None, None
 

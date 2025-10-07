@@ -20,6 +20,7 @@ from darkseid.comic import (
     ComicMetadataError,
     MetadataFormat,
 )
+from natsort import humansorted, ns
 
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.settings import Naming
@@ -101,10 +102,9 @@ class Comic:
             raise ComicMetadataError(f"Unsupported metadata format: {metadata_format}")
 
     def convert(self, extension: Literal["cbt", "cbz"]) -> None:
-        check, archiver = {
-            "cbt": (self.is_cbt, TarArchiver),
-            "cbz": (self.is_cbz, ZipArchiver),
-        }.get(extension)
+        check, archiver = {"cbt": (self.is_cbt, TarArchiver), "cbz": (self.is_cbz, ZipArchiver)}[
+            extension
+        ]
         if check():
             return
         output_file = self.path.with_suffix(f".{extension}")
@@ -112,6 +112,7 @@ class Comic:
             LOGGER.debug("Converting '%s' to '%s'", source.path.name, destination.path.name)
             if destination.copy_from_archive(other_archive=source):
                 self._archiver = destination
+            source.path.unlink()
 
     def clean_archive(self) -> None:
         with self.archive as source:
@@ -148,11 +149,14 @@ class Comic:
 
     def _rename_images(self, base_name: str) -> None:
         with self.archive as source:
-            files = [
-                x
-                for x in source.get_filename_list()
-                if Path(x).suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS
-            ]
+            files = humansorted(
+                [
+                    x
+                    for x in source.get_filename_list()
+                    if Path(x).suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS
+                ],
+                alg=ns.NA | ns.G | ns.P,
+            )
             pad_count = len(str(len(files))) if files else 1
             for idx, filename in enumerate(files):
                 img_file = Path(filename)
@@ -171,7 +175,7 @@ class Comic:
         new_filepath = new_filepath.lstrip("/")
 
         output = output_folder / f"{new_filepath}.cbz"
-        if output == self.path:
+        if output.relative_to(output_folder) == self.path.resolve().relative_to(output_folder):
             return
         if output.exists():
             LOGGER.warning("'%s' already exists, skipping", output.relative_to(output_folder))
