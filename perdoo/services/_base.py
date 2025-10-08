@@ -1,6 +1,6 @@
 __all__ = ["BaseService"]
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
 from perdoo.metadata import ComicInfo, MetronInfo
@@ -10,20 +10,20 @@ S = TypeVar("S")
 C = TypeVar("C")
 
 
-class BaseService(Generic[S, C]):
+class BaseService(ABC, Generic[S, C]):
     @abstractmethod
     def _search_series(
-        self, name: str | None, volume: int | None, year: int | None
+        self, name: str | None, volume: int | None, year: int | None, filename: str
     ) -> int | None: ...
 
     @abstractmethod
-    def fetch_series(self, search: SeriesSearch) -> S | None: ...
+    def fetch_series(self, search: SeriesSearch, filename: str) -> S | None: ...
 
     @abstractmethod
-    def _search_issue(self, series_id: int, number: str | None) -> int | None: ...
+    def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None: ...
 
     @abstractmethod
-    def fetch_issue(self, series_id: int, search: IssueSearch) -> C | None: ...
+    def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> C | None: ...
 
     @abstractmethod
     def _process_metron_info(self, series: S, issue: C) -> MetronInfo | None: ...

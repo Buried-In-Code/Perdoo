@@ -6,7 +6,7 @@ __all__ = [
     "get_state_root",
     "setup_logging",
 ]
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 import logging
 import os
@@ -14,7 +14,6 @@ from functools import cache
 from pathlib import Path
 
 from rich.logging import RichHandler
-from rich.traceback import install
 
 from perdoo.console import CONSOLE
 
@@ -52,15 +51,14 @@ def get_state_root() -> Path:
 
 
 def setup_logging(debug: bool = False) -> None:
-    install(show_locals=debug, max_frames=3, console=CONSOLE)
-
     console_handler = RichHandler(
         rich_tracebacks=True,
-        tracebacks_show_locals=True,
+        tracebacks_show_locals=debug,
+        tracebacks_max_frames=3,
         omit_repeated_times=False,
         show_level=True,
         show_time=False,
-        show_path=True,
+        show_path=debug,
         console=CONSOLE,
     )
     console_handler.setLevel(logging.DEBUG if debug else logging.INFO)

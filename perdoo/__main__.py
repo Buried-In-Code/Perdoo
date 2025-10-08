@@ -44,9 +44,6 @@ class SyncOption(Enum):
                 return entry
         raise ValueError(f"'{value}' isn't a valid SyncOption")
 
-    def __str__(self) -> str:
-        return self.value
-
 
 @app.callback(invoke_without_command=True)
 def common(
@@ -109,30 +106,30 @@ def _create_search_from_metron(metron_info: MetronInfo) -> Search:
     )
 
 
-def _create_search_from_comic_info(comic_info: ComicInfo) -> Search:
+def _create_search_from_comic_info(comic_info: ComicInfo, filename: str) -> Search:
     volume = comic_info.volume if comic_info.volume else None
     year = volume if volume and volume > 1900 else None
     volume = volume if volume and volume < 1900 else None
     return Search(
-        series=SeriesSearch(name=comic_info.series, volume=volume, year=year),
+        series=SeriesSearch(name=comic_info.series or filename, volume=volume, year=year),
         issue=IssueSearch(number=comic_info.number),
     )
 
 
-def _create_search_from_filename(fallback_title: str) -> Search:
-    series_name = comicfn2dict(fallback_title).get("series", fallback_title).replace("-", " ")
+def _create_search_from_filename(filename: str) -> Search:
+    series_name = comicfn2dict(filename).get("series", filename).replace("-", " ")
     return Search(series=SeriesSearch(name=series_name), issue=IssueSearch())
 
 
 def get_search_details(
-    metadata: tuple[MetronInfo | None, ComicInfo | None], fallback_title: str
+    metadata: tuple[MetronInfo | None, ComicInfo | None], filename: str
 ) -> Search:
     metron_info, comic_info = metadata
     if metron_info and metron_info.series and metron_info.series.name:
-        return _create_search_from_metron(metron_info)
+        return _create_search_from_metron(metron_info=metron_info)
     if comic_info and comic_info.series:
-        return _create_search_from_comic_info(comic_info)
-    return _create_search_from_filename(fallback_title)
+        return _create_search_from_comic_info(comic_info=comic_info, filename=filename)
+    return _create_search_from_filename(filename=filename)
 
 
 def load_page_info(entry: Comic, comic_info: ComicInfo) -> list[Page]:
@@ -181,7 +178,7 @@ def run(
             case_sensitive=False,
             help="Sync ComicInfo/MetronInfo with online services.",
         ),
-    ] = SyncOption.OUTDATED.value,
+    ] = SyncOption.OUTDATED,
     skip_clean: Annotated[
         bool,
         Option(
@@ -251,7 +248,8 @@ def run(
         metadata: tuple[MetronInfo | None, ComicInfo | None] = (entry.metron_info, entry.comic_info)
 
         if sync != SyncOption.SKIP:
-            search = get_search_details(metadata=metadata, fallback_title=entry.path.stem)
+            search = get_search_details(metadata=metadata, filename=entry.path.stem)
+            search.filename = entry.path.stem
             last_modified = date(1900, 1, 1)
             if sync == SyncOption.OUTDATED:
                 metron_info, _ = metadata

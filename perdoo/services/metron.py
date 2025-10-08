@@ -10,11 +10,9 @@ from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
 from prompt_toolkit.styles import Style
-from questionary import Choice, select
-from rich.prompt import Confirm, Prompt
+from questionary import Choice, confirm, select, text
 
 from perdoo import get_cache_root
-from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
@@ -41,8 +39,10 @@ class Metron(BaseService[Series, Issue]):
             LOGGER.error(err)
         return None
 
-    def _search_series(self, name: str | None, volume: int | None, year: int | None) -> int | None:
-        name = name or Prompt.ask("Series Name", console=CONSOLE)
+    def _search_series(
+        self, name: str | None, volume: int | None, year: int | None, filename: str
+    ) -> int | None:
+        name = name or text(message="Series Name").ask()
         try:
             params = {"name": name}
             if volume:
@@ -71,7 +71,9 @@ class Metron(BaseService[Series, Issue]):
                 ]
                 choices.append(DEFAULT_CHOICE)
                 selected = select(
-                    f"Searching for Metron Series '{search}'",
+                    f"Searching Metron for Series matching '{filename}'"
+                    if not year
+                    else f"Searching Metron for Series '{search}'",
                     default=DEFAULT_CHOICE,
                     choices=choices,
                     style=Style([("dim", "dim")]),
@@ -79,29 +81,26 @@ class Metron(BaseService[Series, Issue]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Series with the Name, Volume and YearBegan: '%s %s %s'",
-                    name,
-                    volume,
-                    year,
-                )
+                LOGGER.warning("Unable to find any Series for the file: '%s'", filename)
             if year:
                 LOGGER.info("Searching again without the YearBegan")
-                return self._search_series(name=name, volume=volume, year=None)
+                return self._search_series(name=name, volume=volume, year=None, filename=filename)
             if volume:
                 LOGGER.info("Searching again without the Volume")
-                return self._search_series(name=name, volume=None, year=None)
-            if Confirm.ask("Search Again", console=CONSOLE):
-                return self._search_series(name=None, volume=None, year=None)
+                return self._search_series(name=name, volume=None, year=None, filename=filename)
+            if confirm(message="Search Again", default=False).ask():
+                return self._search_series(name=None, volume=None, year=None, filename=filename)
         except ApiError as err:
             LOGGER.error(err)
         return None
 
-    def fetch_series(self, search: SeriesSearch) -> Series | None:
+    def fetch_series(self, search: SeriesSearch, filename: str) -> Series | None:
         series_id = (
             search.metron
             or self._search_series_by_comicvine(comicvine_id=search.comicvine)
-            or self._search_series(name=search.name, volume=search.volume, year=search.year)
+            or self._search_series(
+                name=search.name, volume=search.volume, year=search.year, filename=filename
+            )
         )
         if not series_id:
             return None
@@ -113,7 +112,7 @@ class Metron(BaseService[Series, Issue]):
             LOGGER.error(err)
         if search.metron:
             search.metron = None
-            return self.fetch_series(search=search)
+            return self.fetch_series(search=search, filename=filename)
         return None
 
     def _search_issue_by_comicvine(self, comicvine_id: int | None) -> int | None:
@@ -127,7 +126,7 @@ class Metron(BaseService[Series, Issue]):
             LOGGER.error(err)
         return None
 
-    def _search_issue(self, series_id: int, number: str | None) -> int | None:
+    def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
         try:
             options = humansorted(
                 self.session.issues_list(
@@ -149,7 +148,9 @@ class Metron(BaseService[Series, Issue]):
                 ]
                 choices.append(DEFAULT_CHOICE)
                 selected = select(
-                    f"Searching for Metron Issue #{number}",
+                    f"Searching Metron for Issues matching '{filename}'"
+                    if not number
+                    else f"Searching Metron for Issues with number '{number}'",
                     default=DEFAULT_CHOICE,
                     choices=choices,
                     style=Style([("dim", "dim")]),
@@ -157,23 +158,19 @@ class Metron(BaseService[Series, Issue]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Issues with the SeriesId and Number: '%s %s'",
-                    series_id,
-                    number,
-                )
+                LOGGER.warning("Unable to find any Comics for the file: '%s'", filename)
             if number:
                 LOGGER.info("Searching again without the Number")
-                return self._search_issue(series_id=series_id, number=None)
+                return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ApiError as err:
             LOGGER.error(err)
         return None
 
-    def fetch_issue(self, series_id: int, search: IssueSearch) -> Issue | None:
+    def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
         issue_id = (
             search.metron
             or self._search_issue_by_comicvine(comicvine_id=search.comicvine)
-            or self._search_issue(series_id=series_id, number=search.number)
+            or self._search_issue(series_id=series_id, number=search.number, filename=filename)
         )
         if not issue_id:
             return None
@@ -185,7 +182,7 @@ class Metron(BaseService[Series, Issue]):
             LOGGER.error(err)
         if search.metron:
             search.metron = None
-            return self.fetch_issue(series_id=series_id, search=search)
+            return self.fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
     def _process_metron_info(self, series: Series, issue: Issue) -> MetronInfo | None:
@@ -303,11 +300,11 @@ class Metron(BaseService[Series, Issue]):
             except ApiError:
                 pass
 
-        series = self.fetch_series(search=search.series)
+        series = self.fetch_series(search=search.series, filename=search.filename)
         if not series:
             return None, None
 
-        issue = self.fetch_issue(series_id=series.id, search=search.issue)
+        issue = self.fetch_issue(series_id=series.id, search=search.issue, filename=search.filename)
         if not issue:
             return None, None
 
