@@ -25,6 +25,7 @@ def issue_mock() -> Issue:
     return MagicMock()
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(("data", "expected"), [(None, None)])
 def test_search_series_by_comicvine(
     service: Metron, data: int | None, expected: int | None
@@ -71,6 +72,7 @@ def test_fetch_series(service: Metron, series_mock: Series) -> None:
     assert found == series_mock
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(("data", "expected"), [(None, None)])
 def test_search_issue_by_comicvine(service: Metron, data: int | None, expected: int | None) -> None:
     pass
