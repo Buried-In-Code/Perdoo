@@ -15,7 +15,7 @@ from perdoo.console import CONSOLE
 from perdoo.metadata import ComicInfo, MetronInfo
 from perdoo.metadata.comic_info import Page
 from perdoo.metadata.metron_info import Id, InformationSource
-from perdoo.services import BaseService, Comicvine, Marvel, Metron
+from perdoo.services import BaseService, Comicvine, Metron
 from perdoo.settings import Service, Services, Settings
 from perdoo.utils import (
     IssueSearch,
@@ -63,8 +63,6 @@ def get_services(settings: Services) -> dict[Service, BaseService]:
     output = {}
     if settings.comicvine.api_key:
         output[Service.COMICVINE] = Comicvine(settings.comicvine)
-    if settings.marvel.public_key and settings.marvel.private_key:
-        output[Service.MARVEL] = Marvel(settings.marvel)
     if settings.metron.username and settings.metron.password:
         output[Service.METRON] = Metron(settings.metron)
     return output
@@ -94,13 +92,11 @@ def _create_search_from_metron(metron_info: MetronInfo) -> Search:
             volume=metron_info.series.volume,
             year=metron_info.series.start_year,
             comicvine=series_id if source == InformationSource.COMIC_VINE else None,
-            marvel=series_id if source == InformationSource.MARVEL else None,
             metron=series_id if source == InformationSource.METRON else None,
         ),
         issue=IssueSearch(
             number=metron_info.number,
             comicvine=_get_id_value(metron_info.ids, InformationSource.COMIC_VINE),
-            marvel=_get_id_value(metron_info.ids, InformationSource.MARVEL),
             metron=_get_id_value(metron_info.ids, InformationSource.METRON),
         ),
     )

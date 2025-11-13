@@ -84,7 +84,6 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ## Services
 
 - [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) library.
-- [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) library.
 - [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
 
 ## File Renaming and Organization
@@ -168,14 +167,10 @@ single_issue = ""
 trade_paperback = ""
 
 [services]
-order = ["Metron", "Marvel", "Comicvine"]
+order = ["Metron", "Comicvine"]
 
 [services.comicvine]
 api_key = "<Comicvine API Key>"
-
-[services.marvel]
-public_key = "<Marvel Public Key>"
-private_key = "<Marvel Private Key>"
 
 [services.metron]
 username = "<Metron Username>"
@@ -219,7 +214,7 @@ password = "<Metron Password>"
   The order in which the services will be used for metadata retrieval.
   Metadata will be fetched from the first service that returns a result.
   Don't include the service name in the list if you don't want to use it.
-  Defaults to `["Metron", "Marvel", "Comicvine"]`, options are `Metron`, `Marvel` and `Comicvine`.
+  Defaults to `["Metron", "Comicvine"]`, options are `Metron` and `Comicvine`.
 
 ## Socials
 

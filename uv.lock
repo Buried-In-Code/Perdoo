@@ -482,19 +482,6 @@ wheels = [
 ]
 
 [[package]]
-name = "esak"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pydantic" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/43/8548361d99e50883c96813e5d8a4b954ef54baf236ea28039a1fa13a9b43/esak-2.0.0.tar.gz", hash = "sha256:3caeff8b6b69c9c2ac27990623dad4e868f631ecdcfdbb9b7c34733407cf7256", size = 336486, upload-time = "2024-11-26T16:56:17.999Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/54/da4abf304f5bd0e8efc3c5c6923fa53c750dd05207eecb8ec7445c95958c/esak-2.0.0-py3-none-any.whl", hash = "sha256:84d838d6c4472f4608169e634a330b3c375e7bbbbe2ffb804363e2608850b1b4", size = 16971, upload-time = "2024-11-26T16:56:15.952Z" },
-]
-
-[[package]]
 name = "exceptiongroup"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -791,7 +778,6 @@ source = { editable = "." }
 dependencies = [
     { name = "comicfn2dict" },
     { name = "darkseid" },
-    { name = "esak" },
     { name = "lxml" },
     { name = "mokkari" },
     { name = "natsort" },
@@ -827,11 +813,10 @@ requires-dist = [
     { name = "comicfn2dict", specifier = ">=0.2.0" },
     { name = "darkseid", specifier = ">=7.1.0" },
     { name = "darkseid", extras = ["7zip"], marker = "extra == 'cb7'", specifier = ">=7.1.0" },
-    { name = "esak", specifier = ">=2.0.0" },
     { name = "lxml", specifier = ">=6.0.0" },
-    { name = "mokkari", specifier = ">=3.13.0" },
+    { name = "mokkari", specifier = ">=3.14.0" },
     { name = "natsort", specifier = ">=8.4.0" },
-    { name = "pillow", specifier = ">=11.3.0" },
+    { name = "pillow", specifier = ">=12.0.0" },
     { name = "pydantic", specifier = ">=2.12.0" },
     { name = "pydantic-xml", specifier = ">=2.18.0" },
     { name = "questionary", specifier = ">=2.1.0" },
@@ -839,16 +824,16 @@ requires-dist = [
     { name = "simyan", specifier = ">=1.6.0" },
     { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.3.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
-    { name = "typer", specifier = ">=0.19.0" },
+    { name = "typer", specifier = ">=0.20.0" },
 ]
 provides-extras = ["cb7"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pre-commit", specifier = ">=4.3.0" }]
+dev = [{ name = "pre-commit", specifier = ">=4.4.0" }]
 tests = [
-    { name = "pytest", specifier = ">=8.4.0" },
+    { name = "pytest", specifier = ">=9.0.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "tox", specifier = ">=4.31.0" },
+    { name = "tox", specifier = ">=4.32.0" },
     { name = "tox-uv", specifier = ">=1.29.0" },
 ]
 
