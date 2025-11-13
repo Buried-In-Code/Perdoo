@@ -46,7 +46,6 @@ class SeriesSearch:
     volume: int | None = None
     year: int | None = None
     comicvine: str | None = None
-    marvel: str | None = None
     metron: str | None = None
 
 
@@ -54,7 +53,6 @@ class SeriesSearch:
 class IssueSearch:
     number: str | None = None
     comicvine: str | None = None
-    marvel: str | None = None
     metron: str | None = None
 
 

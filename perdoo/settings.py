@@ -1,7 +1,6 @@
 __all__ = [
     "ComicInfo",
     "Comicvine",
-    "Marvel",
     "Metron",
     "MetronInfo",
     "Naming",
@@ -84,11 +83,6 @@ class Comicvine(SettingsModel):
     api_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
 
 
-class Marvel(SettingsModel):
-    public_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
-    private_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
-
-
 class Metron(SettingsModel):
     password: Annotated[str | None, BeforeValidator(blank_is_none)] = None
     username: Annotated[str | None, BeforeValidator(blank_is_none)] = None
@@ -96,7 +90,6 @@ class Metron(SettingsModel):
 
 class Service(str, Enum):
     COMICVINE = "Comicvine"
-    MARVEL = "Marvel"
     METRON = "Metron"
 
     def __str__(self) -> str:
@@ -105,9 +98,8 @@ class Service(str, Enum):
 
 class Services(SettingsModel):
     comicvine: Comicvine = Comicvine()
-    marvel: Marvel = Marvel()
     metron: Metron = Metron()
-    order: tuple[Service, ...] = (Service.METRON, Service.MARVEL, Service.COMICVINE)
+    order: tuple[Service, ...] = (Service.METRON, Service.COMICVINE)
 
 
 def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
