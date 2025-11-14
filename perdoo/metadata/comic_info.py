@@ -4,21 +4,13 @@ import logging
 from collections.abc import Callable
 from datetime import date
 from enum import Enum
-from pathlib import Path
 
 from natsort import humansorted, ns
-from PIL import Image
 from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
 from perdoo.settings import Naming
-
-try:
-    from typing import Self  # Python >= 3.11
-except ImportError:
-    from typing_extensions import Self  # Python < 3.11
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +33,7 @@ class YesNo(Enum):
     YES = "Yes"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "YesNo":
         for entry in YesNo:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -59,7 +51,7 @@ class Manga(Enum):
     YES_AND_RIGHT_TO_LEFT = "YesAndRightToLeft"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "Manga":
         for entry in Manga:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -88,7 +80,7 @@ class AgeRating(Enum):
     X18 = "X18+"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "AgeRating":
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -113,7 +105,7 @@ class PageType(Enum):
     DELETED = "Deleted"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "PageType":
         for entry in PageType:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -146,27 +138,6 @@ class Page(PascalModel):
 
     def __hash__(self) -> int:
         return hash((type(self), self.image))
-
-    @staticmethod
-    def from_path(file: Path, index: int, is_final_page: bool, page: Self | None) -> Self:
-        if page:
-            page_type = page.type
-        elif index == 0:
-            page_type = PageType.FRONT_COVER
-        elif is_final_page:
-            page_type = PageType.BACK_COVER
-        else:
-            page_type = PageType.STORY
-        with Image.open(file) as img:
-            width, height = img.size
-        return Page(
-            image=index,
-            type=page_type,
-            double_page=width >= height,
-            image_size=file.stat().st_size,
-            image_height=height,
-            image_width=width,
-        )
 
 
 class ComicInfo(PascalModel):
