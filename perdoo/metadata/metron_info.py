@@ -24,16 +24,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Generic, TypeVar
 
-from pydantic import HttpUrl, NonNegativeInt, PositiveInt
+from pydantic import HttpUrl, NonNegativeInt, PositiveInt, field_validator
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.metadata._base import PascalModel
 from perdoo.settings import Naming
-
-try:
-    from typing import Self  # Python >= 3.11
-except ImportError:
-    from typing_extensions import Self  # Python < 3.11
 
 LOGGER = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -49,7 +44,7 @@ class AgeRating(Enum):
     ADULT = "Adult"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "AgeRating":
         for entry in AgeRating:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -142,7 +137,7 @@ class Role(Enum):
     OTHER = "Other"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "Role":
         for entry in Role:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -191,7 +186,7 @@ class InformationSource(Enum):
     LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
 
     @staticmethod
-    def load(value: str) -> Self:
+    def load(value: str) -> "InformationSource":
         for entry in InformationSource:
             if entry.value.replace(" ", "").casefold() == value.replace(" ", "").casefold():
                 return entry
@@ -366,7 +361,7 @@ class MetronInfo(PascalModel):
     universes: list[Universe] = wrapped(
         path="Universes", entity=element(tag="Universe", default_factory=list)
     )
-    urls: list[Url] = wrapped(path="URLS", entity=element(tag="URLs", default_factory=list))
+    urls: list[Url] = wrapped(path="URLs", entity=element(tag="URL", default_factory=list))
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:
@@ -388,6 +383,13 @@ class MetronInfo(PascalModel):
             }.get(self.series.format, settings.default),
             seperator=settings.seperator,
         )
+
+    @field_validator("last_modified", mode="before")
+    def ensure_timezone(cls, v: str | datetime | None) -> str | datetime | None:
+        if isinstance(v, datetime) and v.tzinfo is None:
+            timezone = datetime.now().astimezone().tzinfo
+            return v.replace(tzinfo=timezone)
+        return v
 
 
 PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {

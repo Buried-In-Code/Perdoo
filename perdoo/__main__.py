@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from platform import python_version
 from typing import Annotated
@@ -129,6 +130,10 @@ def get_search_details(
 
 
 def load_page_info(entry: Comic, comic_info: ComicInfo) -> list[Page]:
+    from PIL import Image  # noqa: PLC0415
+
+    from perdoo.metadata.comic_info import PageType  # noqa: PLC0415
+
     pages = set()
     image_files = [
         x
@@ -136,10 +141,26 @@ def load_page_info(entry: Comic, comic_info: ComicInfo) -> list[Page]:
         if Path(x).suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS
     ]
     for idx, file in enumerate(image_files):
-        img_file = Path(file)
-        is_final_page = idx == len(image_files) - 1
         page = next((x for x in comic_info.pages if x.image == idx), None)
-        pages.add(Page.from_path(file=img_file, index=idx, is_final_page=is_final_page, page=page))
+        if page:
+            page_type = page.type
+        elif idx == 0:
+            page_type = PageType.FRONT_COVER
+        elif idx == len(image_files) - 1:
+            page_type = PageType.BACK_COVER
+        else:
+            page_type = PageType.STORY
+        if not page:
+            page = Page(image=idx)
+        page.type = page_type
+        page_bytes = entry.archive.read_file(file)
+        page.image_size = len(page_bytes)
+        with Image.open(BytesIO(page_bytes)) as page_data:
+            width, height = page_data.size
+            page.double_page = width >= height
+            page.image_height = height
+            page.image_width = width
+        pages.add(page)
     return sorted(pages)
 
 
