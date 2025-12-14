@@ -200,11 +200,11 @@ wheels = [
 
 [[package]]
 name = "cachetools"
-version = "6.2.2"
+version = "6.2.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fb/44/ca1675be2a83aeee1886ab745b28cda92093066590233cc501890eb8417a/cachetools-6.2.2.tar.gz", hash = "sha256:8e6d266b25e539df852251cfd6f990b4bc3a141db73b939058d809ebd2590fc6", size = 31571, upload-time = "2025-11-13T17:42:51.465Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/44/5dc354b9f2df614673c2a542a630ef95d578b4a8673a1046d1137a7e2453/cachetools-6.2.3.tar.gz", hash = "sha256:64e0a4ddf275041dd01f5b873efa87c91ea49022b844b8c5d1ad3407c0f42f1f", size = 31641, upload-time = "2025-12-12T21:18:06.011Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e6/46/eb6eca305c77a4489affe1c5d8f4cae82f285d9addd8de4ec084a7184221/cachetools-6.2.2-py3-none-any.whl", hash = "sha256:6c09c98183bf58560c97b2abfcedcbaf6a896a490f534b031b661d3723b45ace", size = 11503, upload-time = "2025-11-13T17:42:50.232Z" },
+    { url = "https://files.pythonhosted.org/packages/ab/de/aa4cfc69feb5b3d604310214369979bb222ed0df0e2575a1b6e7af1a5579/cachetools-6.2.3-py3-none-any.whl", hash = "sha256:3fde34f7033979efb1e79b07ae529c2c40808bdd23b0b731405a48439254fba5", size = 11554, upload-time = "2025-12-12T21:18:04.556Z" },
 ]
 
 [[package]]
@@ -851,16 +851,16 @@ wheels = [
 
 [[package]]
 name = "mokkari"
-version = "3.15.0"
+version = "3.15.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyrate-limiter" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/76/c3f4fbaea48d81a5a8078d9bfa2f8c805b403746a0da13a68a61f9a9cc57/mokkari-3.15.0.tar.gz", hash = "sha256:12d293555595125b2ab7ea61ea0f9bbe3615b69e1338a4b65a05c6ed15d8b633", size = 345228, upload-time = "2025-12-05T14:03:01.076Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/de/21/8e4ef3b2105f2a72a27978a8731d5ebf3fe201cb01add0da1d860c384e1f/mokkari-3.15.1.tar.gz", hash = "sha256:500ddc70c53c218b3913346546dd143df9cc558504c36f9e6f9e0ad5a0bdaf55", size = 345735, upload-time = "2025-12-13T13:31:08.23Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/49/231a9c976d1b599706e6236fa85a78d1d6f2a97a4ef10887364012c03269/mokkari-3.15.0-py3-none-any.whl", hash = "sha256:a4bbd2ae810d07035a649a93d8c9a63bca4ce58e5ae16a36c624a8be24ec1ce9", size = 44720, upload-time = "2025-12-05T14:03:02.591Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/3a/bdcbfc806aa7ec36a5950eb6973ab29c238240f8d8ea80af7b5790927e83/mokkari-3.15.1-py3-none-any.whl", hash = "sha256:5b5d16855b8f69d5039fd692d2aaa46a94f8a6153c45db28702856c2c6341ba9", size = 44966, upload-time = "2025-12-13T13:31:06.887Z" },
 ]
 
 [[package]]
@@ -1597,15 +1597,15 @@ wheels = [
 
 [[package]]
 name = "pyzstd"
-version = "0.19.0"
+version = "0.19.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "backports-zstd", marker = "python_full_version < '3.14'" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d7/a4/ea8fd7f7ecb7da737188ff6e7d0edbf33e7fd566fb0684b1123f644bb015/pyzstd-0.19.0.tar.gz", hash = "sha256:44e7b9be7b445aac742003ddee52ca31385d52dffb8c60adf633fad8e795f10d", size = 69457, upload-time = "2025-12-07T14:59:34.886Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/66/59fed71d0d2065e02974b40296f836a237c364c8bbe07295f2d0dc33c278/pyzstd-0.19.1.tar.gz", hash = "sha256:36723d3c915b3981de9198d0a2c82b2f5fe3eaa36e4d8d586937830a8afc7d72", size = 69531, upload-time = "2025-12-13T08:15:33.455Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/72/0498193c22d6344cf5ceeac1f0b104520637afd4e4084dafcca27efd0344/pyzstd-0.19.0-py3-none-any.whl", hash = "sha256:878cfc4af81715e32139f7bd50871a06d58693849f946e55fd45c84f4c9a014c", size = 23755, upload-time = "2025-12-07T14:59:33.271Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/62/f55d1363512d1b1cc122af6ca5951008e42605b63675c7d6781affc7c475/pyzstd-0.19.1-py3-none-any.whl", hash = "sha256:267e2eb0de0291dfcb7ccfebc4ffe75b2f9d84e7007ac38844f6ccafc6dce081", size = 23779, upload-time = "2025-12-13T08:15:31.979Z" },
 ]
 
 [[package]]
