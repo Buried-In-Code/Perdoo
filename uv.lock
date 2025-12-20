@@ -541,7 +541,7 @@ toml = [
 
 [[package]]
 name = "darkseid"
-version = "7.2.0"
+version = "7.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "defusedxml" },
@@ -551,9 +551,9 @@ dependencies = [
     { name = "xmlschema" },
     { name = "zipremove" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/49/9664fa619fbf982a5cdb2325a8a6bb5aa2c2ed3322f88eec81593f9559cc/darkseid-7.2.0.tar.gz", hash = "sha256:30997a8e957d0e2a9cce42c9466e509ca1de6cf7d9e395b5534554828117b3d6", size = 112255, upload-time = "2025-11-15T16:30:10.481Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/69/8b8f9b17f615ea540e1077d8e298248caff9243edd442e4f86e82f401719/darkseid-7.2.1.tar.gz", hash = "sha256:4a227ff8dbe274933370f4b5ceb579391432758fefb877e9b58e705fca086517", size = 112257, upload-time = "2025-12-19T21:06:29.997Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/f4/d788d5466befd38c78d63f282112a46667c7a0f67a7592c80a52283a19f3/darkseid-7.2.0-py3-none-any.whl", hash = "sha256:4cd60b66dfa0a1ed84d191ef67aa3fe23cd71c4d3d14d62a8960dab2fbab108b", size = 92458, upload-time = "2025-11-15T16:30:09.457Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/33/48fe98f0eda249f02e1426f6809058b0fbd7cdcfb64e7df8452aac6c9835/darkseid-7.2.1-py3-none-any.whl", hash = "sha256:5b78ed64e35327870d7bf7eaae411ca4e93f786442efe8d5beb6c56b3770e25f", size = 92464, upload-time = "2025-12-19T21:06:28.583Z" },
 ]
 
 [package.optional-dependencies]
@@ -851,16 +851,16 @@ wheels = [
 
 [[package]]
 name = "mokkari"
-version = "3.15.1"
+version = "3.16.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyrate-limiter" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/de/21/8e4ef3b2105f2a72a27978a8731d5ebf3fe201cb01add0da1d860c384e1f/mokkari-3.15.1.tar.gz", hash = "sha256:500ddc70c53c218b3913346546dd143df9cc558504c36f9e6f9e0ad5a0bdaf55", size = 345735, upload-time = "2025-12-13T13:31:08.23Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/d0/1226d9ff7759c148f1905cda6fbd6f37d8fd290b428f102015f0e68b1494/mokkari-3.16.0.tar.gz", hash = "sha256:171772851cef4696cd24f59a71eca30780ba0838575b6eb20ea27f691c726f03", size = 350657, upload-time = "2025-12-19T20:48:26.926Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4d/3a/bdcbfc806aa7ec36a5950eb6973ab29c238240f8d8ea80af7b5790927e83/mokkari-3.15.1-py3-none-any.whl", hash = "sha256:5b5d16855b8f69d5039fd692d2aaa46a94f8a6153c45db28702856c2c6341ba9", size = 44966, upload-time = "2025-12-13T13:31:06.887Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/f6/ff3c6b97c6538bb933a65d22656498f9fd3f29c1c0744ed0cf5d3f413794/mokkari-3.16.0-py3-none-any.whl", hash = "sha256:f735da2d6e728b23cc7cd2a4608c72abafd22b14dd1ecdadd1a89a97e9473f06", size = 49086, upload-time = "2025-12-19T20:48:25.988Z" },
 ]
 
 [[package]]
@@ -1786,7 +1786,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.20.0"
+version = "0.20.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -1794,9 +1794,9 @@ dependencies = [
     { name = "shellingham" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/28/7c85c8032b91dbe79725b6f17d2fffc595dff06a35c7a30a37bef73a1ab4/typer-0.20.0.tar.gz", hash = "sha256:1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37", size = 106492, upload-time = "2025-10-20T17:03:49.445Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/c1/933d30fd7a123ed981e2a1eedafceab63cb379db0402e438a13bc51bbb15/typer-0.20.1.tar.gz", hash = "sha256:68585eb1b01203689c4199bc440d6be616f0851e9f0eb41e4a778845c5a0fd5b", size = 105968, upload-time = "2025-12-19T16:48:56.302Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/64/7713ffe4b5983314e9d436a90d5bd4f63b6054e2aca783a3cfc44cb95bbf/typer-0.20.0-py3-none-any.whl", hash = "sha256:5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a", size = 47028, upload-time = "2025-10-20T17:03:47.617Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/52/1f2df7e7d1be3d65ddc2936d820d4a3d9777a54f4204f5ca46b8513eff77/typer-0.20.1-py3-none-any.whl", hash = "sha256:4b3bde918a67c8e03d861aa02deca90a95bbac572e71b1b9be56ff49affdb5a8", size = 47381, upload-time = "2025-12-19T16:48:53.679Z" },
 ]
 
 [[package]]
