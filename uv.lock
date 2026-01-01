@@ -851,16 +851,16 @@ wheels = [
 
 [[package]]
 name = "mokkari"
-version = "3.16.1"
+version = "3.16.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyrate-limiter" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/81/ed/f5aef7de281a0b234fd046e604f131cd690139260e301950d7cff39abd96/mokkari-3.16.1.tar.gz", hash = "sha256:23121a49d3643a8946d784b671bff89cdc73cc3976d90d1f40f433fac4eaaab5", size = 350672, upload-time = "2025-12-30T13:45:44.854Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/15/3a4af1bf54901b5ae29f5f982515eb7cd995abfc71efe9b4ae3955f43bb3/mokkari-3.16.2.tar.gz", hash = "sha256:00c098344fe3f67d3b406778a77e9b3784164cb194bf69d3e5d40557fc7b53aa", size = 350813, upload-time = "2025-12-31T14:24:31.532Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/3b/74b7ac8f869c58b8b03ba18826a82918a351e1c8ae4c9477258928cc6aff/mokkari-3.16.1-py3-none-any.whl", hash = "sha256:3928a3810b9aa7ff39e55ff3519d0a90cadee66800e63bb93e3058a74e937667", size = 49085, upload-time = "2025-12-30T13:45:45.939Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/3a/687b2e6126d384942f84eaa7cb3fb321da5727be19877856fa01680279b2/mokkari-3.16.2-py3-none-any.whl", hash = "sha256:75696bfcf78fce0fc2e6a7abd745d39240aca6900cf35b5378b7f53d39cca6b9", size = 49106, upload-time = "2025-12-31T14:24:33.05Z" },
 ]
 
 [[package]]
