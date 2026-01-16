@@ -3,7 +3,7 @@ __all__ = ["BaseService"]
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from perdoo.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata import ComicInfo, MetronInfo
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 S = TypeVar("S")
