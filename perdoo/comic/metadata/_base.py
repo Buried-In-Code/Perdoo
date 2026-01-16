@@ -1,7 +1,8 @@
-__all__ = ["PascalModel", "sanitize"]
+__all__ = ["Metadata", "PascalModel", "sanitize"]
 
 import logging
 import re
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
@@ -11,6 +12,7 @@ from pydantic_xml import BaseXmlModel
 from rich.panel import Panel
 
 from perdoo.console import CONSOLE
+from perdoo.settings import Naming
 from perdoo.utils import flatten_dict
 
 try:
@@ -42,6 +44,13 @@ class PascalModel(
     skip_empty=True,
     search_mode="unordered",
 ):
+    pass
+
+
+class Metadata(PascalModel, ABC):
+    @abstractmethod
+    def get_filename(self, settings: Naming) -> str: ...
+
     @classmethod
     def from_bytes(cls, content: bytes) -> Self:
         return cls.from_xml(content)

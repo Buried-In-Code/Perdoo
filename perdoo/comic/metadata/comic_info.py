@@ -9,7 +9,7 @@ from natsort import humansorted, ns
 from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
-from perdoo.metadata._base import PascalModel
+from perdoo.comic.metadata._base import Metadata, PascalModel
 from perdoo.settings import Naming
 
 LOGGER = logging.getLogger(__name__)
@@ -140,7 +140,7 @@ class Page(PascalModel):
         return hash((type(self), self.image))
 
 
-class ComicInfo(PascalModel):
+class ComicInfo(Metadata):
     age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
     alternate_count: int | None = element(default=None)
     alternate_number: str | None = element(default=None)

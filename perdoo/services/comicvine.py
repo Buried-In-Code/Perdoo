@@ -15,8 +15,8 @@ from simyan.schemas.volume import Volume
 from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
-from perdoo.metadata import ComicInfo, MetronInfo
-from perdoo.metadata.metron_info import InformationSource
+from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Comicvine as ComicvineSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
@@ -77,7 +77,9 @@ class Comicvine(BaseService[Volume, Issue]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning("Unable to find any Volumes for the file: '%s'", filename)
+                LOGGER.warning(
+                    "Unable to find any Volumes on Comicvine for the file: '%s'", filename
+                )
             if year:
                 LOGGER.info("Searching again without the StartYear")
                 return self._search_series(name=name, volume=volume, year=None, filename=filename)
@@ -144,7 +146,9 @@ class Comicvine(BaseService[Volume, Issue]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning("Unable to find any Issues for the file: '%s'", filename)
+                LOGGER.warning(
+                    "Unable to find any Issues on Comicvine for the file: '%s'", filename
+                )
             if number:
                 LOGGER.info("Searching again without the IssueNumber")
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
@@ -175,7 +179,7 @@ class Comicvine(BaseService[Volume, Issue]):
         return None
 
     def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
-        from perdoo.metadata.metron_info import (  # noqa: PLC0415
+        from perdoo.comic.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
             Id,

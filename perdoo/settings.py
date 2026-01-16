@@ -74,7 +74,6 @@ class Naming(SettingsModel):
 class Output(SettingsModel):
     comic_info: ComicInfo = ComicInfo()
     folder: Path = get_data_root()
-    format: Literal["cbt", "cbz"] = "cbz"
     metron_info: MetronInfo = MetronInfo()
     naming: Naming = Naming()
 

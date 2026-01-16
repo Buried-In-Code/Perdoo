@@ -3,9 +3,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from perdoo.comic import Comic, ComicMetadataError
-from perdoo.metadata import ComicInfo, MetronInfo
-from perdoo.metadata.metron_info import Series
+from perdoo.comic import Comic
+from perdoo.comic.errors import ComicMetadataError
+from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata.metron_info import Series
 from perdoo.settings import Naming
 
 

@@ -13,8 +13,8 @@ from prompt_toolkit.styles import Style
 from questionary import Choice, confirm, select, text
 
 from perdoo import get_cache_root
-from perdoo.metadata import ComicInfo, MetronInfo
-from perdoo.metadata.metron_info import InformationSource
+from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
 from perdoo.settings import Metron as MetronSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
@@ -81,7 +81,7 @@ class Metron(BaseService[Series, Issue]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning("Unable to find any Series for the file: '%s'", filename)
+                LOGGER.warning("Unable to find any Series on Metron for the file: '%s'", filename)
             if year:
                 LOGGER.info("Searching again without the YearBegan")
                 return self._search_series(name=name, volume=volume, year=None, filename=filename)
@@ -158,7 +158,7 @@ class Metron(BaseService[Series, Issue]):
                 if selected and selected != DEFAULT_CHOICE.title:
                     return selected.id
             else:
-                LOGGER.warning("Unable to find any Comics for the file: '%s'", filename)
+                LOGGER.warning("Unable to find any Comics on Metron for the file: '%s'", filename)
             if number:
                 LOGGER.info("Searching again without the Number")
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
@@ -186,7 +186,7 @@ class Metron(BaseService[Series, Issue]):
         return None
 
     def _process_metron_info(self, series: Series, issue: Issue) -> MetronInfo | None:
-        from perdoo.metadata.metron_info import (  # noqa: PLC0415
+        from perdoo.comic.metadata.metron_info import (  # noqa: PLC0415
             GTIN,
             AgeRating,
             Arc,
@@ -262,7 +262,7 @@ class Metron(BaseService[Series, Issue]):
         )
 
     def _process_comic_info(self, series: Series, issue: Issue) -> ComicInfo | None:
-        from perdoo.metadata.comic_info import AgeRating  # noqa: PLC0415
+        from perdoo.comic.metadata.comic_info import AgeRating  # noqa: PLC0415
 
         def load_age_rating(value: str) -> AgeRating:
             try:
