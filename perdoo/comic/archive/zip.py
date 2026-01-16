@@ -1,0 +1,106 @@
+__all__ = ["CBZArchive"]
+
+import logging
+import shutil
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import ClassVar
+
+from zipremove import ZIP_DEFLATED, ZipFile, is_zipfile
+
+from perdoo.comic.archive._base import Archive
+from perdoo.comic.errors import ComicArchiveError
+from perdoo.utils import list_files
+
+try:
+    from typing import Self  # Python >= 3.11
+except ImportError:
+    from typing_extensions import Self  # Python < 3.11
+
+LOGGER = logging.getLogger(__name__)
+
+
+class CBZArchive(Archive):
+    EXTENSION: ClassVar[str] = ".cbz"
+
+    @classmethod
+    def is_archive(cls, path: Path) -> bool:
+        if path.suffix.lower() != cls.EXTENSION:
+            return False
+        return is_zipfile(filename=path)
+
+    def list_filenames(self) -> list[str]:
+        try:
+            with ZipFile(file=self.filepath, mode="r") as archive:
+                return archive.namelist()
+        except Exception as err:
+            raise ComicArchiveError(f"Unable to list files in {self.filepath.name}") from err
+
+    def read_file(self, filename: str) -> bytes:
+        try:
+            with (
+                ZipFile(file=self.filepath, mode="r") as archive,
+                archive.open(filename) as zip_file,
+            ):
+                return zip_file.read()
+        except Exception as err:
+            raise ComicArchiveError(f"Unable to read {filename} in {self.filepath.name}") from err
+
+    def write_file(self, filename: str, data: str | bytes) -> None:
+        if isinstance(data, str):
+            data = data.encode("UTF-8")
+        try:
+            with ZipFile(file=self.filepath, mode="a") as archive:
+                if filename in archive.namelist():
+                    removed = archive.remove(filename)
+                    archive.repack([removed])
+                archive.writestr(filename, data)
+        except Exception as err:
+            raise ComicArchiveError(f"Unable to write {filename} to {self.filepath.name}") from err
+
+    def remove_file(self, filename: str) -> None:
+        if filename not in self.list_filenames():
+            return
+        try:
+            with ZipFile(file=self.filepath, mode="a") as archive:
+                removed = archive.remove(filename)
+                archive.repack([removed])
+        except Exception as err:
+            raise ComicArchiveError(
+                f"Unable to delete {filename} from {self.filepath.name}"
+            ) from err
+
+    def extract_files(self, destination: Path) -> None:
+        try:
+            with ZipFile(file=self.filepath, mode="r") as archive:
+                archive.extractall(path=destination)
+        except Exception as err:
+            raise ComicArchiveError(
+                f"Unable to extract all files from {self.filepath.name} to {destination}"
+            ) from err
+
+    @classmethod
+    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Self:
+        output_file = src.parent / f"{output_name}.cbz"
+        try:
+            with ZipFile(file=output_file, mode="w", compression=ZIP_DEFLATED) as archive:
+                for file in files:
+                    archive.write(file, arcname=file.name)
+            return cls(filepath=output_file)
+        except Exception as err:
+            raise ComicArchiveError(f"Unable to archive files to {output_file.name}") from err
+
+    @classmethod
+    def convert_from(cls, old_archive: Archive) -> Self:
+        with TemporaryDirectory(prefix=f"{old_archive.filepath.stem}_") as temp_str:
+            temp_folder = Path(temp_str)
+            old_archive.extract_files(destination=temp_folder)
+            new_archive = cls.archive_files(
+                src=temp_folder,
+                output_name=old_archive.filepath.stem,
+                files=list_files(temp_folder),
+            )
+            new_file = old_archive.filepath.with_suffix(cls.EXTENSION)
+            old_archive.filepath.unlink(missing_ok=True)
+            shutil.move(new_archive.filepath, new_file)
+            return cls(filepath=new_file)

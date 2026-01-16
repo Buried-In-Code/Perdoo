@@ -4,12 +4,12 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.4.0"
+  "pre-commit >= 4.5.0"
 ]
 tests = [
   "pytest >= 9.0.0",
   "pytest-cov >= 7.0.0",
-  "tox >= 4.32.0",
+  "tox >= 4.34.0",
   "tox-uv >= 1.29.0"
 ]
 
@@ -33,19 +33,19 @@ classifiers = [
 ]
 dependencies = [
   "comicfn2dict >= 0.2.0",
-  "darkseid >= 7.1.0",
-  "lxml >= 6.0.0",
-  "mokkari >= 3.14.0",
+  "mokkari >= 3.17.0",
   "natsort >= 8.4.0",
-  "pillow >= 12.0.0",
+  "pillow >= 12.1.0",
   "pydantic >= 2.12.0",
-  "pydantic-xml >= 2.18.0",
+  "pydantic-xml[lxml] >= 2.18.0",
   "questionary >= 2.1.0",
+  "rarfile >= 4.2",
   "rich >= 14.2.0",
   "simyan >= 1.6.0",
-  "tomli >= 2.3.0 ; python_version < '3.11'",
+  "tomli >= 2.4.0 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.20.0"
+  "typer >= 0.21.0",
+  "zipremove >= 0.8.0"
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -58,7 +58,7 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "darkseid[7zip] >= 7.1.0"
+  "py7zr >= 1.1.0"
 ]
 
 [project.scripts]

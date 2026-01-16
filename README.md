@@ -144,7 +144,6 @@ File will be created on first run.
 ```toml
 [output]
 folder = "~/.local/share/perdoo"
-format = "cbz"
 
 [output.comic_info]
 create = true
@@ -183,10 +182,6 @@ password = "<Metron Password>"
 - `output.folder`
   The folder where the output files will be stored.
   Defaults to `~/.local/share/perdoo`.
-
-- `output.format`
-  The output file format for the comic archives.
-  Defaults to `cbz`.
 
 - `output.comic_info.create`
   Whether to create a ComicInfo.xml file in the output archive.

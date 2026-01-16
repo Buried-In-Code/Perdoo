@@ -1,6 +1,6 @@
-from perdoo.metadata._base import sanitize
-from perdoo.metadata.comic_info import ComicInfo
-from perdoo.metadata.metron_info import Format, MetronInfo, Publisher, Series
+from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata._base import sanitize
+from perdoo.comic.metadata.metron_info import Format, Publisher, Series
 from perdoo.settings import Naming
 
 

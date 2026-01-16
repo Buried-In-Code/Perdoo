@@ -11,11 +11,12 @@ from typer import Argument, Context, Exit, Option, Typer
 
 from perdoo import __version__, get_cache_root, setup_logging
 from perdoo.cli import archive_app, settings_app
-from perdoo.comic import SUPPORTED_IMAGE_EXTENSIONS, Comic, ComicArchiveError, ComicMetadataError
+from perdoo.comic import Comic
+from perdoo.comic.errors import ComicArchiveError, ComicMetadataError
+from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata.comic_info import Page
+from perdoo.comic.metadata.metron_info import Id, InformationSource
 from perdoo.console import CONSOLE
-from perdoo.metadata import ComicInfo, MetronInfo
-from perdoo.metadata.comic_info import Page
-from perdoo.metadata.metron_info import Id, InformationSource
 from perdoo.services import BaseService, Comicvine, Metron
 from perdoo.settings import Service, Services, Settings
 from perdoo.utils import (
@@ -74,7 +75,7 @@ def _load_comics(target: Path) -> list[Comic]:
     files = list_files(target) if target.is_dir() else [target]
     for file in files:
         try:
-            comics.append(Comic(file=file))
+            comics.append(Comic(filepath=file))
         except (ComicArchiveError, ComicMetadataError) as err:  # noqa: PERF203
             LOGGER.error("Failed to load '%s' as a Comic: %s", file, err)
     return comics
@@ -132,13 +133,12 @@ def get_search_details(
 def load_page_info(entry: Comic, comic_info: ComicInfo) -> list[Page]:
     from PIL import Image  # noqa: PLC0415
 
-    from perdoo.metadata.comic_info import PageType  # noqa: PLC0415
+    from perdoo.comic import IMAGE_EXTENSIONS  # noqa: PLC0415
+    from perdoo.comic.metadata.comic_info import PageType  # noqa: PLC0415
 
     pages = set()
     image_files = [
-        x
-        for x in entry.archive.get_filename_list()
-        if Path(x).suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS
+        x for x in entry.archive.list_filenames() if Path(x).suffix.lower() in IMAGE_EXTENSIONS
     ]
     for idx, file in enumerate(image_files):
         page = next((x for x in comic_info.pages if x.image == idx), None)
@@ -169,7 +169,6 @@ def sync_metadata(
 ) -> tuple[MetronInfo | None, ComicInfo | None]:
     for service_name in settings.services.order:
         if service := services.get(service_name):
-            LOGGER.info("Searching %s for matching issue", type(service).__name__)
             metron_info, comic_info = service.fetch(search=search)
             if metron_info or comic_info:
                 return metron_info, comic_info
@@ -252,21 +251,19 @@ def run(
     comics = _load_comics(target=target)
     for index, entry in enumerate(comics):
         CONSOLE.rule(
-            f"[{index + 1}/{len(comics)}] Importing {entry.path.name}",
+            f"[{index + 1}/{len(comics)}] Importing {entry.filepath.name}",
             align="left",
             style="subtitle",
         )
         if not skip_convert:
-            with CONSOLE.status(
-                f"Converting to '{settings.output.format}'", spinner="simpleDotsScrolling"
-            ):
-                entry.convert(extension=settings.output.format)
+            with CONSOLE.status("Converting to '.cbz'", spinner="simpleDotsScrolling"):
+                entry.convert_to(extension="cbz")
 
         metadata: tuple[MetronInfo | None, ComicInfo | None] = (entry.metron_info, entry.comic_info)
 
         if sync != SyncOption.SKIP:
-            search = get_search_details(metadata=metadata, filename=entry.path.stem)
-            search.filename = entry.path.stem
+            search = get_search_details(metadata=metadata, filename=entry.filepath.stem)
+            search.filename = entry.filepath.stem
             last_modified = date(1900, 1, 1)
             if sync == SyncOption.OUTDATED:
                 metron_info, _ = metadata

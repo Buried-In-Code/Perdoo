@@ -24,8 +24,8 @@ def view(
         bool, Option("--hide-metron-info", help="Don't show the MetronInfo details.")
     ] = False,
 ) -> None:
-    comic = Comic(file=target)
-    CONSOLE.print(f"Archive format: '{comic.path.suffix}'")
+    comic = Comic(filepath=target)
+    CONSOLE.print(f"Archive format: '{comic.filepath.suffix}'")
     if not hide_metron_info:
         if not comic.metron_info:
             CONSOLE.print("No MetronInfo found")

@@ -540,52 +540,12 @@ toml = [
 ]
 
 [[package]]
-name = "darkseid"
-version = "7.2.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "defusedxml" },
-    { name = "natsort" },
-    { name = "pycountry" },
-    { name = "rarfile" },
-    { name = "xmlschema" },
-    { name = "zipremove" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/b6/dc/9497d57c8a9b0894f2f83d338c56cc85cb33c147ce9df9f37749f55e763d/darkseid-7.2.2.tar.gz", hash = "sha256:1aad3d6af2afab24b7ad637809cb4107c8bf50e4003f72497cb3c9ca1481fdfd", size = 112278, upload-time = "2026-01-09T14:44:09.113Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/63/0a/637a5ff917f25ab8ab93cef0624d874cbbe2fc444cddc2a6f88d23600951/darkseid-7.2.2-py3-none-any.whl", hash = "sha256:7bd4e27875b369d02d116659f59c6f1fdfec9373ab84891d0afcdc426a1d790a", size = 92489, upload-time = "2026-01-09T14:44:09.913Z" },
-]
-
-[package.optional-dependencies]
-7zip = [
-    { name = "py7zr" },
-]
-
-[[package]]
-name = "defusedxml"
-version = "0.7.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0f/d5/c66da9b79e5bdb124974bfe172b4daf3c984ebd9c2a06e2b8a4dc7331c72/defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69", size = 75520, upload-time = "2021-03-08T10:59:26.269Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61", size = 25604, upload-time = "2021-03-08T10:59:24.45Z" },
-]
-
-[[package]]
 name = "distlib"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/96/8e/709914eb2b5749865801041647dc7f4e6d00b549cfe88b65ca192995f07c/distlib-0.4.0.tar.gz", hash = "sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d", size = 614605, upload-time = "2025-07-17T16:52:00.465Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/33/6b/e0547afaf41bf2c42e52430072fa5658766e3d65bd4b03a563d1b6336f57/distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16", size = 469047, upload-time = "2025-07-17T16:51:58.613Z" },
-]
-
-[[package]]
-name = "elementpath"
-version = "5.1.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/94/95/eeb61a2a917bf506d1402748e71c62399d8dcdd8cdccd64c81962832c260/elementpath-5.1.1.tar.gz", hash = "sha256:c4d1bd6aed987258354d0ea004d965eb0a6818213326bd4fd9bde5dacdb20277", size = 375378, upload-time = "2026-01-20T21:42:27.175Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/5a/4ddfd9aeecdc75a78b5d85d882abc2b822115caae2c00a4d0eb23cc101fc/elementpath-5.1.1-py3-none-any.whl", hash = "sha256:57637359065e60654422d8474c1749b09bb21348012b7197f868027e3c09c9b9", size = 259962, upload-time = "2026-01-20T21:42:24.127Z" },
 ]
 
 [[package]]
@@ -904,24 +864,24 @@ name = "perdoo"
 source = { editable = "." }
 dependencies = [
     { name = "comicfn2dict" },
-    { name = "darkseid" },
-    { name = "lxml" },
     { name = "mokkari" },
     { name = "natsort" },
     { name = "pillow" },
     { name = "pydantic" },
-    { name = "pydantic-xml" },
+    { name = "pydantic-xml", extra = ["lxml"] },
     { name = "questionary" },
+    { name = "rarfile" },
     { name = "rich" },
     { name = "simyan" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "tomli-w" },
     { name = "typer" },
+    { name = "zipremove" },
 ]
 
 [package.optional-dependencies]
 cb7 = [
-    { name = "darkseid", extra = ["7zip"] },
+    { name = "py7zr" },
 ]
 
 [package.dev-dependencies]
@@ -938,29 +898,29 @@ tests = [
 [package.metadata]
 requires-dist = [
     { name = "comicfn2dict", specifier = ">=0.2.0" },
-    { name = "darkseid", specifier = ">=7.1.0" },
-    { name = "darkseid", extras = ["7zip"], marker = "extra == 'cb7'", specifier = ">=7.1.0" },
-    { name = "lxml", specifier = ">=6.0.0" },
-    { name = "mokkari", specifier = ">=3.14.0" },
+    { name = "mokkari", specifier = ">=3.17.0" },
     { name = "natsort", specifier = ">=8.4.0" },
-    { name = "pillow", specifier = ">=12.0.0" },
+    { name = "pillow", specifier = ">=12.1.0" },
+    { name = "py7zr", marker = "extra == 'cb7'", specifier = ">=1.1.0" },
     { name = "pydantic", specifier = ">=2.12.0" },
-    { name = "pydantic-xml", specifier = ">=2.18.0" },
+    { name = "pydantic-xml", extras = ["lxml"], specifier = ">=2.18.0" },
     { name = "questionary", specifier = ">=2.1.0" },
+    { name = "rarfile", specifier = ">=4.2" },
     { name = "rich", specifier = ">=14.2.0" },
     { name = "simyan", specifier = ">=1.6.0" },
-    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.3.0" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.4.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
-    { name = "typer", specifier = ">=0.20.0" },
+    { name = "typer", specifier = ">=0.21.0" },
+    { name = "zipremove", specifier = ">=0.8.0" },
 ]
 provides-extras = ["cb7"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pre-commit", specifier = ">=4.4.0" }]
+dev = [{ name = "pre-commit", specifier = ">=4.5.0" }]
 tests = [
     { name = "pytest", specifier = ">=9.0.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "tox", specifier = ">=4.32.0" },
+    { name = "tox", specifier = ">=4.34.0" },
     { name = "tox-uv", specifier = ">=1.29.0" },
 ]
 
@@ -1220,15 +1180,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pycountry"
-version = "24.6.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/76/57/c389fa68c50590881a75b7883eeb3dc15e9e73a0fdc001cdd45c13290c92/pycountry-24.6.1.tar.gz", hash = "sha256:b61b3faccea67f87d10c1f2b0fc0be714409e8fcdcc1315613174f6466c10221", size = 6043910, upload-time = "2024-06-01T04:12:15.05Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/ec/1fb891d8a2660716aadb2143235481d15ed1cbfe3ad669194690b0604492/pycountry-24.6.1-py3-none-any.whl", hash = "sha256:f1a4fb391cd7214f8eefd39556d740adcc233c778a27f8942c8dca351d6ce06f", size = 6335189, upload-time = "2024-06-01T04:11:49.711Z" },
-]
-
-[[package]]
 name = "pycparser"
 version = "3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1416,6 +1367,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5e/64/cd62cbbba095d69fe601c8d6a1924988907eb5845b397a124fb49e0e5e44/pydantic_xml-2.18.0.tar.gz", hash = "sha256:e6838c9247de2ffe28127581de3cc360bc7176abe5fd87751dbafdd966416749", size = 26168, upload-time = "2025-10-10T20:12:43.251Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8e/cd/6a9174b5a432ef4f49e271418104b62a0da2881cc6dfc6b73dd20498931e/pydantic_xml-2.18.0-py3-none-any.whl", hash = "sha256:9b2412c8c84242223979e9274ade1d3566028cf6a9b1cdb6389384d2db5292c0", size = 42484, upload-time = "2025-10-10T20:12:42.258Z" },
+]
+
+[package.optional-dependencies]
+lxml = [
+    { name = "lxml" },
 ]
 
 [[package]]
@@ -1887,18 +1843,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/98/0a/dc5110cc99c39df65bac29229c4b637a8304e0914850348d98974c8ecfff/wcwidth-0.4.0.tar.gz", hash = "sha256:46478e02cf7149ba150fb93c39880623ee7e5181c64eda167b6a1de51b7a7ba1", size = 237625, upload-time = "2026-01-26T02:35:58.844Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/f6/da704c5e77281d71723bffbd926b754c0efd57cbcd02e74c2ca374c14cef/wcwidth-0.4.0-py3-none-any.whl", hash = "sha256:8af2c81174b3aa17adf05058c543c267e4e5b6767a28e31a673a658c1d766783", size = 88216, upload-time = "2026-01-26T02:35:57.461Z" },
-]
-
-[[package]]
-name = "xmlschema"
-version = "4.3.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "elementpath" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/da/c4/ef78a231be72349fd6677b989ff80e276ef62e28054c36c4fea3b4db9611/xmlschema-4.3.1.tar.gz", hash = "sha256:853effdfaf127849d4724368c17bd669e7f1486e15a0376404ad7954ec31a338", size = 646611, upload-time = "2026-01-17T23:01:04.422Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/7b/3471405875d0b5fac642e9a879b2c7db63642370799b2e9eea8297ffbad0/xmlschema-4.3.1-py3-none-any.whl", hash = "sha256:9560314d70ae87be0aecb8712cfebed636f867707ccf9758d4b0645d607f64b9", size = 469891, upload-time = "2026-01-17T23:01:00.39Z" },
 ]
 
 [[package]]
