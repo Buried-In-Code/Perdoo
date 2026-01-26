@@ -5,6 +5,8 @@ import shutil
 from pathlib import Path
 from typing import Final, Literal
 
+from natsort import humansorted, ns
+
 from perdoo.comic.archive import Archive, CB7Archive, CBTArchive, CBZArchive
 from perdoo.comic.archive.session import ArchiveSession
 from perdoo.comic.metadata import ComicInfo, MetronInfo
@@ -47,18 +49,25 @@ class Comic:
         return metroninfo, comicinfo
 
     def list_images(self) -> list[Path]:
-        return [
-            Path(name)
-            for name in self.archive.list_filenames()
-            if Path(name).suffix.lower() in IMAGE_EXTENSIONS
-        ]
+        return humansorted(
+            [
+                Path(name)
+                for name in self.archive.list_filenames()
+                if Path(name).suffix.lower() in IMAGE_EXTENSIONS
+            ],
+            alg=ns.NA | ns.G | ns.P,
+        )
 
     def list_extras(self) -> list[Path]:
-        return [
-            Path(name)
-            for name in self.archive.list_filenames()
-            if name not in METADATA_FILENAMES and Path(name).suffix.lower() not in IMAGE_EXTENSIONS
-        ]
+        return humansorted(
+            [
+                Path(name)
+                for name in self.archive.list_filenames()
+                if name not in METADATA_FILENAMES
+                and Path(name).suffix.lower() not in IMAGE_EXTENSIONS
+            ],
+            alg=ns.NA | ns.G | ns.P,
+        )
 
     def validate_naming(self, naming: str) -> bool:
         template = Path(naming).stem

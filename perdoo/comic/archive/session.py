@@ -34,7 +34,8 @@ class ArchiveSession:
         self._temp_dir = TemporaryDirectory()
         self._folder = Path(self._temp_dir.name)
         with CONSOLE.status(
-            f"Extracting {self._archive.filepath} to {self._folder}", spinner="simpleDotsScrolling"
+            f"Extracting '{self._archive.filepath}' to '{self._folder}'",
+            spinner="simpleDotsScrolling",
         ):
             self._archive.extract_files(destination=self._folder)
         self._extracted = True
@@ -50,7 +51,7 @@ class ArchiveSession:
         try:
             if exc_type is None and self._extracted and self.updated:
                 with CONSOLE.status(
-                    f"Archiving {self._folder} to {self._archive.filepath}",
+                    f"Archiving '{self._folder}' to '{self._archive.filepath}'",
                     spinner="simpleDotsScrolling",
                 ):
                     filepath = self._archive.archive_files(
@@ -80,20 +81,21 @@ class ArchiveSession:
         return (self._folder / filename).read_bytes()
 
     def write(self, filename: str, data: bytes) -> None:
+        LOGGER.info("Writing '%s'", filename)
         if self._archive.IS_EDITABLE:
             self._archive.write_file(filename, data)
         else:
             (self._folder / filename).write_bytes(data)
 
     def remove(self, filename: str) -> None:
-        LOGGER.info("Removing %s", filename)
+        LOGGER.info("Removing '%s'", filename)
         if self._archive.IS_EDITABLE:
             self._archive.remove_file(filename)
         else:
             (self._folder / filename).unlink(missing_ok=True)
 
     def rename(self, old_name: str, new_name: str) -> None:
-        LOGGER.info("Renaming %s to %s", old_name, new_name)
+        LOGGER.info("Renaming '%s' to '%s'", old_name, new_name)
         if self._archive.IS_EDITABLE:
             self._archive.rename_file(old_name=old_name, new_name=new_name)
         else:
