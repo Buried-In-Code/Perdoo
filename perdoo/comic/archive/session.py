@@ -25,6 +25,7 @@ class ArchiveSession:
         self._temp_dir: TemporaryDirectory | None = None
         self._folder: Path | None = None
         self._extracted = False
+        self.updated = False
 
     def __enter__(self) -> Self:
         if self._archive.IS_EDITABLE:
@@ -37,6 +38,7 @@ class ArchiveSession:
         ):
             self._archive.extract_files(destination=self._folder)
         self._extracted = True
+        self.updated = False
         return self
 
     def __exit__(
@@ -46,7 +48,7 @@ class ArchiveSession:
         tb: TracebackType | None,
     ) -> None:
         try:
-            if exc_type is None and self._extracted:
+            if exc_type is None and self._extracted and self.updated:
                 with CONSOLE.status(
                     f"Archiving {self._folder} to {self._archive.filepath}",
                     spinner="simpleDotsScrolling",
@@ -69,8 +71,11 @@ class ArchiveSession:
             return self._archive.list_filenames()
         return [p.name for p in self._folder.iterdir()]
 
+    def contains(self, filename: str) -> bool:
+        return filename in self.list()
+
     def read(self, filename: str) -> bytes:
-        if self._archive.IS_EDITABLE:
+        if self._archive.IS_READABLE:
             return self._archive.read_file(filename)
         return (self._folder / filename).read_bytes()
 

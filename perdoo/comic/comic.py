@@ -35,21 +35,14 @@ class Comic:
         if not isinstance(self.archive, cls):
             self._archive = cls.convert_from(old_archive=self.archive)
 
-    def contains(self, filename: str) -> bool:
-        return filename in self.archive.list_filenames()
-
-    def read_metadata(self) -> tuple[MetronInfo | None, ComicInfo | None]:
+    def read_metadata(self, session: ArchiveSession) -> tuple[MetronInfo | None, ComicInfo | None]:
         metroninfo = None
-        if self.contains(filename=MetronInfo.FILENAME):
-            metroninfo = MetronInfo.from_bytes(
-                content=self.archive.read_file(filename=MetronInfo.FILENAME)
-            )
+        if session.contains(filename=MetronInfo.FILENAME):
+            metroninfo = MetronInfo.from_bytes(content=session.read(filename=MetronInfo.FILENAME))
 
         comicinfo = None
-        if self.contains(filename=ComicInfo.FILENAME):
-            comicinfo = ComicInfo.from_bytes(
-                content=self.archive.read_file(filename=ComicInfo.FILENAME)
-            )
+        if session.contains(filename=ComicInfo.FILENAME):
+            comicinfo = ComicInfo.from_bytes(content=session.read(filename=ComicInfo.FILENAME))
 
         return metroninfo, comicinfo
 

@@ -21,7 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 class CBTArchive(Archive):
     EXTENSION: ClassVar[str] = ".cbt"
-    IS_READABLE: ClassVar[bool] = True
+    IS_READABLE: ClassVar[bool] = False
     IS_WRITEABLE: ClassVar[bool] = True
     IS_EDITABLE: ClassVar[bool] = False
 
@@ -37,13 +37,6 @@ class CBTArchive(Archive):
                 return archive.getnames()
         except Exception as err:
             raise ComicArchiveError(f"Unable to list files in {self.filepath.name}") from err
-
-    def read_file(self, filename: str) -> bytes:
-        try:
-            with tarfile.open(name=self.filepath, mode="r") as archive:
-                return archive.extractfile(filename).read()
-        except Exception as err:
-            raise ComicArchiveError(f"Unable to read {filename} in {self.filepath.name}") from err
 
     def extract_files(self, destination: Path) -> None:
         try:

@@ -44,8 +44,8 @@ class Archive(ABC):
     @abstractmethod
     def list_filenames(self) -> list[str]: ...
 
-    @abstractmethod
-    def read_file(self, filename: str) -> bytes: ...
+    def read_file(self, filename: str) -> bytes:
+        raise ComicArchiveError(f"Unable to read {filename} from {self.filepath.name}.")
 
     def write_file(self, filename: str, data: str | bytes) -> None:  # noqa: ARG002
         raise ComicArchiveError(f"Unable to write {filename} to {self.filepath.name}.")
