@@ -21,6 +21,9 @@ LOGGER = logging.getLogger(__name__)
 
 class CB7Archive(Archive):
     EXTENSION: ClassVar[str] = ".cb7"
+    IS_READABLE: ClassVar[bool] = True
+    IS_WRITEABLE: ClassVar[bool] = False
+    IS_EDITABLE: ClassVar[bool] = False
 
     @classmethod
     def is_archive(cls, path: Path) -> bool:

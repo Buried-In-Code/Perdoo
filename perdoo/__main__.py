@@ -1,7 +1,6 @@
 import logging
 from datetime import date
 from enum import Enum
-from io import BytesIO
 from pathlib import Path
 from platform import python_version
 from typing import Annotated
@@ -14,9 +13,9 @@ from perdoo.cli import archive_app, settings_app
 from perdoo.comic import Comic
 from perdoo.comic.errors import ComicArchiveError, ComicMetadataError
 from perdoo.comic.metadata import ComicInfo, MetronInfo
-from perdoo.comic.metadata.comic_info import Page
 from perdoo.comic.metadata.metron_info import Id, InformationSource
 from perdoo.console import CONSOLE
+from perdoo.processing import ProcessingPlan
 from perdoo.services import BaseService, Comicvine, Metron
 from perdoo.settings import Service, Services, Settings
 from perdoo.utils import (
@@ -70,7 +69,25 @@ def get_services(settings: Services) -> dict[Service, BaseService]:
     return output
 
 
-def _load_comics(target: Path) -> list[Comic]:
+def setup_environment(
+    clean_cache: bool, sync: SyncOption, settings: Settings, debug: bool = False
+) -> tuple[dict[Service, BaseService], SyncOption]:
+    setup_logging(debug=debug)
+    LOGGER.info("Python v%s", python_version())
+    LOGGER.info("Perdoo v%s", __version__)
+
+    if clean_cache:
+        LOGGER.info("Cleaning Cache")
+        recursive_delete(path=get_cache_root())
+
+    services = get_services(settings=settings.services)
+    if not services and sync != SyncOption.SKIP:
+        LOGGER.warning("No external services configured")
+        sync = SyncOption.SKIP
+    return services, sync
+
+
+def load_comics(target: Path) -> list[Comic]:
     comics = []
     files = list_files(target) if target.is_dir() else [target]
     for file in files:
@@ -81,11 +98,31 @@ def _load_comics(target: Path) -> list[Comic]:
     return comics
 
 
+def prepare_comic(entry: Comic, settings: Settings, skip_convert: bool) -> bool:
+    if not skip_convert:
+        entry.convert_to(settings.output.format)
+    if not entry.archive.IS_WRITEABLE:
+        LOGGER.warning("Archive format %s is not writeable", entry.archive.EXTENSION)
+        return False
+    return True
+
+
+def should_sync_metadata(sync: SyncOption, metroninfo: MetronInfo | None) -> bool:
+    if sync == SyncOption.SKIP:
+        return False
+    if sync == SyncOption.FORCE:
+        return True
+    if metroninfo and metroninfo.last_modified:
+        age = (date.today() - metroninfo.last_modified.date()).days
+        return age >= 28
+    return True
+
+
 def _get_id_value(ids: list[Id], source: InformationSource) -> str | None:
     return next((x.value for x in ids if x.source == source), None)
 
 
-def _create_search_from_metron(metron_info: MetronInfo) -> Search:
+def _create_search_from_metron_info(metron_info: MetronInfo) -> Search:
     series_id = metron_info.series.id
     source = next((x.source for x in metron_info.ids if x.primary), None)
     return Search(
@@ -124,44 +161,10 @@ def get_search_details(
 ) -> Search:
     metron_info, comic_info = metadata
     if metron_info and metron_info.series and metron_info.series.name:
-        return _create_search_from_metron(metron_info=metron_info)
+        return _create_search_from_metron_info(metron_info=metron_info)
     if comic_info and comic_info.series:
         return _create_search_from_comic_info(comic_info=comic_info, filename=filename)
     return _create_search_from_filename(filename=filename)
-
-
-def load_page_info(entry: Comic, comic_info: ComicInfo) -> list[Page]:
-    from PIL import Image  # noqa: PLC0415
-
-    from perdoo.comic import IMAGE_EXTENSIONS  # noqa: PLC0415
-    from perdoo.comic.metadata.comic_info import PageType  # noqa: PLC0415
-
-    pages = set()
-    image_files = [
-        x for x in entry.archive.list_filenames() if Path(x).suffix.lower() in IMAGE_EXTENSIONS
-    ]
-    for idx, file in enumerate(image_files):
-        page = next((x for x in comic_info.pages if x.image == idx), None)
-        if page:
-            page_type = page.type
-        elif idx == 0:
-            page_type = PageType.FRONT_COVER
-        elif idx == len(image_files) - 1:
-            page_type = PageType.BACK_COVER
-        else:
-            page_type = PageType.STORY
-        if not page:
-            page = Page(image=idx)
-        page.type = page_type
-        page_bytes = entry.archive.read_file(file)
-        page.image_size = len(page_bytes)
-        with Image.open(BytesIO(page_bytes)) as page_data:
-            width, height = page_data.size
-            page.double_page = width >= height
-            page.image_height = height
-            page.image_width = width
-        pages.add(page)
-    return sorted(pages)
 
 
 def sync_metadata(
@@ -173,6 +176,17 @@ def sync_metadata(
             if metron_info or comic_info:
                 return metron_info, comic_info
     return None, None
+
+
+def resolve_metadata(
+    entry: Comic, services: dict[Service, BaseService], settings: Settings, sync: SyncOption
+) -> tuple[MetronInfo | None, ComicInfo | None]:
+    metroninfo, comicinfo = entry.read_metadata()
+    if not should_sync_metadata(sync=sync, metroninfo=metroninfo):
+        return metroninfo, comicinfo
+    search = get_search_details(metadata=(metroninfo, comicinfo), filename=entry.filepath.stem)
+    search.filename = entry.filepath.stem
+    return sync_metadata(search=search, services=services, settings=settings)
 
 
 @app.command(name="import", help="Import comics into your collection using Perdoo.")
@@ -223,74 +237,36 @@ def run(
         bool, Option("--debug", help="Enable debug mode to show extra information.")
     ] = False,
 ) -> None:
-    setup_logging(debug=debug)
-    LOGGER.info("Python v%s", python_version())
-    LOGGER.info("Perdoo v%s", __version__)
-
     settings = Settings.load()
     settings.save()
-    if debug:
-        CONSOLE.print(
-            {
-                "target": target,
-                "flags.skip-convert": skip_convert,
-                "flags.sync": sync,
-                "flags.skip-clean": skip_clean,
-                "flags.skip-rename": skip_rename,
-                "flags.clean-cache": clean_cache,
-            }
-        )
-    if clean_cache:
-        LOGGER.info("Cleaning Cache")
-        recursive_delete(path=get_cache_root())
-    services = get_services(settings=settings.services)
-    if not services and sync != SyncOption.SKIP:
-        LOGGER.warning("No external services configured")
-        sync = SyncOption.SKIP
+    services, sync = setup_environment(
+        clean_cache=clean_cache, sync=sync, settings=settings, debug=debug
+    )
 
-    comics = _load_comics(target=target)
+    comics = load_comics(target=target)
     for index, entry in enumerate(comics):
         CONSOLE.rule(
             f"[{index + 1}/{len(comics)}] Importing {entry.filepath.name}",
             align="left",
             style="subtitle",
         )
-        if not skip_convert:
-            with CONSOLE.status("Converting to '.cbz'", spinner="simpleDotsScrolling"):
-                entry.convert_to(extension="cbz")
 
-        metadata: tuple[MetronInfo | None, ComicInfo | None] = (entry.metron_info, entry.comic_info)
-
-        if sync != SyncOption.SKIP:
-            search = get_search_details(metadata=metadata, filename=entry.filepath.stem)
-            search.filename = entry.filepath.stem
-            last_modified = date(1900, 1, 1)
-            if sync == SyncOption.OUTDATED:
-                metron_info, _ = metadata
-                if metron_info and metron_info.last_modified:
-                    last_modified = metron_info.last_modified.date()
-            if (date.today() - last_modified).days >= 28:
-                metadata = sync_metadata(search=search, services=services, settings=settings)
-            else:
-                LOGGER.info("Metadata up-to-date")
-
-        if not skip_clean:
-            with CONSOLE.status("Cleaning Archive", spinner="simpleDotsScrolling"):
-                entry.clean_archive()
-        if settings.output.metron_info.create and metadata[0]:
-            entry.write_metadata(metadata=metadata[0])
-        if settings.output.comic_info.create and metadata[1]:
-            metadata[1].pages = (
-                load_page_info(entry=entry, comic_info=metadata[1])
-                if settings.output.comic_info.handle_pages
-                else []
-            )
-            entry.write_metadata(metadata=metadata[1])
-
-        if not skip_rename:
-            with CONSOLE.status("Renaming based on metadata", spinner="simpleDotsScrolling"):
-                entry.rename(naming=settings.output.naming, output_folder=settings.output.folder)
-
+        if not prepare_comic(entry=entry, settings=settings, skip_convert=skip_convert):
+            continue
+        metroninfo, comicinfo = resolve_metadata(
+            entry=entry, services=services, settings=settings, sync=sync
+        )
+        plan = ProcessingPlan.build(
+            entry=entry,
+            metroninfo=metroninfo,
+            comicinfo=comicinfo,
+            settings=settings.output,
+            skip_clean=skip_clean,
+            skip_rename=skip_rename,
+        )
+        plan.apply()
+        if plan.naming:
+            entry.move_to(naming=plan.naming, output_folder=settings.output.folder)
     with CONSOLE.status("Cleaning up empty folders"):
         delete_empty_folders(folder=target)
 

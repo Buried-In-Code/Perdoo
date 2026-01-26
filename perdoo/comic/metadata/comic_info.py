@@ -4,6 +4,7 @@ import logging
 from collections.abc import Callable
 from datetime import date
 from enum import Enum
+from typing import ClassVar
 
 from natsort import humansorted, ns
 from pydantic import HttpUrl, NonNegativeFloat
@@ -141,6 +142,8 @@ class Page(PascalModel):
 
 
 class ComicInfo(Metadata):
+    FILENAME: ClassVar[str] = "ComicInfo.xml"
+
     age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
     alternate_count: int | None = element(default=None)
     alternate_number: str | None = element(default=None)

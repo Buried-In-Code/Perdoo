@@ -22,6 +22,9 @@ LOGGER = logging.getLogger(__name__)
 
 class CBZArchive(Archive):
     EXTENSION: ClassVar[str] = ".cbz"
+    IS_READABLE: ClassVar[bool] = True
+    IS_WRITEABLE: ClassVar[bool] = True
+    IS_EDITABLE: ClassVar[bool] = True
 
     @classmethod
     def is_archive(cls, path: Path) -> bool:
@@ -70,6 +73,29 @@ class CBZArchive(Archive):
                 f"Unable to delete {filename} from {self.filepath.name}"
             ) from err
 
+    def rename_file(self, old_name: str, new_name: str, override: bool = False) -> None:
+        if old_name not in self.list_filenames():
+            raise ComicArchiveError(
+                f"Unable to rename {old_name} as it doesn't exist in {self.filepath.name}."
+            )
+        try:
+            removed = []
+            with ZipFile(file=self.filepath, mode="a") as archive:
+                if new_name in archive.namelist():
+                    if not override:
+                        raise ComicArchiveError(  # noqa: TRY301
+                            f"Unable to rename {old_name} as {new_name} already extsts in {self.filepath.name}."
+                        )
+                    removed.append(archive.remove(new_name))
+                removed.append(archive.remove(archive.copy(old_name, new_name)))
+                archive.repack(removed)
+        except ComicArchiveError:
+            raise
+        except Exception as err:
+            raise ComicArchiveError(
+                f"Unable to rename {old_name} to {new_name} in {self.filepath.name}"
+            ) from err
+
     def extract_files(self, destination: Path) -> None:
         try:
             with ZipFile(file=self.filepath, mode="r") as archive:
@@ -80,13 +106,13 @@ class CBZArchive(Archive):
             ) from err
 
     @classmethod
-    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Self:
+    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path:
         output_file = src.parent / f"{output_name}.cbz"
         try:
             with ZipFile(file=output_file, mode="w", compression=ZIP_DEFLATED) as archive:
                 for file in files:
                     archive.write(file, arcname=file.name)
-            return cls(filepath=output_file)
+            return output_file
         except Exception as err:
             raise ComicArchiveError(f"Unable to archive files to {output_file.name}") from err
 
@@ -95,12 +121,12 @@ class CBZArchive(Archive):
         with TemporaryDirectory(prefix=f"{old_archive.filepath.stem}_") as temp_str:
             temp_folder = Path(temp_str)
             old_archive.extract_files(destination=temp_folder)
-            new_archive = cls.archive_files(
+            filepath = cls.archive_files(
                 src=temp_folder,
                 output_name=old_archive.filepath.stem,
                 files=list_files(temp_folder),
             )
-            new_file = old_archive.filepath.with_suffix(cls.EXTENSION)
+            new_filepath = old_archive.filepath.with_suffix(cls.EXTENSION)
             old_archive.filepath.unlink(missing_ok=True)
-            shutil.move(new_archive.filepath, new_file)
-            return cls(filepath=new_file)
+            shutil.move(filepath, new_filepath)
+            return cls(filepath=new_filepath)

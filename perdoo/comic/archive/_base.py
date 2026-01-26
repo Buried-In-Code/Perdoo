@@ -15,6 +15,9 @@ except ImportError:
 class Archive(ABC):
     _registry: ClassVar[list[type["Archive"]]] = []
     EXTENSION: ClassVar[str] = ""
+    IS_READABLE: ClassVar[bool] = False
+    IS_WRITEABLE: ClassVar[bool] = False
+    IS_EDITABLE: ClassVar[bool] = False
 
     def __init__(self, filepath: Path) -> None:
         self._filepath = filepath
@@ -41,9 +44,6 @@ class Archive(ABC):
     @abstractmethod
     def list_filenames(self) -> list[str]: ...
 
-    def exists(self, filename: str) -> bool:
-        return filename in self.list_filenames()
-
     @abstractmethod
     def read_file(self, filename: str) -> bytes: ...
 
@@ -53,12 +53,17 @@ class Archive(ABC):
     def remove_file(self, filename: str) -> None:
         raise ComicArchiveError(f"Unable to delete {filename} in {self.filepath.name}.")
 
+    def rename_file(self, filename: str, new_name: str, override: bool = False) -> None:  # noqa: ARG002
+        raise ComicArchiveError(
+            f"Unable to rename {filename} to {new_name} in {self.filepath.name}."
+        )
+
     @abstractmethod
     def extract_files(self, destination: Path) -> None: ...
 
     @classmethod
-    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Self:  # noqa: ARG003
-        raise ComicArchiveError(f"Unable to archive files to {output_name}.")
+    def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path:  # noqa: ARG003
+        raise ComicArchiveError(f"Unable to archive files to {output_name}{cls.EXTENSION}.")
 
     @classmethod
     def convert_from(cls, old_archive: "Archive") -> Self:

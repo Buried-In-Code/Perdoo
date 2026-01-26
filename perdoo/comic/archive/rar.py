@@ -14,6 +14,9 @@ LOGGER = logging.getLogger(__name__)
 
 class CBRArchive(Archive):
     EXTENSION: ClassVar[str] = ".cbr"
+    IS_READABLE: ClassVar[bool] = True
+    IS_WRITEABLE: ClassVar[bool] = False
+    IS_EDITABLE: ClassVar[bool] = False
 
     @classmethod
     def is_archive(cls, path: Path) -> bool:

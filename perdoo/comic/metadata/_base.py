@@ -5,7 +5,7 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from pathlib import Path
-from typing import Literal
+from typing import ClassVar, Literal
 
 from pydantic.alias_generators import to_pascal
 from pydantic_xml import BaseXmlModel
@@ -48,6 +48,8 @@ class PascalModel(
 
 
 class Metadata(PascalModel, ABC):
+    FILENAME: ClassVar[str] = ""
+
     @abstractmethod
     def get_filename(self, settings: Naming) -> str: ...
 

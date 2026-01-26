@@ -75,6 +75,8 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ### Output Extensions
 
 - .cbz
+- .cbt
+- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
 
 ### Metadata Files
 
@@ -144,6 +146,7 @@ File will be created on first run.
 ```toml
 [output]
 folder = "~/.local/share/perdoo"
+format = "cbz"
 
 [output.comic_info]
 create = true
@@ -183,6 +186,11 @@ password = "<Metron Password>"
   The folder where the output files will be stored.
   Defaults to `~/.local/share/perdoo`.
 
+- `output.format`
+  The output file format for the comic archives.
+  Defaults to `cbz`.
+  Options are `cbz`, `cbt` or `cb7`
+
 - `output.comic_info.create`
   Whether to create a ComicInfo.xml file in the output archive.
   Defaults to `true`.
@@ -209,7 +217,8 @@ password = "<Metron Password>"
   The order in which the services will be used for metadata retrieval.
   Metadata will be fetched from the first service that returns a result.
   Don't include the service name in the list if you don't want to use it.
-  Defaults to `["Metron", "Comicvine"]`, options are `Metron` and `Comicvine`.
+  Defaults to `["Metron", "Comicvine"]`.
+  Options are `Metron` or `Comicvine`.
 
 ## Socials
 
