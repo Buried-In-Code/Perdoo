@@ -82,7 +82,7 @@ class CBZArchive(Archive):
                 if new_name in archive.namelist():
                     if not override:
                         raise ComicArchiveError(
-                            f"Unable to rename {filename} as {new_name} already extsts in {self.filepath.name}."
+                            f"Unable to rename {filename} as {new_name} already exists in {self.filepath.name}."
                         )
                     removed.append(archive.remove(new_name))
                 removed.append(archive.remove(archive.copy(filename, new_name)))

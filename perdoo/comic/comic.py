@@ -37,15 +37,13 @@ class Comic:
             self._archive = cls.convert_from(old_archive=self.archive)
 
     def read_metadata(self, session: ArchiveSession) -> tuple[MetronInfo | None, ComicInfo | None]:
-        metroninfo = None
+        metron_info = None
         if session.contains(filename=MetronInfo.FILENAME):
-            metroninfo = MetronInfo.from_bytes(content=session.read(filename=MetronInfo.FILENAME))
-
-        comicinfo = None
+            metron_info = MetronInfo.from_bytes(content=session.read(filename=MetronInfo.FILENAME))
+        comic_info = None
         if session.contains(filename=ComicInfo.FILENAME):
-            comicinfo = ComicInfo.from_bytes(content=session.read(filename=ComicInfo.FILENAME))
-
-        return metroninfo, comicinfo
+            comic_info = ComicInfo.from_bytes(content=session.read(filename=ComicInfo.FILENAME))
+        return metron_info, comic_info
 
     def list_images(self) -> list[Path]:
         return humansorted(
@@ -73,7 +71,7 @@ class Comic:
         return all(img.name.startswith(template) for img in self.list_images())
 
     def move_to(self, naming: str, output_folder: Path) -> None:
-        output = output_folder / f"{naming}{self.archive.EXTENSION}"
+        output = output_folder / (naming + self.archive.EXTENSION)
         if output.exists():
             LOGGER.warning("'%s' already exists, skipping", output)
             return

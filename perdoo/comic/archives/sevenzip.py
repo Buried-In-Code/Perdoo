@@ -7,7 +7,7 @@ from sys import maxsize
 from tempfile import TemporaryDirectory
 from typing import ClassVar
 
-from perdoo.comic.archive._base import Archive
+from perdoo.comic.archives._base import Archive
 from perdoo.comic.errors import ComicArchiveError
 from perdoo.utils import list_files
 
