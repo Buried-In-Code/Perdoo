@@ -7,7 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import ClassVar
 
-from perdoo.comic.archive._base import Archive
+from perdoo.comic.archives._base import Archive
 from perdoo.comic.errors import ComicArchiveError
 from perdoo.utils import list_files
 
@@ -47,7 +47,7 @@ class CBTArchive(Archive):
 
     @classmethod
     def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path:
-        output_file = src.parent / f"{output_name}.cbt"
+        output_file = src.parent / (output_name + cls.EXTENSION)
         try:
             with tarfile.open(name=output_file, mode="w:gz") as archive:
                 for file in files:

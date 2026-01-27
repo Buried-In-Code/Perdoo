@@ -6,7 +6,7 @@ from typing import ClassVar
 
 from rarfile import RarFile, is_rarfile
 
-from perdoo.comic.archive._base import Archive
+from perdoo.comic.archives._base import Archive
 from perdoo.comic.errors import ComicArchiveError
 
 LOGGER = logging.getLogger(__name__)

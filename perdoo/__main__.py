@@ -11,7 +11,7 @@ from typer import Argument, Context, Exit, Option, Typer
 from perdoo import __version__, get_cache_root, setup_logging
 from perdoo.cli import archive_app, settings_app
 from perdoo.comic import Comic
-from perdoo.comic.archive import ArchiveSession
+from perdoo.comic.archives import ArchiveSession
 from perdoo.comic.errors import ComicArchiveError, ComicMetadataError
 from perdoo.comic.metadata import ComicInfo, MetronInfo
 from perdoo.comic.metadata.metron_info import Id, InformationSource
@@ -212,20 +212,17 @@ def apply_changes(
         if metron_info:
             session.write(filename=MetronInfo.FILENAME, data=metron_info.to_bytes())
         else:
-            session.remove(filename=MetronInfo.FILENAME)
-        session.updated = True
+            session.delete(filename=MetronInfo.FILENAME)
 
     if local_comic_info != comic_info:
         if comic_info:
             session.write(filename=ComicInfo.FILENAME, data=comic_info.to_bytes())
         else:
-            session.remove(filename=ComicInfo.FILENAME)
-        session.updated = True
+            session.delete(filename=ComicInfo.FILENAME)
 
     if not skip_clean:
         for extra in entry.list_extras():
-            session.remove(filename=extra.name)
-            session.updated = True
+            session.delete(filename=extra.name)
 
     naming = None
     if not skip_rename and (
@@ -239,8 +236,7 @@ def apply_changes(
         for idx, img in enumerate(images):
             new_name = f"{stem}_{str(idx).zfill(pad)}{img.suffix}"
             if img.name != new_name:
-                session.rename(old_name=img.name, new_name=new_name)
-                session.updated = True
+                session.rename(filename=img.name, new_name=new_name)
     return naming
 
 

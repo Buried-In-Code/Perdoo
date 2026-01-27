@@ -7,8 +7,7 @@ from typing import Final, Literal
 
 from natsort import humansorted, ns
 
-from perdoo.comic.archive import Archive, CB7Archive, CBTArchive, CBZArchive
-from perdoo.comic.archive.session import ArchiveSession
+from perdoo.comic.archives import Archive, ArchiveSession, CB7Archive, CBTArchive, CBZArchive
 from perdoo.comic.metadata import ComicInfo, MetronInfo
 
 LOGGER = logging.getLogger(__name__)

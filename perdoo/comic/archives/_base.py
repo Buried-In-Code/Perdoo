@@ -47,10 +47,10 @@ class Archive(ABC):
     def read_file(self, filename: str) -> bytes:
         raise ComicArchiveError(f"Unable to read {filename} from {self.filepath.name}.")
 
-    def write_file(self, filename: str, data: str | bytes) -> None:  # noqa: ARG002
+    def write_file(self, filename: str, data: bytes) -> None:  # noqa: ARG002
         raise ComicArchiveError(f"Unable to write {filename} to {self.filepath.name}.")
 
-    def remove_file(self, filename: str) -> None:
+    def delete_file(self, filename: str) -> None:
         raise ComicArchiveError(f"Unable to delete {filename} in {self.filepath.name}.")
 
     def rename_file(self, filename: str, new_name: str, override: bool = False) -> None:  # noqa: ARG002

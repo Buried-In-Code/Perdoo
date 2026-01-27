@@ -8,7 +8,7 @@ from typing import ClassVar
 
 from zipremove import ZIP_DEFLATED, ZipFile, is_zipfile
 
-from perdoo.comic.archive._base import Archive
+from perdoo.comic.archives._base import Archive
 from perdoo.comic.errors import ComicArchiveError
 from perdoo.utils import list_files
 
@@ -49,9 +49,7 @@ class CBZArchive(Archive):
         except Exception as err:
             raise ComicArchiveError(f"Unable to read {filename} in {self.filepath.name}") from err
 
-    def write_file(self, filename: str, data: str | bytes) -> None:
-        if isinstance(data, str):
-            data = data.encode("UTF-8")
+    def write_file(self, filename: str, data: bytes) -> None:
         try:
             with ZipFile(file=self.filepath, mode="a") as archive:
                 if filename in archive.namelist():
@@ -61,7 +59,7 @@ class CBZArchive(Archive):
         except Exception as err:
             raise ComicArchiveError(f"Unable to write {filename} to {self.filepath.name}") from err
 
-    def remove_file(self, filename: str) -> None:
+    def delete_file(self, filename: str) -> None:
         if filename not in self.list_filenames():
             return
         try:
@@ -73,27 +71,27 @@ class CBZArchive(Archive):
                 f"Unable to delete {filename} from {self.filepath.name}"
             ) from err
 
-    def rename_file(self, old_name: str, new_name: str, override: bool = False) -> None:
-        if old_name not in self.list_filenames():
+    def rename_file(self, filename: str, new_name: str, override: bool = False) -> None:
+        if filename not in self.list_filenames():
             raise ComicArchiveError(
-                f"Unable to rename {old_name} as it doesn't exist in {self.filepath.name}."
+                f"Unable to rename {filename} as it doesn't exist in {self.filepath.name}."
             )
         try:
             removed = []
             with ZipFile(file=self.filepath, mode="a") as archive:
                 if new_name in archive.namelist():
                     if not override:
-                        raise ComicArchiveError(  # noqa: TRY301
-                            f"Unable to rename {old_name} as {new_name} already extsts in {self.filepath.name}."
+                        raise ComicArchiveError(
+                            f"Unable to rename {filename} as {new_name} already extsts in {self.filepath.name}."
                         )
                     removed.append(archive.remove(new_name))
-                removed.append(archive.remove(archive.copy(old_name, new_name)))
+                removed.append(archive.remove(archive.copy(filename, new_name)))
                 archive.repack(removed)
         except ComicArchiveError:
             raise
         except Exception as err:
             raise ComicArchiveError(
-                f"Unable to rename {old_name} to {new_name} in {self.filepath.name}"
+                f"Unable to rename {filename} to {new_name} in {self.filepath.name}"
             ) from err
 
     def extract_files(self, destination: Path) -> None:
@@ -107,7 +105,7 @@ class CBZArchive(Archive):
 
     @classmethod
     def archive_files(cls, src: Path, output_name: str, files: list[Path]) -> Path:
-        output_file = src.parent / f"{output_name}.cbz"
+        output_file = src.parent / (output_name + cls.EXTENSION)
         try:
             with ZipFile(file=output_file, mode="w", compression=ZIP_DEFLATED) as archive:
                 for file in files:
