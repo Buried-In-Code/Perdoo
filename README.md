@@ -26,40 +26,28 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ## Usage
 
-<details><summary>Perdoo Commands</summary>
+<details><summary>perdoo Commands</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo --help`](docs/img/perdoo-commands.svg)
+  ![`uv run perdoo`](docs/img/perdoo-commands.svg)
 
 </details>
-<details><summary>Perdoo import</summary>
+<details><summary>perdoo process</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo import --help`](docs/img/perdoo-import.svg)
+  ![`uv run perdoo process --help`](docs/img/perdoo-process.svg)
 
 </details>
-
-### Perdoo archive Commands
-
-<details><summary>Perdoo archive view</summary>
+<details><summary>perdoo archive</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo archive view --help`](docs/img/perdoo-archive-view.svg)
+  ![`uv run perdoo archive --help`](docs/img/perdoo-archive.svg)
 
 </details>
-
-### Perdoo settings Commands
-
-<details><summary>Perdoo settings view</summary>
+<details><summary>perdoo settings</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo settings view --help`](docs/img/perdoo-settings-view.svg)
-
-</details>
-<details><summary>Perdoo settings locate</summary>
-
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo settings locate --help`](docs/img/perdoo-settings-locate.svg)
+  ![`uv run perdoo settings --help`](docs/img/perdoo-settings.svg)
 
 </details>
 
@@ -75,6 +63,8 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ### Output Extensions
 
 - .cbz
+- .cbt
+- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
 
 ### Metadata Files
 
@@ -187,6 +177,7 @@ password = "<Metron Password>"
 - `output.format`
   The output file format for the comic archives.
   Defaults to `cbz`.
+  Options are `cbz`, `cbt` or `cb7`
 
 - `output.comic_info.create`
   Whether to create a ComicInfo.xml file in the output archive.
@@ -214,7 +205,8 @@ password = "<Metron Password>"
   The order in which the services will be used for metadata retrieval.
   Metadata will be fetched from the first service that returns a result.
   Don't include the service name in the list if you don't want to use it.
-  Defaults to `["Metron", "Comicvine"]`, options are `Metron` and `Comicvine`.
+  Defaults to `["Metron", "Comicvine"]`.
+  Options are `Metron` or `Comicvine`.
 
 ## Socials
 

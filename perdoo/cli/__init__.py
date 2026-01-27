@@ -1,4 +1,6 @@
-__all__ = ["archive_app", "settings_app"]
+__all__ = ["app", "archive", "process", "settings"]
 
-from perdoo.cli.archive import app as archive_app
-from perdoo.cli.settings import app as settings_app
+from perdoo.cli._typer import app
+from perdoo.cli.archive import archive
+from perdoo.cli.process import process
+from perdoo.cli.settings import settings

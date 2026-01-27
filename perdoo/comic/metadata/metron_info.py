@@ -22,12 +22,12 @@ from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Generic, TypeVar
+from typing import ClassVar, Generic, TypeVar
 
 from pydantic import HttpUrl, NonNegativeInt, PositiveInt, field_validator
 from pydantic_xml import attr, computed_attr, element, wrapped
 
-from perdoo.metadata._base import PascalModel
+from perdoo.comic.metadata._base import Metadata, PascalModel
 from perdoo.settings import Naming
 
 LOGGER = logging.getLogger(__name__)
@@ -317,7 +317,9 @@ class Url(PascalModel):
         return hash((type(self), self.value))
 
 
-class MetronInfo(PascalModel):
+class MetronInfo(Metadata):
+    FILENAME: ClassVar[str] = "MetronInfo.xml"
+
     age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
     arcs: list[Arc] = wrapped(path="Arcs", entity=element(tag="Arc", default_factory=list))
     characters: list[Resource[str]] = wrapped(

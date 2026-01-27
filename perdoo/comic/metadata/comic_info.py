@@ -4,12 +4,13 @@ import logging
 from collections.abc import Callable
 from datetime import date
 from enum import Enum
+from typing import ClassVar
 
 from natsort import humansorted, ns
 from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
-from perdoo.metadata._base import PascalModel
+from perdoo.comic.metadata._base import Metadata, PascalModel
 from perdoo.settings import Naming
 
 LOGGER = logging.getLogger(__name__)
@@ -140,7 +141,9 @@ class Page(PascalModel):
         return hash((type(self), self.image))
 
 
-class ComicInfo(PascalModel):
+class ComicInfo(Metadata):
+    FILENAME: ClassVar[str] = "ComicInfo.xml"
+
     age_rating: AgeRating = element(default=AgeRating.UNKNOWN)
     alternate_count: int | None = element(default=None)
     alternate_number: str | None = element(default=None)
@@ -184,7 +187,7 @@ class ComicInfo(PascalModel):
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:
-        return "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/schemas/v2.0/ComicInfo.xsd"
+        return "https://raw.githubusercontent.com/anansi-project/comicinfo/main/schema/v2.0/ComicInfo.xsd"
 
     @property
     def cover_date(self) -> date | None:
@@ -278,7 +281,7 @@ class ComicInfo(PascalModel):
         self.story_arc = list_to_str(value=value)
 
     def get_filename(self, settings: Naming) -> str:
-        from perdoo.metadata.metron_info import Format  # noqa: PLC0415
+        from perdoo.comic.metadata.metron_info import Format  # noqa: PLC0415
 
         return self.evaluate_pattern(
             pattern_map=PATTERN_MAP,
