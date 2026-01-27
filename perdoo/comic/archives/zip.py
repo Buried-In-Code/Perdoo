@@ -37,7 +37,7 @@ class CBZArchive(Archive):
             with ZipFile(file=self.filepath, mode="r") as archive:
                 return archive.namelist()
         except Exception as err:
-            raise ComicArchiveError(f"Unable to list files in {self.filepath.name}") from err
+            raise ComicArchiveError(f"Unable to list files from {self.filepath.name}.") from err
 
     def read_file(self, filename: str) -> bytes:
         try:
@@ -47,7 +47,7 @@ class CBZArchive(Archive):
             ):
                 return zip_file.read()
         except Exception as err:
-            raise ComicArchiveError(f"Unable to read {filename} in {self.filepath.name}") from err
+            raise ComicArchiveError(f"Unable to read {filename}.") from err
 
     def write_file(self, filename: str, data: bytes) -> None:
         try:
@@ -57,7 +57,7 @@ class CBZArchive(Archive):
                     archive.repack([removed])
                 archive.writestr(filename, data)
         except Exception as err:
-            raise ComicArchiveError(f"Unable to write {filename} to {self.filepath.name}") from err
+            raise ComicArchiveError(f"Unable to write {filename}.") from err
 
     def delete_file(self, filename: str) -> None:
         if filename not in self.list_filenames():
@@ -67,22 +67,18 @@ class CBZArchive(Archive):
                 removed = archive.remove(filename)
                 archive.repack([removed])
         except Exception as err:
-            raise ComicArchiveError(
-                f"Unable to delete {filename} from {self.filepath.name}"
-            ) from err
+            raise ComicArchiveError(f"Unable to delete {filename}.") from err
 
     def rename_file(self, filename: str, new_name: str, override: bool = False) -> None:
         if filename not in self.list_filenames():
-            raise ComicArchiveError(
-                f"Unable to rename {filename} as it doesn't exist in {self.filepath.name}."
-            )
+            raise ComicArchiveError(f"Unable to rename {filename} as it does not exist.")
         try:
             removed = []
             with ZipFile(file=self.filepath, mode="a") as archive:
                 if new_name in archive.namelist():
                     if not override:
                         raise ComicArchiveError(
-                            f"Unable to rename {filename} as {new_name} already exists in {self.filepath.name}."
+                            f"Unable to rename {filename} as {new_name} already exists."
                         )
                     removed.append(archive.remove(new_name))
                 removed.append(archive.remove(archive.copy(filename, new_name)))
@@ -90,9 +86,7 @@ class CBZArchive(Archive):
         except ComicArchiveError:
             raise
         except Exception as err:
-            raise ComicArchiveError(
-                f"Unable to rename {filename} to {new_name} in {self.filepath.name}"
-            ) from err
+            raise ComicArchiveError(f"Unable to rename {filename} to {new_name}.") from err
 
     def extract_files(self, destination: Path) -> None:
         try:
@@ -100,7 +94,7 @@ class CBZArchive(Archive):
                 archive.extractall(path=destination)
         except Exception as err:
             raise ComicArchiveError(
-                f"Unable to extract all files from {self.filepath.name} to {destination}"
+                f"Unable to extract all files from {self.filepath.name} to {destination}."
             ) from err
 
     @classmethod
@@ -112,7 +106,7 @@ class CBZArchive(Archive):
                     archive.write(file, arcname=file.name)
             return output_file
         except Exception as err:
-            raise ComicArchiveError(f"Unable to archive files to {output_file.name}") from err
+            raise ComicArchiveError(f"Unable to archive files to {output_file.name}.") from err
 
     @classmethod
     def convert_from(cls, old_archive: Archive) -> Self:

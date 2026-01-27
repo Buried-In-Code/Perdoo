@@ -187,7 +187,7 @@ class ComicInfo(Metadata):
 
     @computed_attr(ns="xsi", name="noNamespaceSchemaLocation")
     def schema_location(self) -> str:
-        return "https://raw.githubusercontent.com/Buried-In-Code/Schemas/main/schemas/v2.0/ComicInfo.xsd"
+        return "https://raw.githubusercontent.com/anansi-project/comicinfo/main/schema/v2.0/ComicInfo.xsd"
 
     @property
     def cover_date(self) -> date | None:

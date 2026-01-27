@@ -40,9 +40,9 @@ def test_delete_file(cbz_archive: CBZArchive) -> None:
 
 def test_rename_file(cbz_archive: CBZArchive) -> None:
     cbz_archive.write_file(filename="new.txt", data=b"Hello World")
-    with pytest.raises(ComicArchiveError, match=r"doesn't exist"):
+    with pytest.raises(ComicArchiveError, match=r"does not exist"):
         cbz_archive.rename_file(filename="missing.txt", new_name="new.txt")
-    with pytest.raises(ComicArchiveError, match=r"already exist"):
+    with pytest.raises(ComicArchiveError, match=r"already exists"):
         cbz_archive.rename_file(filename="new.txt", new_name="info.txt", override=False)
 
     cbz_archive.rename_file(filename="new.txt", new_name="info.txt", override=True)

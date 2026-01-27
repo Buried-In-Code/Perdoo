@@ -26,40 +26,28 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ## Usage
 
-<details><summary>Perdoo Commands</summary>
+<details><summary>perdoo Commands</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo --help`](docs/img/perdoo-commands.svg)
+  ![`uv run perdoo`](docs/img/perdoo-commands.svg)
 
 </details>
-<details><summary>Perdoo import</summary>
+<details><summary>perdoo process</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo import --help`](docs/img/perdoo-import.svg)
+  ![`uv run perdoo process --help`](docs/img/perdoo-process.svg)
 
 </details>
-
-### Perdoo archive Commands
-
-<details><summary>Perdoo archive view</summary>
+<details><summary>perdoo archive</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo archive view --help`](docs/img/perdoo-archive-view.svg)
+  ![`uv run perdoo archive --help`](docs/img/perdoo-archive.svg)
 
 </details>
-
-### Perdoo settings Commands
-
-<details><summary>Perdoo settings view</summary>
+<details><summary>perdoo settings</summary>
 
   <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo settings view --help`](docs/img/perdoo-settings-view.svg)
-
-</details>
-<details><summary>Perdoo settings locate</summary>
-
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run Perdoo settings locate --help`](docs/img/perdoo-settings-locate.svg)
+  ![`uv run perdoo settings --help`](docs/img/perdoo-settings.svg)
 
 </details>
 
