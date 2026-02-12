@@ -220,7 +220,7 @@ class ComicInfo(Metadata):
                 output.setdefault(creator, []).append(role)
         return output
 
-    @credits.setter
+    @credits.setter  # noqa: A003
     def credits(self, value: dict[str, list[str]]) -> None:
         def get_creators(role: str) -> list[str]:
             return humansorted(

@@ -111,4 +111,4 @@ def delete_empty_folders(folder: Path) -> None:
 
 def blank_is_none(value: str) -> str | None:
     """Enforces blank strings to be None."""
-    return value if value else None
+    return value or None

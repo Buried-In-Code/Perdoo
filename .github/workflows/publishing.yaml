@@ -2,9 +2,11 @@ name: Publishing
 
 on: push
 
+env:
+  PY_VERSION: 3.14
+
 jobs:
   build:
-    name: Build
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -12,9 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
-      - name: Setup Python
-        run: uv python install 3.14
-      - name: Build wheel and source tarball
+        with:
+          python-version: ${{ env.PY_VERSION }}
+      - name: Install project
+        run: uv sync --locked --no-dev
+      - name: Run build
         run: uv build
       - uses: actions/upload-artifact@v6
         with:
@@ -22,7 +26,6 @@ jobs:
           path: dist/
 
   validate:
-    name: Validate dist
     needs:
       - build
     permissions: {}
@@ -34,8 +37,8 @@ jobs:
           name: python-package-distributions
           path: dist/
       - uses: astral-sh/setup-uv@v7
-      - name: Setup Python
-        run: uv python install 3.14
+        with:
+          python-version: ${{ env.PY_VERSION }}
       - name: Validate dist
         run: uv run --with twine twine check dist/*
 
@@ -44,7 +47,6 @@ jobs:
       name: pypi
       url: https://pypi.org/p/perdoo
     if: startsWith(github.ref, 'refs/tags/')
-    name: Publish to PyPI
     needs:
       - build
       - validate
@@ -57,4 +59,4 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@v1
