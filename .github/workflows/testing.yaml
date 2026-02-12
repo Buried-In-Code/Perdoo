@@ -39,22 +39,22 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
-      - name: Setup Python
-        run: uv python install ${{ matrix.python-version }}
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Install project
-        run: uv sync --group tests
+        run: uv sync --locked --no-dev --group tests
       - name: Run tests
         run: uv run pytest
 
-  collector:
+  check:
     if: always()
     needs:
       - pytest
-
-    permissions: { }
+    permissions: {}
     runs-on: ubuntu-latest
 
     steps:
       - name: Check for failures
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: echo job failed && exit 1
+        uses: re-actors/alls-green@v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
