@@ -834,16 +834,16 @@ wheels = [
 
 [[package]]
 name = "mokkari"
-version = "3.18.0"
+version = "3.19.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyrate-limiter" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/6c/21d44420ff796330bdf19a8d9785bd638e6775597085e8611e24d39e5e6a/mokkari-3.18.0.tar.gz", hash = "sha256:4be47eb8ad026e38a692468aee29f110b661b3a3faeb9dd7c1e0b9b5fb5b0f6a", size = 352406, upload-time = "2026-02-08T21:13:32.746Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/60/2c/06e389e0eaf2bbb7c20efa380343e003d8e85d034fbf4a303e9b1023caa0/mokkari-3.19.0.tar.gz", hash = "sha256:0d30f127c8c7436998fbb11fec485af4b13231a23460dc664e5e0be90de8dabf", size = 353832, upload-time = "2026-02-13T14:31:26.791Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/3b/4eec66ccb65b3c0bd16bf01b9e7720d4b4dae68144a1eb28e12b721a03c4/mokkari-3.18.0-py3-none-any.whl", hash = "sha256:996aedf8ae3bf4b167f233bf3cf6e9dabe2aaf6b0241f2319075260edbda06b9", size = 49922, upload-time = "2026-02-08T21:13:33.808Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/88/fabef825be9144a96982f08c192bd4e2ea49578357c10b025d838631371c/mokkari-3.19.0-py3-none-any.whl", hash = "sha256:0b954fad5ce76bb3a4719afbd4e7565b94137ee1148a5f84c4bb1a7b5257eaa1", size = 50623, upload-time = "2026-02-13T14:31:25.797Z" },
 ]
 
 [[package]]
@@ -1047,11 +1047,11 @@ wheels = [
 
 [[package]]
 name = "platformdirs"
-version = "4.7.0"
+version = "4.7.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/71/25/ccd8e88fcd16a4eb6343a8b4b9635e6f3928a7ebcd82822a14d20e3ca29f/platformdirs-4.7.0.tar.gz", hash = "sha256:fd1a5f8599c85d49b9ac7d6e450bc2f1aaf4a23f1fe86d09952fe20ad365cf36", size = 23118, upload-time = "2026-02-12T22:21:53.764Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/3e/c81eb24fb98b00bc097b9ce5dee6eca020c52619ed95b246aaec2018c511/platformdirs-4.7.1.tar.gz", hash = "sha256:6f4ff8472e482af4b7e67a183fbe63da846a9b34f57d5019c4d112a181003d82", size = 25254, upload-time = "2026-02-13T17:57:16.833Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/e3/1eddccb2c39ecfbe09b3add42a04abcc3fa5b468aa4224998ffb8a7e9c8f/platformdirs-4.7.0-py3-none-any.whl", hash = "sha256:1ed8db354e344c5bb6039cd727f096af975194b508e37177719d562b2b540ee6", size = 18983, upload-time = "2026-02-12T22:21:52.237Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/82/36dcca0cfa42ad259bf0eb1f7af0d5759710c21928856891631cb47e4771/platformdirs-4.7.1-py3-none-any.whl", hash = "sha256:06ac79ae0c5025949f62711e3f7cd178736515a29bcc669f42a216016cd1dc7a", size = 19070, upload-time = "2026-02-13T17:57:15.67Z" },
 ]
 
 [[package]]
@@ -1775,7 +1775,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.23.0"
+version = "0.23.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -1783,9 +1783,9 @@ dependencies = [
     { name = "rich" },
     { name = "shellingham" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7e/e6/44e073787aa57cd71c151f44855232feb0f748428fd5242d7366e3c4ae8b/typer-0.23.0.tar.gz", hash = "sha256:d8378833e47ada5d3d093fa20c4c63427cc4e27127f6b349a6c359463087d8cc", size = 120181, upload-time = "2026-02-11T15:22:18.637Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/07/b822e1b307d40e263e8253d2384cf98c51aa2368cc7ba9a07e523a1d964b/typer-0.23.1.tar.gz", hash = "sha256:2070374e4d31c83e7b61362fd859aa683576432fd5b026b060ad6b4cd3b86134", size = 120047, upload-time = "2026-02-13T10:04:30.984Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/ed/d6fca788b51d0d4640c4bc82d0e85bad4b49809bca36bf4af01b4dcb66a7/typer-0.23.0-py3-none-any.whl", hash = "sha256:79f4bc262b6c37872091072a3cb7cb6d7d79ee98c0c658b4364bdcde3c42c913", size = 56668, upload-time = "2026-02-11T15:22:21.075Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/91/9b286ab899c008c2cb05e8be99814807e7fbbd33f0c0c960470826e5ac82/typer-0.23.1-py3-none-any.whl", hash = "sha256:3291ad0d3c701cbf522012faccfbb29352ff16ad262db2139e6b01f15781f14e", size = 56813, upload-time = "2026-02-13T10:04:32.008Z" },
 ]
 
 [[package]]
