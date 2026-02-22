@@ -1738,7 +1738,7 @@ wheels = [
 
 [[package]]
 name = "tox"
-version = "4.41.0"
+version = "4.44.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -1753,9 +1753,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/44/a0eaf15e38b0a85dfaa6ef4f1fe902f4681c4c8050e0e24d76cdd225f2c8/tox-4.41.0.tar.gz", hash = "sha256:58c82bd68d970abc0fd001ca413b10e7422cd83d13f25580f658afab61a85f86", size = 228941, upload-time = "2026-02-19T16:20:24.573Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/73/dadb7954bdb3f67662322faaef9fe5ede418527d8cff0c57fa368c558f37/tox-4.44.0.tar.gz", hash = "sha256:0c911cbc448a2ac5dd7cbb6be2f9ffa26d0a10405982f9efea654803b23cec77", size = 243605, upload-time = "2026-02-20T21:29:15.879Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/29/a8b5dd927130882bb848dfbc12d43c81f3415bc516d9d04563ccea26ef23/tox-4.41.0-py3-none-any.whl", hash = "sha256:9579cc7b2c4c0d465e70f91f7897a6d58d6509cdadf20f75ade3510c0b7ce96a", size = 188883, upload-time = "2026-02-19T16:20:22.323Z" },
+    { url = "https://files.pythonhosted.org/packages/78/cc/6f3b1775effb0511df6136fd66b59000b1a7977e7d908725d8336649d0fa/tox-4.44.0-py3-none-any.whl", hash = "sha256:b850fb8d1803d132c3120a189b2ae7fe319a07a9cb4254d81ac9c94e3230bc0f", size = 197333, upload-time = "2026-02-20T21:29:14.007Z" },
 ]
 
 [[package]]
@@ -1775,7 +1775,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.24.0"
+version = "0.24.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -1783,9 +1783,9 @@ dependencies = [
     { name = "rich" },
     { name = "shellingham" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5a/b6/3e681d3b6bb22647509bdbfdd18055d5adc0dce5c5585359fa46ff805fdc/typer-0.24.0.tar.gz", hash = "sha256:f9373dc4eff901350694f519f783c29b6d7a110fc0dcc11b1d7e353b85ca6504", size = 118380, upload-time = "2026-02-16T22:08:48.496Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/24/cb09efec5cc954f7f9b930bf8279447d24618bb6758d4f6adf2574c41780/typer-0.24.1.tar.gz", hash = "sha256:e39b4732d65fbdcde189ae76cf7cd48aeae72919dea1fdfc16593be016256b45", size = 118613, upload-time = "2026-02-21T16:54:40.609Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/d0/4da85c2a45054bb661993c93524138ace4956cb075a7ae0c9d1deadc331b/typer-0.24.0-py3-none-any.whl", hash = "sha256:5fc435a9c8356f6160ed6e85a6301fdd6e3d8b2851da502050d1f92c5e9eddc8", size = 56441, upload-time = "2026-02-16T22:08:47.535Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/91/48db081e7a63bb37284f9fbcefda7c44c277b18b0e13fbc36ea2335b71e6/typer-0.24.1-py3-none-any.whl", hash = "sha256:112c1f0ce578bfb4cab9ffdabc68f031416ebcc216536611ba21f04e9aa84c9e", size = 56085, upload-time = "2026-02-21T16:54:41.616Z" },
 ]
 
 [[package]]
