@@ -20,7 +20,7 @@ jobs:
         run: uv sync --locked --no-dev
       - name: Run build
         run: uv build
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
           path: dist/
