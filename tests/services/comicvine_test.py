@@ -5,14 +5,12 @@ from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 
 from perdoo.services.comicvine import DEFAULT_CHOICE, Comicvine
-from perdoo.settings import Comicvine as ComicvineSettings
 from perdoo.utils import IssueSearch, SeriesSearch
 
 
 @pytest.fixture
 def service() -> Comicvine:
-    settings = ComicvineSettings(api_key="Api-Key")
-    return Comicvine(settings=settings)
+    return Comicvine(api_key="UNSET")
 
 
 @pytest.fixture

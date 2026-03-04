@@ -4,14 +4,12 @@ import pytest
 from seagrin.schemas import Issue, Series
 
 from perdoo.services.metron import DEFAULT_CHOICE, Metron
-from perdoo.settings import Metron as MetronSettings
 from perdoo.utils import IssueSearch, SeriesSearch
 
 
 @pytest.fixture
 def service() -> Metron:
-    settings = MetronSettings(username="username", password="password")  # noqa: S106
-    return Metron(settings=settings)
+    return Metron(username="UNSET", password="UNSET")  # noqa: S106
 
 
 @pytest.fixture

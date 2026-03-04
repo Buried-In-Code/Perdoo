@@ -27,6 +27,6 @@ jobs:
         with:
           python-version: ${{ env.PY_VERSION }}
       - name: Install project
-        run: uv sync --locked --dev
+        run: uv sync --locked --dev --all-extras
       - name: Run prek
         run: uv run prek run -a
