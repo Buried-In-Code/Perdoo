@@ -16,11 +16,10 @@ try:
 
     PY7ZR_AVAILABLE = True
 except ImportError:
-    py7zr = None
     PY7ZR_AVAILABLE = False
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 

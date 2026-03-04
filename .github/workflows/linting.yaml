@@ -27,22 +27,6 @@ jobs:
         with:
           python-version: ${{ env.PY_VERSION }}
       - name: Install project
-        run: uv sync --locked --no-dev
+        run: uv sync --locked --dev
       - name: Run pre-commit
-        run: uv run --with pre-commit pre-commit run -a
-
-  ty:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v7
-        with:
-          python-version: ${{ env.PY_VERSION }}
-      - name: Install project
-        run: uv sync --locked --no-dev
-      - name: Run ty
-        run: uv run --with ty ty check perdoo --ignore unresolved-import
-        continue-on-error: true
+        run: uv run prek run -a

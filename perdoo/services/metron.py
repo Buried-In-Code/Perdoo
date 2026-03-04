@@ -3,14 +3,13 @@ __all__ = ["Metron"]
 import logging
 from datetime import datetime
 
-from mokkari.exceptions import ApiError
-from mokkari.schemas.issue import Issue
-from mokkari.schemas.series import Series
-from mokkari.session import Session as Mokkari
-from mokkari.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
 from prompt_toolkit.styles import Style
 from questionary import Choice, confirm, select, text
+from seagrin.cache import SQLiteCache
+from seagrin.errors import ServiceError
+from seagrin.metron import Metron as Seagrin
+from seagrin.schemas import Issue, Series
 
 from perdoo import get_cache_root
 from perdoo.comic.metadata import ComicInfo, MetronInfo
@@ -25,17 +24,17 @@ DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 class Metron(BaseService[Series, Issue]):
     def __init__(self, settings: MetronSettings):
-        cache = SqliteCache(db_name=str(get_cache_root() / "mokkari.sqlite"), expire=14)
-        self.session = Mokkari(username=settings.username, passwd=settings.password, cache=cache)
+        cache = SQLiteCache(path=get_cache_root() / "seagrin.sqlite")
+        self.session = Seagrin(username=settings.username, password=settings.password, cache=cache)
 
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
             return None
         try:
-            series = self.session.series_list({"cv_id": comicvine_id})
+            series = self.session.list_series(cv_id=comicvine_id)
             if series and len(series) >= 1:
                 return series[0].id
-        except ApiError as err:
+        except ServiceError as err:
             LOGGER.error(err)
         return None
 
@@ -44,13 +43,9 @@ class Metron(BaseService[Series, Issue]):
     ) -> int | None:
         name = name or text(message="Series Name").ask()
         try:
-            params = {"name": name}
-            if volume:
-                params["volume"] = volume
-            if year:
-                params["year_began"] = year
             options = sorted(
-                self.session.series_list(params=params), key=lambda x: (x.display_name, x.volume)
+                self.session.list_series(name=name, volume=volume, year_began=year),
+                key=lambda x: (x.display_name, x.volume),
             )
             if options:
                 search = name
@@ -90,7 +85,7 @@ class Metron(BaseService[Series, Issue]):
                 return self._search_series(name=name, volume=None, year=None, filename=filename)
             if confirm(message="Search Again", default=False).ask():
                 return self._search_series(name=None, volume=None, year=None, filename=filename)
-        except ApiError as err:
+        except ServiceError as err:
             LOGGER.error(err)
         return None
 
@@ -105,10 +100,10 @@ class Metron(BaseService[Series, Issue]):
         if not series_id:
             return None
         try:
-            series = self.session.series(_id=series_id)
+            series = self.session.get_series(series_id=series_id)
             search.metron = series_id
             return series
-        except ApiError as err:
+        except ServiceError as err:
             LOGGER.error(err)
         if search.metron:
             search.metron = None
@@ -119,21 +114,17 @@ class Metron(BaseService[Series, Issue]):
         if not comicvine_id:
             return None
         try:
-            issues = self.session.issues_list({"cv_id": comicvine_id})
+            issues = self.session.list_issues(cv_id=comicvine_id)
             if issues and len(issues) >= 1:
                 return issues[0].id
-        except ApiError as err:
+        except ServiceError as err:
             LOGGER.error(err)
         return None
 
     def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
         try:
             options = humansorted(
-                self.session.issues_list(
-                    params={"series_id": series_id, "number": number}
-                    if number
-                    else {"series_id": series_id}
-                ),
+                self.session.list_issues(series_id=series_id, number=number),
                 key=lambda x: (x.number, x.issue_name),
                 alg=ns.NA | ns.G,
             )
@@ -162,7 +153,7 @@ class Metron(BaseService[Series, Issue]):
             if number:
                 LOGGER.info("Searching again without the Number")
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
-        except ApiError as err:
+        except ServiceError as err:
             LOGGER.error(err)
         return None
 
@@ -175,10 +166,10 @@ class Metron(BaseService[Series, Issue]):
         if not issue_id:
             return None
         try:
-            issue = self.session.issue(_id=issue_id)
+            issue = self.session.get_issue(issue_id=issue_id)
             search.metron = issue_id
             return issue
-        except ApiError as err:
+        except ServiceError as err:
             LOGGER.error(err)
         if search.metron:
             search.metron = None
@@ -295,9 +286,9 @@ class Metron(BaseService[Series, Issue]):
     def fetch(self, search: Search) -> tuple[MetronInfo | None, ComicInfo | None]:
         if not search.series.metron and search.issue.metron:
             try:
-                temp = self.session.issue(_id=search.issue.metron)
+                temp = self.session.get_issue(issue_id=search.issue.metron)
                 search.series.metron = temp.series.id
-            except ApiError:
+            except ServiceError:
                 pass
 
         series = self.fetch_series(search=search.series, filename=search.filename)

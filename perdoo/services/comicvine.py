@@ -7,12 +7,11 @@ from datetime import datetime
 from natsort import humansorted, ns
 from prompt_toolkit.styles import Style
 from questionary import Choice, confirm, select, text
-from requests.exceptions import JSONDecodeError
+from simyan.cache import SQLiteCache
 from simyan.comicvine import Comicvine as Simyan
-from simyan.exceptions import ServiceError
+from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
-from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
 from perdoo.comic.metadata import ComicInfo, MetronInfo
@@ -27,7 +26,7 @@ DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 class Comicvine(BaseService[Volume, Issue]):
     def __init__(self, settings: ComicvineSettings):
-        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite", expiry=14)
+        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite")
         self.session = Simyan(api_key=settings.api_key, cache=cache)
 
     def _search_series(
@@ -87,8 +86,6 @@ class Comicvine(BaseService[Volume, Issue]):
                 return self._search_series(name=None, volume=None, year=None, filename=filename)
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
         return None
 
     def fetch_series(self, search: SeriesSearch, filename: str) -> Volume | None:
@@ -103,9 +100,6 @@ class Comicvine(BaseService[Volume, Issue]):
             return series
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
-            return None
         if search.comicvine:
             search.comicvine = None
             return self.fetch_series(search=search, filename=filename)
@@ -154,8 +148,6 @@ class Comicvine(BaseService[Volume, Issue]):
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
         return None
 
     def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
@@ -170,9 +162,6 @@ class Comicvine(BaseService[Volume, Issue]):
             return issue
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
-            return None
         if search.comicvine:
             search.comicvine = None
             return self.fetch_issue(series_id=series_id, search=search, filename=filename)
@@ -251,7 +240,7 @@ class Comicvine(BaseService[Volume, Issue]):
             try:
                 temp = self.session.get_issue(issue_id=search.issue.comicvine)
                 search.series.comicvine = temp.volume.id
-            except (ServiceError, JSONDecodeError):
+            except ServiceError:
                 pass
 
         series = self.fetch_series(search=search.series, filename=search.filename)

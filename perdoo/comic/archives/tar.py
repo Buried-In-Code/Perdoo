@@ -12,7 +12,7 @@ from perdoo.comic.errors import ComicArchiveError
 from perdoo.utils import list_files
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 

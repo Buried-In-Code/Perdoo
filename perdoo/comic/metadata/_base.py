@@ -9,6 +9,7 @@ from typing import ClassVar, Literal
 
 from pydantic.alias_generators import to_pascal
 from pydantic_xml import BaseXmlModel
+from pydantic_xml.element import SearchMode
 from rich.panel import Panel
 
 from perdoo.console import CONSOLE
@@ -16,7 +17,7 @@ from perdoo.settings import Naming
 from perdoo.utils import flatten_dict
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 
@@ -42,7 +43,7 @@ class PascalModel(
     extra="ignore",
     nsmap={"xsi": "http://www.w3.org/2001/XMLSchema-instance"},
     skip_empty=True,
-    search_mode="unordered",
+    search_mode=SearchMode.UNORDERED,
 ):
     pass
 
