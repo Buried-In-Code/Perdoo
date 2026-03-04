@@ -22,11 +22,11 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - '3.10'
-          - '3.11'
-          - '3.12'
-          - '3.13'
-          - '3.14'
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
         os:
           - ubuntu-latest
           - macos-latest
@@ -42,7 +42,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install project
-        run: uv sync --locked --no-dev --group tests --managed-python
+        run: uv sync --locked --no-dev --all-extras --group tests --managed-python
       - name: Run tests
         run: uv run pytest
 

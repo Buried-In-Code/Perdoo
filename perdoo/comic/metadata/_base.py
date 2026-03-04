@@ -9,6 +9,7 @@ from typing import ClassVar, Literal
 
 from pydantic.alias_generators import to_pascal
 from pydantic_xml import BaseXmlModel
+from pydantic_xml.element import SearchMode
 from rich.panel import Panel
 
 from perdoo.console import CONSOLE
@@ -16,15 +17,15 @@ from perdoo.settings import Naming
 from perdoo.utils import flatten_dict
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 
 LOGGER = logging.getLogger(__name__)
 
 
-def sanitize(value: str | None, seperator: Literal["-", "_", ".", " "]) -> str | None:
-    if not value:
+def sanitize(value: str | int | None, seperator: Literal["-", "_", ".", " "]) -> str | None:
+    if value is None:
         return value
     value = str(value)
     value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace(seperator, " "))
@@ -42,7 +43,7 @@ class PascalModel(
     extra="ignore",
     nsmap={"xsi": "http://www.w3.org/2001/XMLSchema-instance"},
     skip_empty=True,
-    search_mode="unordered",
+    search_mode=SearchMode.UNORDERED,
 ):
     pass
 
@@ -58,9 +59,10 @@ class Metadata(PascalModel, ABC):
         return cls.from_xml(content)
 
     def to_bytes(self) -> bytes:
-        return b'<?xml version="1.0" encoding="UTF-8"?>\n' + self.to_xml(
-            skip_empty=True, pretty_print=True, encoding="UTF-8"
-        )
+        content = self.to_xml(skip_empty=True, pretty_print=True, encoding="UTF-8")
+        if isinstance(content, str):
+            return ('<?xml version="1.0" encoding="UTF-8"?>\n' + content).encode("UTF-8")
+        return b'<?xml version="1.0" encoding="UTF-8"?>\n' + content
 
     def to_file(self, file: Path) -> None:
         file.write_bytes(self.to_bytes())
@@ -75,7 +77,7 @@ class Metadata(PascalModel, ABC):
 
     def evaluate_pattern(
         self,
-        pattern_map: dict[str, Callable[[Self], str]],
+        pattern_map: dict[str, Callable[[Self], str | int | None]],
         pattern: str,
         seperator: Literal["-", "_", ".", " "],
     ) -> str:

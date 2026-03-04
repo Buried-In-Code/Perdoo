@@ -7,7 +7,7 @@ from typing import ClassVar
 from perdoo.comic.errors import ComicArchiveError
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 

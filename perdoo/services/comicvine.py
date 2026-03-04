@@ -7,18 +7,16 @@ from datetime import datetime
 from natsort import humansorted, ns
 from prompt_toolkit.styles import Style
 from questionary import Choice, confirm, select, text
-from requests.exceptions import JSONDecodeError
+from simyan.cache import SQLiteCache
 from simyan.comicvine import Comicvine as Simyan
-from simyan.exceptions import ServiceError
+from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
-from simyan.sqlite_cache import SQLiteCache
 
 from perdoo import get_cache_root
 from perdoo.comic.metadata import ComicInfo, MetronInfo
 from perdoo.comic.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
-from perdoo.settings import Comicvine as ComicvineSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
@@ -26,9 +24,9 @@ DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 
 class Comicvine(BaseService[Volume, Issue]):
-    def __init__(self, settings: ComicvineSettings):
-        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite", expiry=14)
-        self.session = Simyan(api_key=settings.api_key, cache=cache)
+    def __init__(self, api_key: str):
+        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite")
+        self.session = Simyan(api_key=api_key, cache=cache)
 
     def _search_series(
         self, name: str | None, volume: int | None, year: int | None, filename: str
@@ -87,8 +85,6 @@ class Comicvine(BaseService[Volume, Issue]):
                 return self._search_series(name=None, volume=None, year=None, filename=filename)
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
         return None
 
     def fetch_series(self, search: SeriesSearch, filename: str) -> Volume | None:
@@ -103,9 +99,6 @@ class Comicvine(BaseService[Volume, Issue]):
             return series
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
-            return None
         if search.comicvine:
             search.comicvine = None
             return self.fetch_series(search=search, filename=filename)
@@ -154,8 +147,6 @@ class Comicvine(BaseService[Volume, Issue]):
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
         return None
 
     def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
@@ -170,9 +161,6 @@ class Comicvine(BaseService[Volume, Issue]):
             return issue
         except ServiceError as err:
             LOGGER.error(err)
-        except JSONDecodeError:
-            LOGGER.error("Unable to get response from Comicvine")
-            return None
         if search.comicvine:
             search.comicvine = None
             return self.fetch_issue(series_id=series_id, search=search, filename=filename)
@@ -198,17 +186,28 @@ class Comicvine(BaseService[Volume, Issue]):
 
         return MetronInfo(
             ids=[Id(primary=True, source=InformationSource.COMIC_VINE, value=str(issue.id))],
-            publisher=Publisher(id=str(series.publisher.id), name=series.publisher.name),
-            series=Series(id=str(series.id), name=series.name, start_year=series.start_year),
+            publisher=Publisher(id=str(series.publisher.id), name=series.publisher.name)
+            if series.publisher and series.publisher.name
+            else None,
+            series=Series(
+                id=str(series.id),
+                name=series.name,
+                start_year=series.start_year,
+                alternative_names=[],
+            ),
             collection_title=issue.name,
             number=issue.number,
             summary=issue.summary,
             cover_date=issue.cover_date,
             store_date=issue.store_date,
-            arcs=[Arc(id=str(x.id), name=x.name) for x in issue.story_arcs],
-            characters=[Resource[str](id=str(x.id), value=x.name) for x in issue.characters],
-            teams=[Resource[str](id=str(x.id), value=x.name) for x in issue.teams],
-            locations=[Resource[str](id=str(x.id), value=x.name) for x in issue.locations],
+            arcs=[Arc(id=str(x.id), name=x.name) for x in issue.story_arcs if x.name],
+            characters=[
+                Resource[str](id=str(x.id), value=x.name) for x in issue.characters if x.name
+            ],
+            teams=[Resource[str](id=str(x.id), value=x.name) for x in issue.teams if x.name],
+            locations=[
+                Resource[str](id=str(x.id), value=x.name) for x in issue.locations if x.name
+            ],
             urls=[Url(primary=True, value=issue.site_url)],
             credits=[
                 Credit(
@@ -220,8 +219,15 @@ class Comicvine(BaseService[Volume, Issue]):
                     ],
                 )
                 for x in issue.creators
+                if x.name
             ],
             last_modified=datetime.now(),
+            genres=[],
+            prices=[],
+            reprints=[],
+            stories=[],
+            tags=[],
+            universes=[],
         )
 
     def _process_comic_info(self, series: Volume, issue: Issue) -> ComicInfo | None:
@@ -232,17 +238,19 @@ class Comicvine(BaseService[Volume, Issue]):
             summary=issue.summary,
             publisher=series.publisher.name if series.publisher else None,
             web=issue.site_url,
+            pages=[],
         )
 
         comic_info.cover_date = issue.cover_date
         comic_info.credits = {
             x.name: [r.strip() for r in re.split(r"[~\r\n,]+", x.roles) if r.strip()]
             for x in issue.creators
+            if x.name
         }
-        comic_info.character_list = [x.name for x in issue.characters]
-        comic_info.team_list = [x.name for x in issue.teams]
-        comic_info.location_list = [x.name for x in issue.locations]
-        comic_info.story_arc_list = [x.name for x in issue.story_arcs]
+        comic_info.character_list = [x.name for x in issue.characters if x.name]
+        comic_info.team_list = [x.name for x in issue.teams if x.name]
+        comic_info.location_list = [x.name for x in issue.locations if x.name]
+        comic_info.story_arc_list = [x.name for x in issue.story_arcs if x.name]
 
         return comic_info
 
@@ -251,7 +259,7 @@ class Comicvine(BaseService[Volume, Issue]):
             try:
                 temp = self.session.get_issue(issue_id=search.issue.comicvine)
                 search.series.comicvine = temp.volume.id
-            except (ServiceError, JSONDecodeError):
+            except ServiceError:
                 pass
 
         series = self.fetch_series(search=search.series, filename=search.filename)

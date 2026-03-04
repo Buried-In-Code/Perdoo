@@ -74,7 +74,7 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ## Services
 
 - [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) library.
-- [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
+- [Metron](https://metron.cloud) using the [Seagrin](https://codeberg.org/BuriedInCode/Seagrin) library.
 
 ## File Renaming and Organization
 

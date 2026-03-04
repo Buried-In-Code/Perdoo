@@ -4,18 +4,24 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "pre-commit >= 4.5.0"
+  "mdformat >= 1.0.0",
+  "mdformat-gfm >= 1.0.0",
+  "mdformat-ruff >= 0.1.0",
+  "prek >= 0.3.0",
+  "ruff >= 0.15.0",
+  "toml-sort >= 0.24.0",
+  "ty >= 0.0.20",
 ]
 tests = [
   "pytest >= 9.0.0",
   "pytest-cov >= 7.0.0",
-  "tox >= 4.34.0",
-  "tox-uv >= 1.29.0"
+  "tox >= 4.47.0",
+  "tox-uv >= 1.33.0",
 ]
 
 [project]
 authors = [
-  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"}
+  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"},
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -29,23 +35,24 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Typing :: Typed"
+  "Typing :: Typed",
 ]
 dependencies = [
   "comicfn2dict >= 0.2.0",
-  "mokkari >= 3.17.0",
+  "grayven >= 0.5.0",
   "natsort >= 8.4.0",
   "pillow >= 12.1.0",
   "pydantic >= 2.12.0",
-  "pydantic-xml[lxml] >= 2.18.0",
+  "pydantic-xml[lxml] >= 2.19.0",
   "questionary >= 2.1.0",
   "rarfile >= 4.2",
   "rich >= 14.3.0",
-  "simyan >= 1.6.0",
+  "seagrin >= 0.3.0",
+  "simyan >= 2.0.0",
   "tomli >= 2.4.0 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.21.0",
-  "zipremove >= 0.8.0"
+  "typer >= 0.24.0",
+  "zipremove >= 0.8.0",
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -58,7 +65,7 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "py7zr >= 1.1.0"
+  "py7zr >= 1.1.0",
 ]
 
 [project.scripts]
@@ -112,7 +119,7 @@ ignore = [
   "PLW2901",
   "TCH",
   "TD",
-  "TRY"
+  "TRY",
 ]
 select = ["ALL"]
 
@@ -144,6 +151,8 @@ keep-runtime-typing = true
 
 [tool.tomlsort]
 all = true
+ignore_case = true
+trailing_comma_inline_array = true
 overrides."tool.tox.env_list".inline_arrays = false
 overrides."tool.tox.env_run_base.commands".inline_arrays = false
 
@@ -154,3 +163,7 @@ min_version = "4.22"
 [tool.tox.env_run_base]
 commands = [["pytest"]]
 dependency_groups = ["tests"]
+
+[tool.ty.src]
+exclude = ["**/tests/"]
+include = ["**/perdoo"]

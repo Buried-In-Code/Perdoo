@@ -12,7 +12,7 @@ from perdoo.console import CONSOLE
 from perdoo.utils import list_files
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 
@@ -54,13 +54,14 @@ class ArchiveSession:
                     f"Archiving '{self._folder}' to '{self._archive.filepath}'",
                     spinner="simpleDotsScrolling",
                 ):
-                    filepath = self._archive.archive_files(
-                        src=self._folder,
-                        output_name=self._archive.filepath.stem,
-                        files=list_files(path=self._folder),
-                    )
-                    self._archive.filepath.unlink(missing_ok=True)
-                    shutil.move(filepath, self._archive.filepath)
+                    if self._folder:
+                        filepath = self._archive.archive_files(
+                            src=self._folder,
+                            output_name=self._archive.filepath.stem,
+                            files=list_files(path=self._folder),
+                        )
+                        self._archive.filepath.unlink(missing_ok=True)
+                        shutil.move(filepath, self._archive.filepath)
         finally:
             if self._temp_dir:
                 self._temp_dir.cleanup()
@@ -70,6 +71,8 @@ class ArchiveSession:
     def list(self) -> list[str]:
         if self._archive.IS_EDITABLE:
             return self._archive.list_filenames()
+        if not self._folder:
+            return []
         return [p.name for p in self._folder.iterdir()]
 
     def contains(self, filename: str) -> bool:
@@ -78,6 +81,8 @@ class ArchiveSession:
     def read(self, filename: str) -> bytes:
         if self._archive.IS_READABLE:
             return self._archive.read_file(filename=filename)
+        if not self._folder:
+            return b""
         return (self._folder / filename).read_bytes()
 
     def write(self, filename: str, data: str | bytes) -> None:
@@ -87,6 +92,8 @@ class ArchiveSession:
         if self._archive.IS_EDITABLE:
             self._archive.write_file(filename=filename, data=data)
         else:
+            if not self._folder:
+                return
             (self._folder / filename).write_bytes(data)
         self._updated = True
 
@@ -95,6 +102,8 @@ class ArchiveSession:
         if self._archive.IS_EDITABLE:
             self._archive.delete_file(filename=filename)
         else:
+            if not self._folder:
+                return
             (self._folder / filename).unlink(missing_ok=True)
         self._updated = True
 
@@ -103,6 +112,8 @@ class ArchiveSession:
         if self._archive.IS_EDITABLE:
             self._archive.rename_file(filename=filename, new_name=new_name, override=override)
         else:
+            if not self._folder:
+                return
             src = self._folder / filename
             if not src.exists():
                 raise ComicArchiveError(f"Unable to rename '{src}' as it does not exist.")

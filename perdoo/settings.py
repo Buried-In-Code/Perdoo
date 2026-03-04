@@ -23,12 +23,12 @@ from perdoo.console import CONSOLE
 from perdoo.utils import BaseModel, blank_is_none, flatten_dict
 
 try:
-    from typing import Self  # Python >= 3.11
+    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 
 try:
-    import tomllib as tomlreader  # Python >= 3.11
+    import tomllib as tomlreader  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ModuleNotFoundError:
     import tomli as tomlreader  # Python < 3.11
 
