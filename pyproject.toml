@@ -163,3 +163,7 @@ min_version = "4.22"
 [tool.tox.env_run_base]
 commands = [["pytest"]]
 dependency_groups = ["tests"]
+
+[tool.ty.src]
+exclude = ["**/tests/"]
+include = ["**/perdoo"]

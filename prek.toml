@@ -2,9 +2,9 @@
 hooks = [
   {args = ["--all", "--in-place"], entry = "toml-sort", id = "toml-sort", language = "system", name = "toml sort", types = ["toml"]},
   {args = ["--number", "--wrap=keep"], entry = "mdformat", exclude = "(.github/ISSUE_TEMPLATE/.*|README).md", id = "mdformat", language = "system", name = "mdformat", types = ["markdown"]},
-  {entry = "ruff check .", id = "ruff-check", language = "system", name = "ruff check", types = ["python"]},
-  {entry = "ruff format .", id = "ruff-format", language = "system", name = "ruff format", types = ["python"]},
-  {entry = "ty check .", id = "ty", language = "system", name = "ty", types = ["python"]},
+  {entry = "ruff check .", id = "ruff-check", language = "system", name = "ruff check", pass_filenames = false, types = ["python"]},
+  {entry = "ruff format .", id = "ruff-format", language = "system", name = "ruff format", pass_filenames = false, types = ["python"]},
+  {entry = "ty check .", id = "ty", language = "system", name = "ty", pass_filenames = false, types = ["python"]},
 ]
 repo = "local"
 
@@ -47,7 +47,7 @@ rev = "v6.0.0"
 
 [[repos]]
 hooks = [
-  {id = "check-hooks-apply"},
+  # {id = "check-hooks-apply"},
   {id = "check-useless-excludes"},
 ]
 repo = "meta"

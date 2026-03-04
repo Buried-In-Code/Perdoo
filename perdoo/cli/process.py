@@ -39,9 +39,11 @@ class SyncOption(str, Enum):
 def get_services(settings: Services) -> dict[Service, BaseService]:
     output = {}
     if settings.comicvine.api_key:
-        output[Service.COMICVINE] = Comicvine(settings.comicvine)
+        output[Service.COMICVINE] = Comicvine(api_key=settings.comicvine.api_key)
     if settings.metron.username and settings.metron.password:
-        output[Service.METRON] = Metron(settings.metron)
+        output[Service.METRON] = Metron(
+            username=settings.metron.username, password=settings.metron.password
+        )
     return output
 
 
@@ -98,22 +100,27 @@ def get_id(ids: list[Id], source: InformationSource) -> str | None:
     return next((x.value for x in ids if x.source is source), None)
 
 
-def search_from_metron_info(metron_info: MetronInfo) -> Search:
+def search_from_metron_info(metron_info: MetronInfo, filename: str) -> Search:
     series_id = metron_info.series.id
+    comicvine_id = get_id(metron_info.ids, InformationSource.COMIC_VINE)
+    metron_id = get_id(metron_info.ids, InformationSource.METRON)
     source = next((x.source for x in metron_info.ids if x.primary), None)
     return Search(
         series=SeriesSearch(
             name=metron_info.series.name,
             volume=metron_info.series.volume,
             year=metron_info.series.start_year,
-            comicvine=series_id if source == InformationSource.COMIC_VINE else None,
-            metron=series_id if source == InformationSource.METRON else None,
+            comicvine=int(series_id)
+            if series_id and source == InformationSource.COMIC_VINE
+            else None,
+            metron=int(series_id) if series_id and source == InformationSource.METRON else None,
         ),
         issue=IssueSearch(
             number=metron_info.number,
-            comicvine=get_id(metron_info.ids, InformationSource.COMIC_VINE),
-            metron=get_id(metron_info.ids, InformationSource.METRON),
+            comicvine=int(comicvine_id) if comicvine_id else None,
+            metron=int(metron_id) if metron_id else None,
         ),
+        filename=filename,
     )
 
 
@@ -124,19 +131,21 @@ def search_from_comic_info(comic_info: ComicInfo, filename: str) -> Search:
     return Search(
         series=SeriesSearch(name=comic_info.series or filename, volume=volume, year=year),
         issue=IssueSearch(number=comic_info.number),
+        filename=filename,
     )
 
 
 def search_from_filename(filename: str) -> Search:
-    series_name = comicfn2dict(filename).get("series", filename).replace("-", " ")
-    return Search(series=SeriesSearch(name=series_name), issue=IssueSearch())
+    series_name = comicfn2dict(filename).get("series", filename)
+    series_name = str(series_name).replace("-", " ")
+    return Search(series=SeriesSearch(name=series_name), issue=IssueSearch(), filename=filename)
 
 
 def build_search(
     metron_info: MetronInfo | None, comic_info: ComicInfo | None, filename: str
 ) -> Search:
     if metron_info and metron_info.series and metron_info.series.name:
-        return search_from_metron_info(metron_info=metron_info)
+        return search_from_metron_info(metron_info=metron_info, filename=filename)
     if comic_info and comic_info.series:
         return search_from_comic_info(comic_info=comic_info, filename=filename)
     return search_from_filename(filename=filename)
@@ -166,7 +175,6 @@ def resolve_metadata(
     search = build_search(
         metron_info=metron_info, comic_info=comic_info, filename=entry.filepath.stem
     )
-    search.filename = entry.filepath.stem
     return sync_metadata(search=search, services=services, service_order=settings.order)
 
 

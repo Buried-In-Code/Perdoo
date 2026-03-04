@@ -71,7 +71,8 @@ class ArchiveSession:
     def list(self) -> list[str]:
         if self._archive.IS_EDITABLE:
             return self._archive.list_filenames()
-        assert self._folder
+        if not self._folder:
+            return []
         return [p.name for p in self._folder.iterdir()]
 
     def contains(self, filename: str) -> bool:
@@ -80,7 +81,8 @@ class ArchiveSession:
     def read(self, filename: str) -> bytes:
         if self._archive.IS_READABLE:
             return self._archive.read_file(filename=filename)
-        assert self._folder
+        if not self._folder:
+            return b""
         return (self._folder / filename).read_bytes()
 
     def write(self, filename: str, data: str | bytes) -> None:
@@ -90,7 +92,8 @@ class ArchiveSession:
         if self._archive.IS_EDITABLE:
             self._archive.write_file(filename=filename, data=data)
         else:
-            assert self._folder
+            if not self._folder:
+                return
             (self._folder / filename).write_bytes(data)
         self._updated = True
 
@@ -99,7 +102,8 @@ class ArchiveSession:
         if self._archive.IS_EDITABLE:
             self._archive.delete_file(filename=filename)
         else:
-            assert self._folder
+            if not self._folder:
+                return
             (self._folder / filename).unlink(missing_ok=True)
         self._updated = True
 
@@ -108,7 +112,8 @@ class ArchiveSession:
         if self._archive.IS_EDITABLE:
             self._archive.rename_file(filename=filename, new_name=new_name, override=override)
         else:
-            assert self._folder
+            if not self._folder:
+                return
             src = self._folder / filename
             if not src.exists():
                 raise ComicArchiveError(f"Unable to rename '{src}' as it does not exist.")

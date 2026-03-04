@@ -15,7 +15,6 @@ from perdoo import get_cache_root
 from perdoo.comic.metadata import ComicInfo, MetronInfo
 from perdoo.comic.metadata.metron_info import InformationSource
 from perdoo.services._base import BaseService
-from perdoo.settings import Metron as MetronSettings
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
@@ -23,9 +22,9 @@ DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 
 class Metron(BaseService[Series, Issue]):
-    def __init__(self, settings: MetronSettings):
+    def __init__(self, username: str, password: str):
         cache = SQLiteCache(path=get_cache_root() / "seagrin.sqlite")
-        self.session = Seagrin(username=settings.username, password=settings.password, cache=cache)
+        self.session = Seagrin(username=username, password=password, cache=cache)
 
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
@@ -220,8 +219,9 @@ class Metron(BaseService[Series, Issue]):
                 volume=series.volume,
                 format=Format.load(value=series.series_type.name),
                 start_year=series.year_began,
+                alternative_names=[],
             ),
-            collection_title=issue.collection_title or None,
+            collection_title=issue.title or None,
             number=issue.number,
             stories=[Resource[str](value=x) for x in issue.story_titles],
             summary=issue.desc,
@@ -250,6 +250,8 @@ class Metron(BaseService[Series, Issue]):
                 for x in issue.credits
             ],
             last_modified=datetime.now(),
+            locations=[],
+            tags=[],
         )
 
     def _process_comic_info(self, series: Series, issue: Issue) -> ComicInfo | None:
@@ -262,7 +264,7 @@ class Metron(BaseService[Series, Issue]):
                 return AgeRating.UNKNOWN
 
         comic_info = ComicInfo(
-            title=issue.collection_title,
+            title=issue.title,
             series=series.name,
             number=issue.number,
             volume=series.volume,
@@ -272,6 +274,7 @@ class Metron(BaseService[Series, Issue]):
             page_count=issue.page_count or 0,
             format=series.series_type.name,
             age_rating=load_age_rating(value=issue.rating.name),
+            pages=[],
         )
 
         comic_info.cover_date = issue.cover_date
