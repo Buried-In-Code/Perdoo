@@ -1604,16 +1604,16 @@ wheels = [
 
 [[package]]
 name = "seagrin"
-version = "0.3.0"
+version = "0.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
     { name = "pyrate-limiter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a4/cb/7e493a86bc4f10fd7bf8e694ee413276c06ab3de6601a5808f480807b832/seagrin-0.3.0.tar.gz", hash = "sha256:8e49ccc5be6de4d8c7792ab4c76d4851759021c8c2ec24797d0bf3bc1748e076", size = 404486, upload-time = "2026-03-03T19:21:48.505Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c8/29/aa799163f48f0475116946a2d3b6a9b93a3e424ef503cbbb9cd1118f95dc/seagrin-0.3.1.tar.gz", hash = "sha256:57e0e001771cf61a03ebbb5aa07a2b5b31ed85822f3fd05b755985c21edbd031", size = 411143, upload-time = "2026-03-05T10:59:35.819Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ea/c4/93f511f0d85913111bdc279848f9ea136e56f3c9afac6c3c7653569c92d0/seagrin-0.3.0-py3-none-any.whl", hash = "sha256:dfc65db1ffaf55987a8a9c0a1ba331351b534845796ef75045f5d181769b25f5", size = 24135, upload-time = "2026-03-03T19:21:50.059Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/1f/c10daa5ac25cadffd19e74f3bbb52e2a2c642e0675fc6e96e78f8621a4f9/seagrin-0.3.1-py3-none-any.whl", hash = "sha256:8cf70a31e061d08d5971b1e0eebca5aef7fe2ac62adf6aad7e14866f1c794731", size = 24169, upload-time = "2026-03-05T10:59:33.457Z" },
 ]
 
 [[package]]

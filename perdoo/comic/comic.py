@@ -1,4 +1,4 @@
-__all__ = ["IMAGE_EXTENSIONS", "Comic"]
+__all__ = ["Comic"]
 
 import logging
 import shutil
@@ -13,7 +13,6 @@ from perdoo.comic.metadata import ComicInfo, MetronInfo
 LOGGER = logging.getLogger(__name__)
 
 METADATA_FILENAMES: Final[frozenset[str]] = frozenset([MetronInfo.FILENAME, ComicInfo.FILENAME])
-IMAGE_EXTENSIONS: Final[frozenset[str]] = frozenset([".png", ".jpg", ".jpeg", ".webp", ".jxl"])
 
 
 class Comic:
@@ -45,33 +44,43 @@ class Comic:
             comic_info = ComicInfo.from_bytes(content=session.read(filename=ComicInfo.FILENAME))
         return metron_info, comic_info
 
-    def list_images(self) -> list[Path]:
+    def read_file(self, session: ArchiveSession, filename: str) -> bytes | None:
+        if session.contains(filename=filename):
+            return session.read(filename=filename)
+        return None
+
+    def list_images(self, image_extensions: tuple[str, ...]) -> list[Path]:
         return humansorted(
             [
                 Path(name)
                 for name in self.archive.list_filenames()
-                if Path(name).suffix.lower() in IMAGE_EXTENSIONS
+                if Path(name).suffix.lower() in image_extensions
             ],
             alg=ns.NA | ns.G | ns.P,
         )
 
-    def list_extras(self) -> list[Path]:
+    def list_extras(self, image_extensions: tuple[str, ...]) -> list[Path]:
         return humansorted(
             [
                 Path(name)
                 for name in self.archive.list_filenames()
                 if name not in METADATA_FILENAMES
-                and Path(name).suffix.lower() not in IMAGE_EXTENSIONS
+                and Path(name).suffix.lower() not in image_extensions
             ],
             alg=ns.NA | ns.G | ns.P,
         )
 
-    def validate_naming(self, naming: str) -> bool:
+    def validate_naming(self, naming: str, image_extensions: tuple[str, ...]) -> bool:
         template = Path(naming).stem
-        return all(img.name.startswith(template) for img in self.list_images())
+        return all(
+            img.name.startswith(template)
+            for img in self.list_images(image_extensions=image_extensions)
+        )
 
     def move_to(self, naming: str, output_folder: Path) -> None:
         output = output_folder / (naming + self.archive.EXTENSION)
+        if output == self.archive.filepath.resolve():
+            return
         if output.exists():
             LOGGER.warning("'%s' already exists, skipping", output)
             return

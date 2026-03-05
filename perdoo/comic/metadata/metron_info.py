@@ -28,7 +28,7 @@ from pydantic import HttpUrl, NonNegativeInt, PositiveInt, field_validator
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.comic.metadata._base import Metadata, PascalModel
-from perdoo.settings import Naming
+from perdoo.settings import SETTINGS
 
 LOGGER = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -369,7 +369,9 @@ class MetronInfo(Metadata):
     def schema_location(self) -> str:
         return "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/schema/v1.0/MetronInfo.xsd"
 
-    def get_filename(self, settings: Naming) -> str:
+    def get_filename(self) -> str:
+        settings = SETTINGS.output.naming
+
         return self.evaluate_pattern(
             pattern_map=PATTERN_MAP,
             pattern={

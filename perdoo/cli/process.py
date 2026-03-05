@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from platform import python_version
 from typing import Annotated
@@ -14,10 +15,11 @@ from perdoo.comic import Comic
 from perdoo.comic.archives import ArchiveSession
 from perdoo.comic.errors import ComicArchiveError, ComicMetadataError
 from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata.comic_info import Page, PageType
 from perdoo.comic.metadata.metron_info import Id, InformationSource
 from perdoo.console import CONSOLE
 from perdoo.services import BaseService, Comicvine, Metron
-from perdoo.settings import Naming, Output, Service, Services, Settings
+from perdoo.settings import SETTINGS, Service
 from perdoo.utils import (
     IssueSearch,
     Search,
@@ -36,19 +38,19 @@ class SyncOption(str, Enum):
     SKIP = "Skip"
 
 
-def get_services(settings: Services) -> dict[Service, BaseService]:
+def get_services() -> dict[Service, BaseService]:
     output = {}
-    if settings.comicvine.api_key:
-        output[Service.COMICVINE] = Comicvine(api_key=settings.comicvine.api_key)
-    if settings.metron.username and settings.metron.password:
+    if SETTINGS.services.comicvine.api_key:
+        output[Service.COMICVINE] = Comicvine(api_key=SETTINGS.services.comicvine.api_key)
+    if SETTINGS.services.metron.username and SETTINGS.services.metron.password:
         output[Service.METRON] = Metron(
-            username=settings.metron.username, password=settings.metron.password
+            username=SETTINGS.services.metron.username, password=SETTINGS.services.metron.password
         )
     return output
 
 
 def setup_environment(
-    clean_cache: bool, sync: SyncOption, settings: Settings, debug: bool = False
+    clean_cache: bool, sync: SyncOption, debug: bool = False
 ) -> tuple[dict[Service, BaseService], SyncOption]:
     setup_logging(debug=debug)
     LOGGER.info("Python v%s", python_version())
@@ -58,7 +60,7 @@ def setup_environment(
         LOGGER.info("Cleaning Cache")
         recursive_delete(path=get_cache_root())
 
-    services = get_services(settings=settings.services)
+    services = get_services()
     if not services and sync is not SyncOption.SKIP:
         LOGGER.warning("No external services configured")
         sync = SyncOption.SKIP
@@ -76,9 +78,9 @@ def load_comics(target: Path) -> list[Comic]:
     return comics
 
 
-def prepare_comic(entry: Comic, settings: Settings, skip_convert: bool) -> bool:
+def prepare_comic(entry: Comic, skip_convert: bool) -> bool:
     if not skip_convert:
-        entry.convert_to(settings.output.format)
+        entry.convert_to(SETTINGS.output.format)
     if not entry.archive.IS_WRITEABLE:
         LOGGER.warning("Archive format %s is not writeable", entry.archive.EXTENSION)
         return False
@@ -163,11 +165,7 @@ def sync_metadata(
 
 
 def resolve_metadata(
-    entry: Comic,
-    session: ArchiveSession,
-    services: dict[Service, BaseService],
-    settings: Services,
-    sync: SyncOption,
+    entry: Comic, session: ArchiveSession, services: dict[Service, BaseService], sync: SyncOption
 ) -> tuple[MetronInfo | None, ComicInfo | None]:
     metron_info, comic_info = entry.read_metadata(session=session)
     if not should_sync_metadata(sync=sync, metron_info=metron_info):
@@ -175,18 +173,47 @@ def resolve_metadata(
     search = build_search(
         metron_info=metron_info, comic_info=comic_info, filename=entry.filepath.stem
     )
-    return sync_metadata(search=search, services=services, service_order=settings.order)
+    return sync_metadata(search=search, services=services, service_order=SETTINGS.services.order)
 
 
-def generate_naming(
-    settings: Naming, metron_info: MetronInfo | None, comic_info: ComicInfo | None
-) -> str | None:
+def generate_naming(metron_info: MetronInfo | None, comic_info: ComicInfo | None) -> str | None:
     filepath = None
     if metron_info:
-        filepath = metron_info.get_filename(settings=settings)
+        filepath = metron_info.get_filename()
     if not filepath and comic_info:
-        filepath = comic_info.get_filename(settings=settings)
+        filepath = comic_info.get_filename()
     return filepath.lstrip("/") if filepath else None
+
+
+def load_page_info(entry: Comic, session: ArchiveSession, comic_info: ComicInfo) -> None:
+    from PIL import Image  # noqa: PLC0415
+
+    pages = set()
+    image_files = entry.list_images(image_extensions=SETTINGS.output.image_extensions)
+    for idx, file in enumerate(image_files):
+        page = next((x for x in comic_info.pages if x.image == idx), None)
+        if page:
+            page_type = page.type
+        elif idx == 0:
+            page_type = PageType.FRONT_COVER
+        elif idx == len(image_files) - 1:
+            page_type = PageType.BACK_COVER
+        else:
+            page_type = PageType.STORY
+        if not page:
+            page = Page(image=idx)
+        page.type = page_type
+        page_bytes = entry.read_file(session=session, filename=file.name)
+        if not page_bytes:
+            continue
+        page.image_size = len(page_bytes)
+        with Image.open(BytesIO(page_bytes)) as page_data:
+            width, height = page_data.size
+            page.double_page = width >= height
+            page.image_height = height
+            page.image_width = width
+        pages.add(page)
+    comic_info.pages = sorted(pages)
 
 
 def apply_changes(
@@ -196,7 +223,6 @@ def apply_changes(
     comic_info: ComicInfo | None,
     skip_clean: bool,
     skip_rename: bool,
-    settings: Output,
 ) -> str | None:
     local_metron_info, local_comic_info = entry.read_metadata(session=session)
     if local_metron_info != metron_info:
@@ -205,6 +231,8 @@ def apply_changes(
         else:
             session.delete(filename=MetronInfo.FILENAME)
 
+    if comic_info and SETTINGS.output.comic_info.handle_pages:
+        load_page_info(entry=entry, session=session, comic_info=comic_info)
     if local_comic_info != comic_info:
         if comic_info:
             session.write(filename=ComicInfo.FILENAME, data=comic_info.to_bytes())
@@ -212,16 +240,14 @@ def apply_changes(
             session.delete(filename=ComicInfo.FILENAME)
 
     if not skip_clean:
-        for extra in entry.list_extras():
+        for extra in entry.list_extras(image_extensions=SETTINGS.output.image_extensions):
             session.delete(filename=extra.name)
 
     naming = None
     if not skip_rename and (
-        naming := generate_naming(
-            settings=settings.naming, metron_info=metron_info, comic_info=comic_info
-        )
+        naming := generate_naming(metron_info=metron_info, comic_info=comic_info)
     ):
-        images = entry.list_images()
+        images = entry.list_images(image_extensions=SETTINGS.output.image_extensions)
         stem = Path(naming).stem
         pad = len(str(len(images)))
         for idx, img in enumerate(images):
@@ -268,11 +294,7 @@ def process(
         bool, Option("--debug", help="Enable debug mode to show extra information.")
     ] = False,
 ) -> None:
-    settings = Settings.load()
-    settings.save()
-    services, sync = setup_environment(
-        clean_cache=clean_cache, sync=sync, settings=settings, debug=debug
-    )
+    services, sync = setup_environment(clean_cache=clean_cache, sync=sync, debug=debug)
 
     comics = load_comics(target=target)
     total = len(comics)
@@ -281,15 +303,11 @@ def process(
             f"[{index}/{total}] Importing {entry.filepath.name}", align="left", style="subtitle"
         )
 
-        if not prepare_comic(entry=entry, settings=settings, skip_convert=skip_convert):
+        if not prepare_comic(entry=entry, skip_convert=skip_convert):
             continue
         with entry.open_session() as session:
             metron_info, comic_info = resolve_metadata(
-                entry=entry,
-                session=session,
-                services=services,
-                settings=settings.services,
-                sync=sync,
+                entry=entry, session=session, services=services, sync=sync
             )
             naming = apply_changes(
                 entry=entry,
@@ -298,10 +316,9 @@ def process(
                 comic_info=comic_info,
                 skip_clean=skip_clean,
                 skip_rename=skip_rename,
-                settings=settings.output,
             )
         if naming:
-            entry.move_to(naming=naming, output_folder=settings.output.folder)
+            entry.move_to(naming=naming, output_folder=SETTINGS.output.folder)
     with CONSOLE.status("Cleaning up empty folders"):
         delete_empty_folders(folder=target)
 

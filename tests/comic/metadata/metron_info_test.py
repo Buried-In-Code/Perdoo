@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from unittest.mock import patch
 
 import pytest
 
@@ -13,7 +14,7 @@ from perdoo.comic.metadata.metron_info import (
     Resource,
     Role,
 )
-from perdoo.settings import Naming
+from perdoo.settings import Naming, Output, Settings
 
 
 def test_information_source_load_valid() -> None:
@@ -43,11 +44,16 @@ def test_get_filename_padding_and_sanitization(metron_info: MetronInfo) -> None:
         Id(primary=False, source=InformationSource.METRON, value="abc"),
         Id(primary=True, source=InformationSource.COMIC_VINE, value="cv-123"),
     ]
-    settings = Naming(
-        seperator="-",
-        default="{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:03}_{cover-year}_{id}",
+    settings = Settings(
+        output=Output(
+            naming=Naming(
+                seperator="-",
+                default="{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:03}_{cover-year}_{id}",
+            )
+        )
     )
-    name = metron_info.get_filename(settings=settings)
+    with patch("perdoo.comic.metadata.metron_info.SETTINGS", settings):
+        name = metron_info.get_filename()
 
     assert "#002" in name
     assert "2021" in name
@@ -57,8 +63,13 @@ def test_get_filename_padding_and_sanitization(metron_info: MetronInfo) -> None:
 def test_pattern_map(metron_info: MetronInfo) -> None:
     metron_info.publisher = Publisher(name="Pub", imprint=Resource(value="Imprint Name"))
     metron_info.gtin = GTIN(isbn="9781234567890", upc="012345678905")
-    settings = Naming(seperator="-", default="{publisher-name}/{imprint}/{isbn}/{upc}")
-    name = metron_info.get_filename(settings=settings)
+    settings = Settings(
+        output=Output(
+            naming=Naming(seperator="-", default="{publisher-name}/{imprint}/{isbn}/{upc}")
+        )
+    )
+    with patch("perdoo.comic.metadata.metron_info.SETTINGS", settings):
+        name = metron_info.get_filename()
 
     assert "Pub" in name
     assert "Imprint-Name" in name

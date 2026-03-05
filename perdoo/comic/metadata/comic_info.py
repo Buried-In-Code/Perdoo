@@ -11,7 +11,7 @@ from pydantic import HttpUrl, NonNegativeFloat
 from pydantic_xml import attr, computed_attr, element, wrapped
 
 from perdoo.comic.metadata._base import Metadata, PascalModel
-from perdoo.settings import Naming
+from perdoo.settings import SETTINGS
 
 LOGGER = logging.getLogger(__name__)
 
@@ -280,8 +280,10 @@ class ComicInfo(Metadata):
     def story_arc_list(self, value: list[str]) -> None:
         self.story_arc = list_to_str(value=value)
 
-    def get_filename(self, settings: Naming) -> str:
+    def get_filename(self) -> str:
         from perdoo.comic.metadata.metron_info import Format  # noqa: PLC0415
+
+        settings = SETTINGS.output.naming
 
         return self.evaluate_pattern(
             pattern_map=PATTERN_MAP,

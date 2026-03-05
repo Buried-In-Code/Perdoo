@@ -1,8 +1,9 @@
 from datetime import date
+from unittest.mock import patch
 
 from perdoo.comic.metadata import ComicInfo
 from perdoo.comic.metadata.comic_info import Page, PageType
-from perdoo.settings import Naming
+from perdoo.settings import Naming, Output, Settings
 
 
 def test_cover_date_property(comic_info: ComicInfo) -> None:
@@ -66,11 +67,16 @@ def test_get_filename_padding_and_sanitization() -> None:
         format="Single Issue",
         title="Hello: World / ???",
     )
-    settings = Naming(
-        seperator="-",
-        default="{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:02}-{title}",
+    settings = Settings(
+        output=Output(
+            naming=Naming(
+                seperator="-",
+                default="{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:02}-{title}",
+            )
+        )
     )
-    name = obj.get_filename(settings=settings)
+    with patch("perdoo.comic.metadata.comic_info.SETTINGS", settings):
+        name = obj.get_filename()
 
     assert "#02" in name
     assert "Hello-World" in name

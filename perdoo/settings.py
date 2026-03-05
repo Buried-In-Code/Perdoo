@@ -1,14 +1,4 @@
-__all__ = [
-    "ComicInfo",
-    "Comicvine",
-    "Metron",
-    "MetronInfo",
-    "Naming",
-    "Output",
-    "Service",
-    "Services",
-    "Settings",
-]
+__all__ = ["SETTINGS"]
 
 from enum import Enum
 from pathlib import Path
@@ -75,6 +65,7 @@ class Output(SettingsModel):
     comic_info: ComicInfo = ComicInfo()
     folder: Path = get_data_root()
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
+    image_extensions: tuple[str, ...] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
     metron_info: MetronInfo = MetronInfo()
     naming: Naming = Naming()
 
@@ -163,3 +154,6 @@ class Settings(SettingsModel):
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default"))
         CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
+
+
+SETTINGS = Settings.load().save()

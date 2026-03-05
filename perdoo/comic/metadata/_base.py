@@ -13,7 +13,6 @@ from pydantic_xml.element import SearchMode
 from rich.panel import Panel
 
 from perdoo.console import CONSOLE
-from perdoo.settings import Naming
 from perdoo.utils import flatten_dict
 
 try:
@@ -52,7 +51,7 @@ class Metadata(PascalModel, ABC):
     FILENAME: ClassVar[str] = ""
 
     @abstractmethod
-    def get_filename(self, settings: Naming) -> str: ...
+    def get_filename(self) -> str: ...
 
     @classmethod
     def from_bytes(cls, content: bytes) -> Self:

@@ -1,8 +1,9 @@
 from pathlib import Path
+from unittest.mock import patch
 
 from perdoo.comic.metadata import ComicInfo
 from perdoo.comic.metadata._base import sanitize
-from perdoo.settings import Naming
+from perdoo.settings import Naming, Output, Settings
 
 
 def test_sanitize_basic() -> None:
@@ -18,8 +19,11 @@ def test_sanitize_none_and_empty() -> None:
 
 def test_evaluate_pattern() -> None:
     obj = ComicInfo(series="Series", volume=1, number=2, format="Single Issue", publisher="Pub")
-    settings = Naming(seperator="-", default="{series-name}-{unknown}-{number:03}")
-    name = obj.get_filename(settings=settings)
+    settings = Settings(
+        output=Output(naming=Naming(seperator="-", default="{series-name}-{unknown}-{number:03}"))
+    )
+    with patch("perdoo.comic.metadata.comic_info.SETTINGS", settings):
+        name = obj.get_filename()
 
     assert name == "Series-unknown-002"
 
