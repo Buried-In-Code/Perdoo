@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  PY_VERSION: 3.14
+  PY_VERSION: "3.10"
 
 jobs:
   rich_codex:
@@ -18,13 +18,41 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+      - run: |
+          sudo apt install fonts-firacode
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ env.PY_VERSION }}
       - name: Install project
-        run: uv sync --locked --no-dev
+        run: uv sync --locked --dev --all-extras --group docs --managed-python
       - name: Generate terminal images with rich-codex
-        uses: ewels/rich-codex@v1.2.11
+        run: uv run rich-codex
+        env:
+          CLEAN_IMG_PATHS: docs/img/*.svg
+      - name: Run prek
+        run: uv run prek run docs/
+      - name: Add and commit new images
+        shell: bash
+        run: |
+          echo "::group::Pushing any changes found"
+          git config --local user.name 'github-actions[bot]'
+          git config --local user.email 'github-actions[bot]@users.noreply.github.com'
+          echo "🕵️‍♀️ Git status after run:"
+          git status -s
+          if [[ -f created.txt || -f deleted.txt ]]; then
+            echo "💥 Found some changes from running rich-codex!"
+            [[ -f created.txt ]] && git add $(cat created.txt)
+            [[ -f deleted.txt ]] && git rm $(cat deleted.txt)
+            git commit -m "Generate new screengrabs with rich-codex"
+            git push
+            echo "🤖 Pushed commit with new changes!"
+          else
+            echo "🤫 No changes from rich-codex found!"
+          fi
+          echo "::endgroup::"
+      - name: Upload sync log file artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
         with:
-          commit_changes: true
-          clean_img_paths: docs/img/*.svg
+          name: Rich-codex log file
+          path: rich_codex_*.log
