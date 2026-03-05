@@ -12,9 +12,6 @@ dev = [
   "toml-sort >= 0.24.0",
   "ty >= 0.0.20",
 ]
-docs = [
-  "rich-codex[cairo] >= 1.2.0",
-]
 tests = [
   "pytest >= 9.0.0",
   "pytest-cov >= 7.0.0",

@@ -12,7 +12,7 @@ repo = "local"
 hooks = [
   {args = ["--allow-multiple-documents"], id = "check-yaml"},
   {args = ["--assume-in-merge"], id = "check-merge-conflict"},
-  {args = ["--markdown-linebreak-ext=md"], id = "trailing-whitespace"},
+  {args = ["--markdown-linebreak-ext=md"], exclude_types = ["svg"], id = "trailing-whitespace"},
   {exclude_types = ["json", "svg", "xml"], id = "end-of-file-fixer"},
   {id = "check-added-large-files"},
   {id = "check-case-conflict"},
