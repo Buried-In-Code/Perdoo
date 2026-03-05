@@ -6,7 +6,6 @@ from perdoo.cli.process import generate_naming
 from perdoo.comic.archives import CBTArchive, CBZArchive
 from perdoo.comic.comic import Comic
 from perdoo.comic.metadata import ComicInfo, MetronInfo
-from perdoo.settings import Naming
 
 
 @pytest.fixture
@@ -78,6 +77,6 @@ def test_write_metadata_override(cbz_comic: Comic, metron_info: MetronInfo) -> N
 
 
 def test_rename(cbz_comic: Comic, metron_info: MetronInfo) -> None:
-    naming = generate_naming(settings=Naming(), metron_info=metron_info, comic_info=None)
+    naming = generate_naming(metron_info=metron_info, comic_info=None)
     cbz_comic.move_to(naming=naming, output_folder=cbz_comic.filepath.parent)
     assert cbz_comic.filepath.name == "Test-Series-v1_#.cbz"
