@@ -37,7 +37,9 @@ def test_clean_archive(cbz_comic: Comic) -> None:
     )
     cbz_comic.archive.delete_file = MagicMock()
     with cbz_comic.open_session() as session:
-        for extra in cbz_comic.list_extras():
+        for extra in cbz_comic.list_extras(
+            image_extensions=(".png", ".jpg", ".jpeg", ".webp", ".jxl")
+        ):
             session.delete(filename=extra.name)
     cbz_comic.archive.delete_file.assert_called_once_with(filename="info.txt")
 

@@ -58,7 +58,7 @@ def setup_logging(debug: bool = False) -> None:
         omit_repeated_times=False,
         show_level=True,
         show_time=False,
-        show_path=debug,
+        show_path=True,
         console=CONSOLE,
     )
     console_handler.setLevel(logging.DEBUG if debug else logging.INFO)
@@ -72,4 +72,6 @@ def setup_logging(debug: bool = False) -> None:
         handlers=[console_handler, file_handler],
     )
 
-    logging.getLogger("PIL").setLevel(logging.WARNING)
+    logging.getLogger("PIL").setLevel(logging.INFO if debug else logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.INFO if debug else logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.INFO if debug else logging.WARNING)

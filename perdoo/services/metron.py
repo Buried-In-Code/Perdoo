@@ -44,7 +44,7 @@ class Metron(BaseService[Series, Issue]):
         try:
             options = sorted(
                 self.session.list_series(name=name, volume=volume, year_began=year),
-                key=lambda x: (x.display_name, x.volume),
+                key=lambda x: (x.name, x.volume),
             )
             if options:
                 search = name
@@ -56,7 +56,7 @@ class Metron(BaseService[Series, Issue]):
                     Choice(
                         title=[
                             ("class:dim", f"{x.id} | "),
-                            ("class:title", f"{x.display_name} v{x.volume}"),
+                            ("class:title", f"{x.name} v{x.volume}"),
                         ],
                         description=f"https://metron.cloud/series/{x.id}",
                         value=x,
@@ -124,13 +124,13 @@ class Metron(BaseService[Series, Issue]):
         try:
             options = humansorted(
                 self.session.list_issues(series_id=series_id, number=number),
-                key=lambda x: (x.number, x.issue_name),
+                key=lambda x: (x.number, x.name),
                 alg=ns.NA | ns.G,
             )
             if options:
                 choices = [
                     Choice(
-                        title=[("class:dim", f"{x.id} | "), ("class:title", x.issue_name)],
+                        title=[("class:dim", f"{x.id} | "), ("class:title", x.name)],
                         description=f"https://metron.cloud/issues/{x.id}",
                         value=x,
                     )
