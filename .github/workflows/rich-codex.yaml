@@ -2,7 +2,17 @@ name: Rich Codex
 
 on:
   push:
+    branches:
+      - main
     paths:
+      - .github/workflows/rich-codex.yaml
+      - README.md
+      - perdoo/cli/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/rich-codex.yaml
       - README.md
       - perdoo/cli/**
   workflow_dispatch:

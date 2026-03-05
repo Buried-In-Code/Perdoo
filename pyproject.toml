@@ -13,7 +13,7 @@ dev = [
   "ty >= 0.0.20",
 ]
 docs = [
-  "rich-codex[cairo] >= 1.2.0"
+  "rich-codex[cairo] >= 1.2.0",
 ]
 tests = [
   "pytest >= 9.0.0",

@@ -1,6 +1,16 @@
 name: Publishing
 
-on: push
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - docs/**
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - docs/**
 
 env:
   PY_VERSION: 3.14
