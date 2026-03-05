@@ -136,6 +136,7 @@ File will be created on first run.
 [output]
 folder = "~/.local/share/perdoo"
 format = "cbz"
+image_extensions = [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
 
 [output.comic_info]
 create = true
@@ -179,6 +180,10 @@ password = "<Metron Password>"
   The output file format for the comic archives.
   Defaults to `cbz`.
   Options are `cbz`, `cbt` or `cb7`
+
+- `output.image_extensions`
+  The list of extensions perdoo determines to be images as part of the cleanup step.
+  Defaults to `[".png", ".jpg", ".jpeg", ".webp", ".jxl"]`
 
 - `output.comic_info.create`
   Whether to create a ComicInfo.xml file in the output archive.

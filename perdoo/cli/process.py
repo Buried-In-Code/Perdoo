@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from platform import python_version
 from typing import Annotated
@@ -14,6 +15,7 @@ from perdoo.comic import Comic
 from perdoo.comic.archives import ArchiveSession
 from perdoo.comic.errors import ComicArchiveError, ComicMetadataError
 from perdoo.comic.metadata import ComicInfo, MetronInfo
+from perdoo.comic.metadata.comic_info import Page, PageType
 from perdoo.comic.metadata.metron_info import Id, InformationSource
 from perdoo.console import CONSOLE
 from perdoo.services import BaseService, Comicvine, Metron
@@ -183,6 +185,37 @@ def generate_naming(metron_info: MetronInfo | None, comic_info: ComicInfo | None
     return filepath.lstrip("/") if filepath else None
 
 
+def load_page_info(entry: Comic, session: ArchiveSession, comic_info: ComicInfo) -> None:
+    from PIL import Image  # noqa: PLC0415
+
+    pages = set()
+    image_files = entry.list_images(image_extensions=SETTINGS.output.image_extensions)
+    for idx, file in enumerate(image_files):
+        page = next((x for x in comic_info.pages if x.image == idx), None)
+        if page:
+            page_type = page.type
+        elif idx == 0:
+            page_type = PageType.FRONT_COVER
+        elif idx == len(image_files) - 1:
+            page_type = PageType.BACK_COVER
+        else:
+            page_type = PageType.STORY
+        if not page:
+            page = Page(image=idx)
+        page.type = page_type
+        page_bytes = entry.read_file(session=session, filename=file.name)
+        if not page_bytes:
+            continue
+        page.image_size = len(page_bytes)
+        with Image.open(BytesIO(page_bytes)) as page_data:
+            width, height = page_data.size
+            page.double_page = width >= height
+            page.image_height = height
+            page.image_width = width
+        pages.add(page)
+    comic_info.pages = sorted(pages)
+
+
 def apply_changes(
     entry: Comic,
     session: ArchiveSession,
@@ -198,6 +231,8 @@ def apply_changes(
         else:
             session.delete(filename=MetronInfo.FILENAME)
 
+    if comic_info and SETTINGS.output.comic_info.handle_pages:
+        load_page_info(entry=entry, session=session, comic_info=comic_info)
     if local_comic_info != comic_info:
         if comic_info:
             session.write(filename=ComicInfo.FILENAME, data=comic_info.to_bytes())

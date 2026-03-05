@@ -44,6 +44,11 @@ class Comic:
             comic_info = ComicInfo.from_bytes(content=session.read(filename=ComicInfo.FILENAME))
         return metron_info, comic_info
 
+    def read_file(self, session: ArchiveSession, filename: str) -> bytes | None:
+        if session.contains(filename=filename):
+            return session.read(filename=filename)
+        return None
+
     def list_images(self, image_extensions: tuple[str, ...]) -> list[Path]:
         return humansorted(
             [
