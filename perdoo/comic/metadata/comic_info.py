@@ -297,7 +297,7 @@ class ComicInfo(Metadata):
                 Format.ONE_SHOT.value: settings.one_shot or settings.default,
                 Format.SINGLE_ISSUE.value: settings.single_issue or settings.default,
                 Format.TRADE_PAPERBACK.value: settings.trade_paperback or settings.default,
-            }.get(self.format, settings.default),
+            }.get(self.format, settings.default),  # ty: ignore[no-matching-overload]
             seperator=settings.seperator,
         )
 
