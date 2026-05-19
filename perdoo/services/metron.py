@@ -6,7 +6,6 @@ from datetime import datetime
 from natsort import humansorted, ns
 from prompt_toolkit.styles import Style
 from questionary import Choice, confirm, select, text
-from seagrin.cache import SQLiteCache
 from seagrin.errors import ServiceError
 from seagrin.metron import Metron as Seagrin
 from seagrin.schemas import Issue, Series
@@ -23,8 +22,9 @@ DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 class Metron(BaseService[Series, Issue]):
     def __init__(self, username: str, password: str):
-        cache = SQLiteCache(path=get_cache_root() / "seagrin.sqlite")
-        self.session = Seagrin(username=username, password=password, cache=cache)
+        self.session = Seagrin(
+            username=username, password=password, cache=get_cache_root() / "seagrin.sqlite"
+        )
 
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:

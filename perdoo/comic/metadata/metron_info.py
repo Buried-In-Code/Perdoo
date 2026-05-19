@@ -397,7 +397,7 @@ class MetronInfo(Metadata):
 
 
 PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {
-    "cover-date": lambda x: x.cover_date,
+    "cover-date": lambda x: str(x.cover_date) if x.cover_date else None,
     "cover-day": lambda x: x.cover_date.day if x.cover_date else None,
     "cover-month": lambda x: x.cover_date.month if x.cover_date else None,
     "cover-year": lambda x: x.cover_date.year if x.cover_date else None,
@@ -414,10 +414,10 @@ PATTERN_MAP: dict[str, Callable[[MetronInfo], str | int | None]] = {
     "series-name": lambda x: x.series.name,
     "series-sort-name": lambda x: x.series.sort_name,
     "series-year": lambda x: x.series.start_year,
-    "store-date": lambda x: x.store_date or "",
-    "store-year": lambda x: x.store_date.year if x.store_date else "",
-    "store-month": lambda x: x.store_date.month if x.store_date else "",
-    "store-day": lambda x: x.store_date.day if x.store_date else "",
+    "store-date": lambda x: str(x.store_date) if x.store_date else None,
+    "store-year": lambda x: x.store_date.year if x.store_date else None,
+    "store-month": lambda x: x.store_date.month if x.store_date else None,
+    "store-day": lambda x: x.store_date.day if x.store_date else None,
     "title": lambda x: x.collection_title,
     "upc": lambda x: x.gtin.upc if x.gtin else None,
     "volume": lambda x: x.series.volume or 1,
