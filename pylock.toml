@@ -447,11 +447,11 @@ dependencies = []
 
 [[packages]]
 name = "seagrin"
-version = "2026.1.0"
+version = "0.5.0"
 requires-python = ">=3.10"
-sdist = {name = "seagrin-2026.1.0.tar.gz", url = "https://files.pythonhosted.org/packages/0a/80/cc21ec6431b8fe7a759c98c4ccdc50befbf86629eb472d1d22992ec161b9/seagrin-2026.1.0.tar.gz", hashes = {sha256 = "6de5b751a31ecd9fc3e3cd0118cca171d5d238ab5b1b884e3cac1ed3fc4e9f0b"}}
+sdist = {name = "seagrin-0.5.0.tar.gz", url = "https://files.pythonhosted.org/packages/3c/3a/b2edf10a562beda0f1b42eeaedec017fd2292935e00ea02ffaa6aaeb80e1/seagrin-0.5.0.tar.gz", hashes = {sha256 = "d9c88dc0ed05142acc5ec83d929684cb2e6a6d6423aca224b0b190e0cbfa5b1a"}}
 wheels = [
-    {name = "seagrin-2026.1.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/3f/4a/e5b97779ed67ac2f3419bc11f97c9b53e57b1aceaae605cb5c284ee37821/seagrin-2026.1.0-py3-none-any.whl",hashes = {sha256 = "56cc7fc0ba9c58f54cfbb43dbdefa4b8f28102601a90948467585c01508f35ae"}},
+    {name = "seagrin-0.5.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/c4/6d/66faaf493f0b73271f52b454e17fd8e8774feea9aeaf2dc44af51f34b566/seagrin-0.5.0-py3-none-any.whl",hashes = {sha256 = "135920edcb9491cc0e435dbebd1fa3e10f52b47d1f0b1c51bc4649be92c83782"}},
 ]
 marker = "\"default\" in dependency_groups"
 
@@ -2285,7 +2285,7 @@ marker = "\"cb7\" in extras"
 dependencies = []
 
 [tool.pdm]
-hashes = {sha256 = "abc36ec9875b96ed062bab94a287ed5ea6343b601a490a70981e199290bc4d8d"}
+hashes = {sha256 = "0491c96bcdd178d9b77c95e86f24d4c13110b1adee28110a1bcb301485dce782"}
 strategy = ["inherit_metadata", "static_urls"]
 
 [[tool.pdm.targets]]

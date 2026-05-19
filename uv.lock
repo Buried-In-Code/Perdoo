@@ -1027,7 +1027,7 @@ requires-dist = [
     { name = "questionary", specifier = ">=2.1.0" },
     { name = "rarfile", specifier = ">=4.2" },
     { name = "rich", specifier = ">=15.0.0" },
-    { name = "seagrin", specifier = ">=2026.1.0" },
+    { name = "seagrin", specifier = ">=0.5.0" },
     { name = "simyan", specifier = ">=2.0.0" },
     { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.4.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
@@ -1759,7 +1759,7 @@ wheels = [
 
 [[package]]
 name = "seagrin"
-version = "2026.1.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
@@ -1767,9 +1767,9 @@ dependencies = [
     { name = "requests-cache" },
     { name = "requests-ratelimiter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0a/80/cc21ec6431b8fe7a759c98c4ccdc50befbf86629eb472d1d22992ec161b9/seagrin-2026.1.0.tar.gz", hash = "sha256:6de5b751a31ecd9fc3e3cd0118cca171d5d238ab5b1b884e3cac1ed3fc4e9f0b", size = 1106031, upload-time = "2026-05-18T01:24:44.552Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3c/3a/b2edf10a562beda0f1b42eeaedec017fd2292935e00ea02ffaa6aaeb80e1/seagrin-0.5.0.tar.gz", hash = "sha256:d9c88dc0ed05142acc5ec83d929684cb2e6a6d6423aca224b0b190e0cbfa5b1a", size = 1106003, upload-time = "2026-05-19T09:24:02.462Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3f/4a/e5b97779ed67ac2f3419bc11f97c9b53e57b1aceaae605cb5c284ee37821/seagrin-2026.1.0-py3-none-any.whl", hash = "sha256:56cc7fc0ba9c58f54cfbb43dbdefa4b8f28102601a90948467585c01508f35ae", size = 20973, upload-time = "2026-05-18T01:24:46.571Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/6d/66faaf493f0b73271f52b454e17fd8e8774feea9aeaf2dc44af51f34b566/seagrin-0.5.0-py3-none-any.whl", hash = "sha256:135920edcb9491cc0e435dbebd1fa3e10f52b47d1f0b1c51bc4649be92c83782", size = 20944, upload-time = "2026-05-19T09:23:59.995Z" },
 ]
 
 [[package]]
