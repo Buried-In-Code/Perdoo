@@ -35,6 +35,8 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python",
+  "Topic :: Internet",
   "Typing :: Typed",
 ]
 dependencies = [
@@ -59,6 +61,9 @@ dynamic = ["version"]
 keywords = ["comic", "comics", "metadata", "tagger", "tagging"]
 license = "MIT"
 license-files = ["LICENSE"]
+maintainers = [
+  {email = "buriedincode@duckpond.nz", name = "BuriedInCode"},
+]
 name = "perdoo"
 readme = "README.md"
 requires-python = ">= 3.10"
