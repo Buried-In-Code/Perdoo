@@ -303,7 +303,7 @@ class ComicInfo(Metadata):
 
 
 PATTERN_MAP: dict[str, Callable[[ComicInfo], str | int | None]] = {
-    "cover-date": lambda x: x.cover_date,
+    "cover-date": lambda x: str(x.cover_date) if x.cover_date else None,
     "cover-day": lambda x: x.day,
     "cover-month": lambda x: x.month,
     "cover-year": lambda x: x.year,
