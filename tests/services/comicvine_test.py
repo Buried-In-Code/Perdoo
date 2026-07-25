@@ -4,7 +4,8 @@ import pytest
 from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 
-from perdoo.services.comicvine import DEFAULT_CHOICE, Comicvine
+from perdoo.services._base import DEFAULT_CHOICE
+from perdoo.services.comicvine import Comicvine
 from perdoo.utils import IssueSearch, SeriesSearch
 
 
@@ -26,7 +27,7 @@ def issue_mock() -> Issue:
 def test_search_series(service: Comicvine, volume_mock: Volume) -> None:
     with (
         patch.object(service.session, "list_volumes", return_value=[volume_mock]),
-        patch("perdoo.services.comicvine.select") as select_mock,
+        patch("perdoo.services._base.select") as select_mock,
     ):
         select_mock.return_value.ask.return_value = volume_mock
         found = service._search_series(name="Venom", volume=None, year=None, filename="Venom")  # noqa: SLF001
@@ -36,7 +37,7 @@ def test_search_series(service: Comicvine, volume_mock: Volume) -> None:
 def test_search_series_default(service: Comicvine, volume_mock: Volume) -> None:
     with (
         patch.object(service.session, "list_volumes", return_value=[volume_mock, volume_mock]),
-        patch("perdoo.services.comicvine.select") as select_mock,
+        patch("perdoo.services._base.select") as select_mock,
         patch("perdoo.services.comicvine.confirm") as confirm_mock,
     ):
         select_mock.return_value.ask.return_value = DEFAULT_CHOICE.title
@@ -65,7 +66,7 @@ def test_fetch_series(service: Comicvine, volume_mock: Volume) -> None:
 def test_search_issues(service: Comicvine, issue_mock: Issue) -> None:
     with (
         patch.object(service.session, "list_issues", return_value=[issue_mock]),
-        patch("perdoo.services.comicvine.select") as mock_select,
+        patch("perdoo.services._base.select") as mock_select,
     ):
         mock_select.return_value.ask.return_value = issue_mock
         found = service._search_issue(series_id=466, number="1", filename="Venom")  # noqa: SLF001
@@ -75,7 +76,7 @@ def test_search_issues(service: Comicvine, issue_mock: Issue) -> None:
 def test_search_issues_default(service: Comicvine, issue_mock: Issue) -> None:
     with (
         patch.object(service.session, "list_issues", return_value=[issue_mock, issue_mock]),
-        patch("perdoo.services.comicvine.select") as select_mock,
+        patch("perdoo.services._base.select") as select_mock,
     ):
         select_mock.return_value.ask.return_value = DEFAULT_CHOICE.title
         found = service._search_issue(series_id=466, number="1", filename="Venom")  # noqa: SLF001

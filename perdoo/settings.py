@@ -8,7 +8,7 @@ import tomli_w as tomlwriter
 from pydantic import BeforeValidator
 from rich.panel import Panel
 
-from perdoo import get_config_root, get_data_root
+from perdoo import get_config_home, get_data_home
 from perdoo.console import CONSOLE
 from perdoo.utils import BaseModel, blank_is_none, flatten_dict
 
@@ -60,10 +60,24 @@ class Naming(SettingsModel):
         "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_TPB_#{number:2}"
     )
 
+    def pattern_for(self, format_: str | None) -> str:
+        overrides = {
+            "Annual": self.annual,
+            "Digitial Chapter": self.digital_chapter,
+            "Graphic Novel": self.graphic_novel,
+            "Hardcover": self.hardcover,
+            "Limited Series": self.limited_series,
+            "Omnibus": self.omnibus,
+            "One-Shot": self.one_shot,
+            "Single Issue": self.single_issue,
+            "Trade Paperback": self.trade_paperback,
+        }
+        return overrides.get(format_ or "") or self.default
+
 
 class Output(SettingsModel):
     comic_info: ComicInfo = ComicInfo()
-    folder: Path = get_data_root()
+    folder: Path = get_data_home()
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
     image_extensions: tuple[str, ...] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
     metron_info: MetronInfo = MetronInfo()
@@ -112,7 +126,7 @@ def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
 
 
 class Settings(SettingsModel):
-    _file: ClassVar[Path] = get_config_root() / "settings.toml"
+    _file: ClassVar[Path] = get_config_home() / "settings.toml"
 
     output: Output = Output()
     services: Services = Services()

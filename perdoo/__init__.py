@@ -1,16 +1,16 @@
 __all__ = [
     "__version__",
-    "get_cache_root",
-    "get_config_root",
-    "get_data_root",
-    "get_state_root",
+    "get_cache_home",
+    "get_config_home",
+    "get_data_home",
+    "get_state_home",
     "setup_logging",
 ]
-__version__ = "2026.1.1"
+__version__ = "2026.2.0"
+__project__ = "perdoo"
 
 import logging
 import os
-from functools import cache
 from pathlib import Path
 
 from rich.logging import RichHandler
@@ -18,34 +18,30 @@ from rich.logging import RichHandler
 from perdoo.console import CONSOLE
 
 
-@cache
-def get_cache_root() -> Path:
+def get_cache_home() -> Path:
     cache_home = os.getenv("XDG_CACHE_HOME", default=str(Path.home() / ".cache"))
-    folder = Path(cache_home).resolve() / "perdoo"
+    folder = Path(cache_home).resolve() / __project__
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
 
-@cache
-def get_config_root() -> Path:
+def get_config_home() -> Path:
     config_home = os.getenv("XDG_CONFIG_HOME", default=str(Path.home() / ".config"))
-    folder = Path(config_home).resolve() / "perdoo"
+    folder = Path(config_home).resolve() / __project__
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
 
-@cache
-def get_data_root() -> Path:
+def get_data_home() -> Path:
     data_home = os.getenv("XDG_DATA_HOME", default=str(Path.home() / ".local" / "share"))
-    folder = Path(data_home).resolve() / "perdoo"
+    folder = Path(data_home).resolve() / __project__
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
 
-@cache
-def get_state_root() -> Path:
+def get_state_home() -> Path:
     data_home = os.getenv("XDG_STATE_HOME", default=str(Path.home() / ".local" / "state"))
-    folder = Path(data_home).resolve() / "perdoo"
+    folder = Path(data_home).resolve() / __project__
     folder.mkdir(exist_ok=True, parents=True)
     return folder
 
@@ -63,7 +59,7 @@ def setup_logging(debug: bool = False) -> None:
     )
     console_handler.setLevel(logging.DEBUG if debug else logging.INFO)
     console_handler.setFormatter(logging.Formatter("%(message)s"))
-    file_handler = logging.FileHandler(filename=get_state_root() / "perdoo.log")
+    file_handler = logging.FileHandler(filename=get_state_home() / "perdoo.log")
     file_handler.setLevel(logging.DEBUG if debug else logging.INFO)
     logging.basicConfig(
         format="[%(asctime)s] [%(levelname)-8s] {%(name)s} | %(message)s",
@@ -73,5 +69,3 @@ def setup_logging(debug: bool = False) -> None:
     )
 
     logging.getLogger("PIL").setLevel(logging.INFO if debug else logging.WARNING)
-    logging.getLogger("httpx").setLevel(logging.INFO if debug else logging.WARNING)
-    logging.getLogger("httpcore").setLevel(logging.INFO if debug else logging.WARNING)

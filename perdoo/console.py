@@ -1,11 +1,7 @@
 __all__ = ["CONSOLE"]
 
-import logging
-
 from rich.console import Console
 from rich.theme import Theme
-
-LOGGER = logging.getLogger(__name__)
 
 CONSOLE = Console(
     theme=Theme(

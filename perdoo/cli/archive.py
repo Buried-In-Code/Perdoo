@@ -4,10 +4,11 @@ import logging
 from pathlib import Path
 from typing import Annotated
 
+from comic_archive import Comic
+from comic_archive.metadata import ComicInfo, MetronInfo
 from typer import Argument, Option
 
 from perdoo.cli._typer import app
-from perdoo.comic import Comic
 from perdoo.console import CONSOLE
 
 LOGGER = logging.getLogger(__name__)
@@ -28,17 +29,15 @@ def archive(
 ) -> None:
     if skip_comic_info and skip_metron_info:
         return
-    comic = Comic(filepath=target)
-    LOGGER.info("Format: '%s'", type(comic.archive).__name__)
-    with comic.open_session() as session:
-        metron_info, comic_info = comic.read_metadata(session=session)
+    with Comic.open(target) as comic:
+        LOGGER.info("Format: '%s'", type(comic._archive).__name__)  # noqa: SLF001
         if not skip_comic_info:
-            if comic_info:
-                comic_info.display()
+            if ci := comic.get_metadata(ComicInfo):
+                CONSOLE.print(ci)
             else:
                 CONSOLE.print("No ComicInfo found", style="logging.level.error")
         if not skip_metron_info:
-            if metron_info:
-                metron_info.display()
+            if mi := comic.get_metadata(MetronInfo):
+                CONSOLE.print(mi)
             else:
                 CONSOLE.print("No MetronInfo found", style="logging.level.error")

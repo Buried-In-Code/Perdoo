@@ -1,5 +1,4 @@
 import pytest
-
 from perdoo.comic.metadata import ComicInfo, MetronInfo
 from perdoo.comic.metadata.metron_info import Series
 

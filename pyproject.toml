@@ -8,15 +8,15 @@ dev = [
   "mdformat-gfm >= 1.0.0",
   "mdformat-ruff >= 0.1.0",
   "prek >= 0.4.0",
-  "ruff >= 0.15.0",
+  "ruff >= 0.16.0",
   "toml-sort >= 0.24.0",
-  "ty >= 0.0.30",
+  "ty >= 0.0.60",
 ]
 tests = [
-  "pytest >= 9.0.0",
+  "pytest >= 9.1.0",
   "pytest-cov >= 7.1.0",
-  "tox >= 4.54.0",
-  "tox-uv >= 1.35.0",
+  "tox >= 4.58.0",
+  "tox-uv >= 1.36.0",
 ]
 
 [project]
@@ -40,21 +40,19 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "comic-archive >= 0.1.0",
   "comicfn2dict >= 0.3.0",
-  "grayven >= 0.5.0",
+  "grayven >= 0.6.0",
+  "mokkari >= 4.2.0",
   "natsort >= 8.4.0",
-  "pillow >= 12.2.0",
-  "pydantic >= 2.13.0",
-  "pydantic-xml[lxml] >= 2.21.0",
+  "pillow >= 12.3.0",
   "questionary >= 2.1.0",
-  "rarfile >= 4.2",
   "rich >= 15.0.0",
-  "seagrin >= 0.5.0",
-  "simyan >= 2.0.0",
+  "simyan >= 3.0.0",
   "tomli >= 2.4.0 ; python_version < '3.11'",
   "tomli-w >= 1.2.0",
-  "typer >= 0.25.0",
-  "zipremove >= 0.8.0",
+  "typer >= 0.27.0",
+  "typing-extensions >= 4.16.0 ; python_version < '3.11'",
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -70,7 +68,13 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "py7zr >= 1.1.0",
+  "comic-archive[cb7] >= 0.1.0",
+]
+cbr = [
+  "comic-archive[cbr] >= 0.1.0",
+]
+pdf = [
+  "comic-archive[pdf] >= 0.1.0",
 ]
 
 [project.scripts]
@@ -113,6 +117,7 @@ skip-magic-trailing-comma = true
 ignore = [
   "C901",
   "COM812",
+  "CPY001",
   "D",
   "DTZ",
   "EM",
@@ -146,7 +151,7 @@ split-on-trailing-comma = false
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["PLR2004", "S101"]
+"tests/*" = ["D", "PLR2004", "S101"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -168,6 +173,7 @@ min_version = "4.22"
 [tool.tox.env_run_base]
 commands = [["pytest"]]
 dependency_groups = ["tests"]
+passenv = []
 
 [tool.ty.src]
 exclude = ["**/tests/"]

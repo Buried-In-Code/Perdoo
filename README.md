@@ -29,26 +29,30 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 <details><summary>perdoo Commands</summary>
 
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run perdoo`](docs/img/perdoo-commands.svg)
+<!-- RICH-CODEX hide_command: true -->
+
+![](docs/img/perdoo-commands.svg)
 
 </details>
 <details><summary>perdoo process</summary>
 
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run perdoo process --help`](docs/img/perdoo-process.svg)
+<!-- RICH-CODEX hide_command: true -->
+
+![](docs/img/perdoo-process.svg)
 
 </details>
 <details><summary>perdoo archive</summary>
 
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run perdoo archive --help`](docs/img/perdoo-archive.svg)
+<!-- RICH-CODEX hide_command: true -->
+
+![](docs/img/perdoo-archive.svg)
 
 </details>
 <details><summary>perdoo settings</summary>
 
-  <!-- RICH-CODEX hide_command: true -->
-  ![`uv run perdoo settings --help`](docs/img/perdoo-settings.svg)
+<!-- RICH-CODEX hide_command: true -->
+
+![](docs/img/perdoo-settings.svg)
 
 </details>
 
@@ -216,5 +220,4 @@ password = "<Metron Password>"
 
 ## Socials
 
-[![Social - Fosstodon](https://img.shields.io/badge/%40BuriedInCode-teal?label=Fosstodon&logo=mastodon&style=for-the-badge)](https://fosstodon.org/@BuriedInCode)\
 [![Social - Matrix](https://img.shields.io/matrix/The-Dev-Environment:matrix.org?label=The-Dev-Environment&logo=matrix&style=for-the-badge)](https://matrix.to/#/#The-Dev-Environment:matrix.org)

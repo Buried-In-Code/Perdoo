@@ -8,6 +8,8 @@ updates:
       github_actions:
         patterns:
           - "*"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: uv
     directory: /
@@ -17,12 +19,5 @@ updates:
       python:
         patterns:
           - "*"
-
-  - package-ecosystem: pre-commit
-    directory: /
-    schedule:
-      interval: daily
-    groups:
-      pre-commit:
-        patterns:
-          - "*"
+    cooldown:
+      default-days: 7

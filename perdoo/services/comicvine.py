@@ -5,9 +5,7 @@ import re
 from datetime import datetime
 
 from natsort import humansorted, ns
-from prompt_toolkit.styles import Style
-from questionary import Choice, confirm, select, text
-from simyan.cache import SQLiteCache
+from questionary import Choice, confirm, text
 from simyan.comicvine import Comicvine as Simyan
 from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
@@ -20,13 +18,15 @@ from perdoo.services._base import BaseService
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
-DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
 
 class Comicvine(BaseService[Volume, Issue]):
     def __init__(self, api_key: str):
-        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite")
-        self.session = Simyan(api_key=api_key, cache=cache)
+        self.session = Simyan(
+            api_key=api_key,
+            cache_path=get_cache_root() / "simyan.sqlite",
+            ratelimit_path=get_cache_root() / "simyan-rates.sqlite",
+        )
 
     def _search_series(
         self, name: str | None, volume: int | None, year: int | None, filename: str
@@ -63,16 +63,13 @@ class Comicvine(BaseService[Volume, Issue]):
                     )
                     for x in options
                 ]
-                choices.append(DEFAULT_CHOICE)
-                selected = select(
-                    f"Searching Comicvine for Volumes matching '{filename}'"
+                selected = self._prompt_select(
+                    message=f"Searching Comicvine for Volumes matching '{filename}'"
                     if not year
                     else f"Searching Comicvine for Volume '{search}'",
-                    default=DEFAULT_CHOICE,
                     choices=choices,
-                    style=Style([("dim", "dim")]),
-                ).ask()
-                if selected and selected != DEFAULT_CHOICE.title:
+                )
+                if selected:
                     return selected.id
             else:
                 LOGGER.warning(
@@ -127,16 +124,13 @@ class Comicvine(BaseService[Volume, Issue]):
                     )
                     for x in options
                 ]
-                choices.append(DEFAULT_CHOICE)
-                selected = select(
-                    f"Searching Comicvine for Issues matching '{filename}'"
+                selected = self._prompt_select(
+                    message=f"Searching Comicvine for Issues matching '{filename}'"
                     if not number
                     else f"Searching Comicvine for Issues with number '{number}'",
-                    default=DEFAULT_CHOICE,
                     choices=choices,
-                    style=Style([("dim", "dim")]),
-                ).ask()
-                if selected and selected != DEFAULT_CHOICE.title:
+                )
+                if selected:
                     return selected.id
             else:
                 LOGGER.warning(
