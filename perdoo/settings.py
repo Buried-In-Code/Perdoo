@@ -1,4 +1,4 @@
-__all__ = ["SETTINGS"]
+__all__ = ["Settings"]
 
 from enum import Enum
 from pathlib import Path
@@ -168,6 +168,3 @@ class Settings(SettingsModel):
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default"))
         CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
-
-
-SETTINGS = Settings.load().save()

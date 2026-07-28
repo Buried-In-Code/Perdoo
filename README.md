@@ -29,30 +29,22 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 <details><summary>perdoo Commands</summary>
 
-<!-- RICH-CODEX hide_command: true -->
-
-![](docs/img/perdoo-commands.svg)
-
-</details>
-<details><summary>perdoo process</summary>
-
-<!-- RICH-CODEX hide_command: true -->
-
-![](docs/img/perdoo-process.svg)
+![perdoo help](docs/img/perdoo.svg)
 
 </details>
 <details><summary>perdoo archive</summary>
 
-<!-- RICH-CODEX hide_command: true -->
+![perdoo archive help](docs/img/perdoo_archive.svg)
 
-![](docs/img/perdoo-archive.svg)
+</details>
+<details><summary>perdoo process</summary>
+
+![perdoo process help](docs/img/perdoo_process.svg)
 
 </details>
 <details><summary>perdoo settings</summary>
 
-<!-- RICH-CODEX hide_command: true -->
-
-![](docs/img/perdoo-settings.svg)
+![perdoo settings help](docs/img/perdoo_settings.svg)
 
 </details>
 
@@ -60,10 +52,11 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ### Input Extensions
 
-- .cbr
 - .cbt
 - .cbz
+- .cbr _(Requires installing `cb7` dependencies: `pipx install perdoo[cbr]`)_
 - .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
+- .pdf _(Requires installing `pdf` dependencies: `pipx install perdoo[pdf]`)_
 
 ### Output Extensions
 
@@ -79,7 +72,7 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ## Services
 
 - [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) library.
-- [Metron](https://metron.cloud) using the [Seagrin](https://codeberg.org/BuriedInCode/Seagrin) library.
+- [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
 
 ## File Renaming and Organization
 

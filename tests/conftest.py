@@ -1,6 +1,6 @@
 import pytest
-from perdoo.comic.metadata import ComicInfo, MetronInfo
-from perdoo.comic.metadata.metron_info import Series
+from comic_archive.metadata import ComicInfo, MetronInfo
+from comic_archive.metadata.metron_info import Series
 
 
 @pytest.fixture

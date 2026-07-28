@@ -4,6 +4,8 @@ import logging
 import re
 from datetime import datetime
 
+from comic_archive.metadata import ComicInfo, MetronInfo
+from comic_archive.metadata.metron_info import InformationSource
 from natsort import humansorted, ns
 from questionary import Choice, confirm, text
 from simyan.comicvine import Comicvine as Simyan
@@ -11,9 +13,7 @@ from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 
-from perdoo import get_cache_root
-from perdoo.comic.metadata import ComicInfo, MetronInfo
-from perdoo.comic.metadata.metron_info import InformationSource
+from perdoo import get_cache_home
 from perdoo.services._base import BaseService
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
@@ -24,8 +24,8 @@ class Comicvine(BaseService[Volume, Issue]):
     def __init__(self, api_key: str):
         self.session = Simyan(
             api_key=api_key,
-            cache_path=get_cache_root() / "simyan.sqlite",
-            ratelimit_path=get_cache_root() / "simyan-rates.sqlite",
+            cache_path=get_cache_home() / "simyan.sqlite",
+            ratelimit_path=get_cache_home() / "simyan-rates.sqlite",
         )
 
     def _search_series(
@@ -161,7 +161,7 @@ class Comicvine(BaseService[Volume, Issue]):
         return None
 
     def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
-        from perdoo.comic.metadata.metron_info import (  # noqa: PLC0415
+        from comic_archive.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
             Id,
@@ -215,7 +215,7 @@ class Comicvine(BaseService[Volume, Issue]):
                 for x in issue.creators
                 if x.name
             ],
-            last_modified=datetime.now(),
+            last_modified=datetime.now().astimezone(),
             genres=[],
             prices=[],
             reprints=[],

@@ -1,9 +1,23 @@
-__all__ = []
+__all__ = ["register"]
 
-from perdoo.cli._typer import app
-from perdoo.settings import SETTINGS
+from argparse import _SubParsersAction
+
+from rich_argparse import HelpPreviewAction
+
+from perdoo.cli._help import RichHelpFormatter
+from perdoo.settings import Settings
 
 
-@app.command(help="Display app settings and defaults.")
-def settings() -> None:
-    SETTINGS.display()
+def register(subparsers: _SubParsersAction) -> None:
+    parser = subparsers.add_parser(
+        "settings", help="Display app settings and defaults.", formatter_class=RichHelpFormatter
+    )
+    parser.add_argument(
+        "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_settings.svg"
+    )
+    parser.set_defaults(func=run)
+
+
+def run(args) -> None:  # noqa: ANN001, ARG001
+    settings = Settings.load()
+    settings.display()

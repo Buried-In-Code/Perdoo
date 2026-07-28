@@ -3,10 +3,10 @@ __all__ = ["BaseService"]
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
+from comic_archive.metadata import ComicInfo, MetronInfo
 from prompt_toolkit.styles import Style
 from questionary import Choice, select
 
-from perdoo.comic.metadata import ComicInfo, MetronInfo
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
 S = TypeVar("S")

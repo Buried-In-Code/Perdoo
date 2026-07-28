@@ -3,6 +3,8 @@ __all__ = ["Metron"]
 import logging
 from datetime import datetime
 
+from comic_archive.metadata import ComicInfo, MetronInfo
+from comic_archive.metadata.metron_info import InformationSource
 from mokkari.exceptions import ApiError
 from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
@@ -11,9 +13,7 @@ from mokkari.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
 from questionary import Choice, confirm, text
 
-from perdoo import get_cache_root
-from perdoo.comic.metadata import ComicInfo, MetronInfo
-from perdoo.comic.metadata.metron_info import InformationSource
+from perdoo import get_cache_home
 from perdoo.services._base import BaseService
 from perdoo.utils import IssueSearch, Search, SeriesSearch
 
@@ -22,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Metron(BaseService[Series, Issue]):
     def __init__(self, username: str, password: str):
-        cache = SqliteCache(db_name=str(get_cache_root() / "mokkari.sqlite"))
+        cache = SqliteCache(db_name=str(get_cache_home() / "mokkari.sqlite"))
         self.session = Mokkari(username=username, passwd=password, cache=cache)
 
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
@@ -171,7 +171,7 @@ class Metron(BaseService[Series, Issue]):
         return None
 
     def _process_metron_info(self, series: Series, issue: Issue) -> MetronInfo | None:
-        from perdoo.comic.metadata.metron_info import (  # noqa: PLC0415
+        from comic_archive.metadata.metron_info import (  # noqa: PLC0415
             GTIN,
             AgeRating,
             Arc,
@@ -244,13 +244,13 @@ class Metron(BaseService[Series, Issue]):
                 )
                 for x in issue.credits
             ],
-            last_modified=datetime.now(),
+            last_modified=datetime.now().astimezone(),
             locations=[],
             tags=[],
         )
 
     def _process_comic_info(self, series: Series, issue: Issue) -> ComicInfo | None:
-        from perdoo.comic.metadata.comic_info import AgeRating  # noqa: PLC0415
+        from comic_archive.metadata.comic_info import AgeRating  # noqa: PLC0415
 
         def load_age_rating(value: str) -> AgeRating:
             try:
