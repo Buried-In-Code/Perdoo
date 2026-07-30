@@ -947,7 +947,7 @@ wheels = [
 name = "perdoo"
 source = { editable = "." }
 dependencies = [
-    { name = "comic-archive" },
+    { name = "comic-archive", extra = ["cb7", "cbr", "pdf"] },
     { name = "comicfn2dict" },
     { name = "grayven" },
     { name = "mokkari" },
@@ -959,17 +959,6 @@ dependencies = [
     { name = "rich-argparse" },
     { name = "simyan" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
-]
-
-[package.optional-dependencies]
-cb7 = [
-    { name = "comic-archive", extra = ["cb7"] },
-]
-cbr = [
-    { name = "comic-archive", extra = ["cbr"] },
-]
-pdf = [
-    { name = "comic-archive", extra = ["pdf"] },
 ]
 
 [package.dev-dependencies]
@@ -991,10 +980,7 @@ tests = [
 
 [package.metadata]
 requires-dist = [
-    { name = "comic-archive", specifier = ">=0.1.0" },
-    { name = "comic-archive", extras = ["cb7"], marker = "extra == 'cb7'", specifier = ">=0.1.0" },
-    { name = "comic-archive", extras = ["cbr"], marker = "extra == 'cbr'", specifier = ">=0.1.0" },
-    { name = "comic-archive", extras = ["pdf"], marker = "extra == 'pdf'", specifier = ">=0.1.0" },
+    { name = "comic-archive", extras = ["cb7", "cbr", "pdf"], specifier = ">=0.1.0" },
     { name = "comicfn2dict", specifier = ">=0.3.0" },
     { name = "grayven", specifier = ">=0.6.0" },
     { name = "mokkari", specifier = ">=4.4.0" },
@@ -1007,7 +993,6 @@ requires-dist = [
     { name = "simyan", specifier = ">=3.0.0" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.16.0" },
 ]
-provides-extras = ["cb7", "cbr", "pdf"]
 
 [package.metadata.requires-dev]
 dev = [

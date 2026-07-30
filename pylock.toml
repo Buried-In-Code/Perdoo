@@ -5,28 +5,10 @@ requires-python = ">=3.10"
 environments = [
     "python_version >= \"3.10\"",
 ]
-extras = ["cb7", "cbr", "pdf"]
+extras = []
 dependency-groups = ["default", "dev", "tests"]
 default-groups = ["default"]
 created-by = "pdm"
-
-[[packages]]
-name = "comic-archive"
-version = "0.1.2"
-requires-python = ">=3.10"
-sdist = {name = "comic_archive-0.1.2.tar.gz", url = "https://files.pythonhosted.org/packages/b9/b7/48fb9f6c3e61b6bee88feebd49527f8b0ce41565d217a377358ed60633ab/comic_archive-0.1.2.tar.gz", hashes = {sha256 = "cd9137db30e0e870498f5830dd1fdc9b480bf87fd6b7664095f06ff6dab66d12"}}
-wheels = [
-    {name = "comic_archive-0.1.2-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/b8/c0/bc5781417a67e499d716ef9fd3524037fcc71672aab933b1643f1dbcfb33/comic_archive-0.1.2-py3-none-any.whl",hashes = {sha256 = "954367af62ea78c26a9c863c3eed18cf6212a4a39ad5874b2ecefb3faca7f72a"}},
-]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
-
-[packages.tool.pdm]
-dependencies = [
-    "msgspec-extras>=0.2.0",
-    "msgspec-xml>=0.3.0",
-    "xmlschema>=4.3.0",
-    "zipremove>=0.10.0",
-]
 
 [[packages]]
 name = "comicfn2dict"
@@ -51,7 +33,7 @@ sdist = {name = "typing_extensions-4.16.0.tar.gz", url = "https://files.pythonho
 wheels = [
     {name = "typing_extensions-4.16.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",hashes = {sha256 = "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras or \"tests\" in dependency_groups"
+marker = "\"default\" in dependency_groups or \"tests\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -495,6 +477,24 @@ marker = "\"dev\" in dependency_groups"
 dependencies = []
 
 [[packages]]
+name = "comic-archive"
+version = "0.1.2"
+requires-python = ">=3.10"
+sdist = {name = "comic_archive-0.1.2.tar.gz", url = "https://files.pythonhosted.org/packages/b9/b7/48fb9f6c3e61b6bee88feebd49527f8b0ce41565d217a377358ed60633ab/comic_archive-0.1.2.tar.gz", hashes = {sha256 = "cd9137db30e0e870498f5830dd1fdc9b480bf87fd6b7664095f06ff6dab66d12"}}
+wheels = [
+    {name = "comic_archive-0.1.2-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/b8/c0/bc5781417a67e499d716ef9fd3524037fcc71672aab933b1643f1dbcfb33/comic_archive-0.1.2-py3-none-any.whl",hashes = {sha256 = "954367af62ea78c26a9c863c3eed18cf6212a4a39ad5874b2ecefb3faca7f72a"}},
+]
+marker = "\"default\" in dependency_groups"
+
+[packages.tool.pdm]
+dependencies = [
+    "msgspec-extras>=0.2.0",
+    "msgspec-xml>=0.3.0",
+    "xmlschema>=4.3.0",
+    "zipremove>=0.10.0",
+]
+
+[[packages]]
 name = "msgspec"
 version = "0.21.1"
 requires-python = ">=3.10"
@@ -549,7 +549,7 @@ wheels = [
     {name = "msgspec-0.21.1-cp310-cp310-win_amd64.whl",url = "https://files.pythonhosted.org/packages/c1/ce/27021d1c3e5da837743092a7b7a5e8818397e1f4c05ee8b068bd7d1fd78a/msgspec-0.21.1-cp310-cp310-win_amd64.whl",hashes = {sha256 = "f041a2279f31e3a53319005e4d60ba77c085cfcbe394cdc7ce803c2d01fe9449"}},
     {name = "msgspec-0.21.1-cp310-cp310-win_arm64.whl",url = "https://files.pythonhosted.org/packages/80/2b/daf7a8d6d7cf00e0dcd0439178b284ade701234abdcadf3385601da04fbd/msgspec-0.21.1-cp310-cp310-win_arm64.whl",hashes = {sha256 = "1bf17cbd7b28a5dffc7e764c654eed8ccde5e0f1de7970628608304640d4ce4e"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1173,7 +1173,7 @@ sdist = {name = "comicbox_pdffile-0.6.3.tar.gz", url = "https://files.pythonhost
 wheels = [
     {name = "comicbox_pdffile-0.6.3-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/9f/25/5cbec085503f4a0f2f8cb33620b32d76999a1d5801fd37b182c3ddc4310f/comicbox_pdffile-0.6.3-py3-none-any.whl",hashes = {sha256 = "aca25fbb146135705e51c92abcf781e00f73b9c7a665572c6a69cbc86ee1fdee"}},
 ]
-marker = "\"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -1305,7 +1305,7 @@ sdist = {name = "filetype-1.2.0.tar.gz", url = "https://files.pythonhosted.org/p
 wheels = [
     {name = "filetype-1.2.0-py2.py3-none-any.whl",url = "https://files.pythonhosted.org/packages/18/79/1b8fa1bb3568781e84c9200f951c735f3f157429f44be0495da55894d620/filetype-1.2.0-py2.py3-none-any.whl",hashes = {sha256 = "7ce71b6880181241cf7ac8697a2f1eb6a8bd9b429f7ad6d27b8db9ba5f1c2d25"}},
 ]
-marker = "\"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1359,7 +1359,7 @@ sdist = {name = "msgspec_extras-0.2.1.tar.gz", url = "https://files.pythonhosted
 wheels = [
     {name = "msgspec_extras-0.2.1-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/de/b5/4839230ee88bf9c0e77f7f506495690c17dfed699d178e9dab3f87017032/msgspec_extras-0.2.1-py3-none-any.whl",hashes = {sha256 = "0473c44608f0e4c03c8124aa36a36076e1f68a130dcdbc4683daecffa3d146aa"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -1375,7 +1375,7 @@ sdist = {name = "msgspec_xml-0.3.1.tar.gz", url = "https://files.pythonhosted.or
 wheels = [
     {name = "msgspec_xml-0.3.1-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/df/f8/84442b0a74bec5649ba16a1269d3aff72ff1d79807accfbf548a0173d174/msgspec_xml-0.3.1-py3-none-any.whl",hashes = {sha256 = "c9b75de07b2bd0ed4cd2b95e4a2eaaec835f53fff0f2e7c4b8d171264520513f"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -1390,7 +1390,7 @@ sdist = {name = "py7zr-1.1.3.tar.gz", url = "https://files.pythonhosted.org/pack
 wheels = [
     {name = "py7zr-1.1.3-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/88/40/dc7f804abd0ea167ea8d4d9b3f5455321aaf671d040fcef647e9e952e714/py7zr-1.1.3-py3-none-any.whl",hashes = {sha256 = "17934a35089e026dec6c72ee275d9b841e646881ef822d618e805c3006661d9a"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -1498,7 +1498,7 @@ wheels = [
     {name = "backports_zstd-1.6.0-pp310-pypy310_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",url = "https://files.pythonhosted.org/packages/fb/bb/ab92f8599749cb6063416dd9f46e084004c4e8db68e2eb768283012a6d27/backports_zstd-1.6.0-pp310-pypy310_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",hashes = {sha256 = "79284c1dd702f4f24ed1a36e51555c907dd237b6c0d829595978f4089a2aeea9"}},
     {name = "backports_zstd-1.6.0-pp310-pypy310_pp73-win_amd64.whl",url = "https://files.pythonhosted.org/packages/2c/f4/dd3ef995f6b22e23da145ac3ecc91e1f1fc4cb572b7f95e6b2b11de16782/backports_zstd-1.6.0-pp310-pypy310_pp73-win_amd64.whl",hashes = {sha256 = "1e20b3ecd0a711be82e964aca28554eabbc31ee69a20e5e7b8fd42268af46212"}},
 ]
-marker = "python_version < \"3.14\" and \"cb7\" in extras"
+marker = "python_version < \"3.14\" and \"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1559,7 +1559,7 @@ wheels = [
     {name = "brotli-1.2.0-cp310-cp310-win32.whl",url = "https://files.pythonhosted.org/packages/ed/9a/4b19d4310b2dbd545c0c33f176b0528fa68c3cd0754e34b2f2bcf56548ae/brotli-1.2.0-cp310-cp310-win32.whl",hashes = {sha256 = "b232029d100d393ae3c603c8ffd7e3fe6f798c5e28ddca5feabb8e8fdb732997"}},
     {name = "brotli-1.2.0-cp310-cp310-win_amd64.whl",url = "https://files.pythonhosted.org/packages/ac/39/70981d9f47705e3c2b95c0847dfa3e7a37aa3b7c6030aedc4873081ed005/brotli-1.2.0-cp310-cp310-win_amd64.whl",hashes = {sha256 = "ef87b8ab2704da227e83a246356a2b179ef826f550f794b2c52cddb4efbd0196"}},
 ]
-marker = "platform_python_implementation == \"CPython\" and \"cb7\" in extras"
+marker = "platform_python_implementation == \"CPython\" and \"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1585,7 +1585,7 @@ wheels = [
     {name = "brotlicffi-1.2.0.1-cp38-abi3-win32.whl",url = "https://files.pythonhosted.org/packages/a6/75/6e7977d1935fc3fbb201cbd619be8f2c7aea25d40a096967132854b34708/brotlicffi-1.2.0.1-cp38-abi3-win32.whl",hashes = {sha256 = "82ea52e2b5d3145b6c406ebd3efb0d55db718b7ad996bd70c62cec0439de1187"}},
     {name = "brotlicffi-1.2.0.1-cp38-abi3-win_amd64.whl",url = "https://files.pythonhosted.org/packages/d8/ef/e7e485ce5e4ba3843a0a92feb767c7b6098fd6e65ce752918074d175ae71/brotlicffi-1.2.0.1-cp38-abi3-win_amd64.whl",hashes = {sha256 = "da2e82a08e7778b8bc539d27ca03cdd684113e81394bfaaad8d0dfc6a17ddede"}},
 ]
-marker = "platform_python_implementation == \"PyPy\" and \"cb7\" in extras"
+marker = "platform_python_implementation == \"PyPy\" and \"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -1699,7 +1699,7 @@ wheels = [
     {name = "cffi-2.1.0-cp310-cp310-win32.whl",url = "https://files.pythonhosted.org/packages/70/b6/9003c33a3e7d2c1306f5962e646457dcfe5a8cd8fce6bbe02d7af25db783/cffi-2.1.0-cp310-cp310-win32.whl",hashes = {sha256 = "9d72af0cf10a76a600a9690078fe31c63b9588c8e86bf9fd353f713c84b5db0f"}},
     {name = "cffi-2.1.0-cp310-cp310-win_amd64.whl",url = "https://files.pythonhosted.org/packages/8a/26/710688310447531c7a22f857c7f79d9855ec18b03e04494ced723fb37e2f/cffi-2.1.0-cp310-cp310-win_amd64.whl",hashes = {sha256 = "fb62edb5bb52cca65fab91a63afa7561607120d26090a7e8fda6fb9f064726da"}},
 ]
-marker = "platform_python_implementation == \"PyPy\" and \"cb7\" in extras"
+marker = "platform_python_implementation == \"PyPy\" and \"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -1773,7 +1773,7 @@ wheels = [
     {name = "inflate64-1.0.4-cp310-cp310-win_amd64.whl",url = "https://files.pythonhosted.org/packages/a3/59/cef1b3505dc33d8cb9d115481923dec1de1372d29ac278622feecf9c03a1/inflate64-1.0.4-cp310-cp310-win_amd64.whl",hashes = {sha256 = "950dd7fe53474df5f4699b8f099980027e812d55fd82d8e167d599822c3d27d6"}},
     {name = "inflate64-1.0.4-cp310-cp310-win_arm64.whl",url = "https://files.pythonhosted.org/packages/72/13/d964fbfceeee6752c36c45645e5e9a9ef0dd70d4ce64e5e7316822e43382/inflate64-1.0.4-cp310-cp310-win_arm64.whl",hashes = {sha256 = "bad20de249d6336793f6267880668dbb286ca5c6e6991795aa6344c817588068"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1786,7 +1786,7 @@ sdist = {name = "multivolumefile-0.2.3.tar.gz", url = "https://files.pythonhoste
 wheels = [
     {name = "multivolumefile-0.2.3-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/22/31/ec5f46fd4c83185b806aa9c736e228cb780f13990a9cf4da0beb70025fcc/multivolumefile-0.2.3-py3-none-any.whl",hashes = {sha256 = "237f4353b60af1703087cf7725755a1f6fcaeeea48421e1896940cd1c920d678"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1852,7 +1852,7 @@ wheels = [
     {name = "pybcj-1.0.8-cp310-cp310-win_amd64.whl",url = "https://files.pythonhosted.org/packages/56/04/c9b5dee7004f9b9f7dfb12c9a14b0929cacf1a8410e783f1df98e77cd2f6/pybcj-1.0.8-cp310-cp310-win_amd64.whl",hashes = {sha256 = "b372f40aadb429de71cfc86ff7b8a52e753bd357eef5c03c3eb3b823709982fd"}},
     {name = "pybcj-1.0.8-cp310-cp310-win_arm64.whl",url = "https://files.pythonhosted.org/packages/53/54/7cdfb79a70fbac1756c378d793202991183c4bd911e2d9960c9390449e6a/pybcj-1.0.8-cp310-cp310-win_arm64.whl",hashes = {sha256 = "56c48aecd6ab096e4955ecd39c9655847f2774878a969e8140641fb23c3f2d1c"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1891,7 +1891,7 @@ wheels = [
     {name = "pycryptodomex-3.23.0-cp37-abi3-win_amd64.whl",url = "https://files.pythonhosted.org/packages/69/96/11f36f71a865dd6df03716d33bd07a67e9d20f6b8d39820470b766af323c/pycryptodomex-3.23.0-cp37-abi3-win_amd64.whl",hashes = {sha256 = "52e5ca58c3a0b0bd5e100a9fbc8015059b05cffc6c66ce9d98b4b45e023443b9"}},
     {name = "pycryptodomex-3.23.0-cp37-abi3-win_arm64.whl",url = "https://files.pythonhosted.org/packages/f9/93/45c1cdcbeb182ccd2e144c693eaa097763b08b38cded279f0053ed53c553/pycryptodomex-3.23.0-cp37-abi3-win_arm64.whl",hashes = {sha256 = "02d87b80778c171445d67e23d1caef279bf4b25c3597050ccd2e13970b57fd51"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1912,7 +1912,7 @@ wheels = [
     {name = "pymupdf-1.28.0-cp310-abi3-win32.whl",url = "https://files.pythonhosted.org/packages/06/86/f831fef09013f33b3c9c09fb3923f2ff53e1e437f6ace14b8ae46392f558/pymupdf-1.28.0-cp310-abi3-win32.whl",hashes = {sha256 = "caea2b3b67347fd79e5d15ed7929b0e886aac594ea228073b6d39de0078189da"}},
     {name = "pymupdf-1.28.0-cp310-abi3-win_amd64.whl",url = "https://files.pythonhosted.org/packages/2e/5d/1a03f53eb0449900469335fcfc742ca28e3ba159b7d650e0921d50b8b308/pymupdf-1.28.0-cp310-abi3-win_amd64.whl",hashes = {sha256 = "e01e90fd86abfeb37ceb921eddb951f988a11d45ff6ce6b7664f2039849068ec"}},
 ]
-marker = "\"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -1984,7 +1984,7 @@ wheels = [
     {name = "pyppmd-1.3.1-cp310-cp310-win_amd64.whl",url = "https://files.pythonhosted.org/packages/1b/93/1e035bd1ef405ca024be1fc4d9eb7d603eb03960d7010515ddf155dcccd2/pyppmd-1.3.1-cp310-cp310-win_amd64.whl",hashes = {sha256 = "1e503a28c9a275d31f24af9b735d2cca543b62f438b064e2833e9833e758bdbc"}},
     {name = "pyppmd-1.3.1-cp310-cp310-win_arm64.whl",url = "https://files.pythonhosted.org/packages/23/2f/236f7bf2f8b8ccfd93f0505692b9ad10a249fa00ce4671c50049c69ea414/pyppmd-1.3.1-cp310-cp310-win_arm64.whl",hashes = {sha256 = "3fb3708d7b2b38e2999385a2f02c8e68e0f5a364d94f94e475e2e8b09e9338fc"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2013,7 +2013,7 @@ sdist = {name = "python-dateutil-2.9.0.post0.tar.gz", url = "https://files.pytho
 wheels = [
     {name = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl",hashes = {sha256 = "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"}},
 ]
-marker = "\"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -2044,7 +2044,7 @@ sdist = {name = "rarfile-4.4.tar.gz", url = "https://files.pythonhosted.org/pack
 wheels = [
     {name = "rarfile-4.4-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/e2/06/7135da7d7d662767aee9aeebaa360f4ad29f08d9198cc1b1632428114acd/rarfile-4.4-py3-none-any.whl",hashes = {sha256 = "befb813c283fbcdd46dda2bad090f8272c8bb1de246d04cd570e9d890294d119"}},
 ]
-marker = "\"cbr\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2057,7 +2057,7 @@ sdist = {name = "six-1.17.0.tar.gz", url = "https://files.pythonhosted.org/packa
 wheels = [
     {name = "six-1.17.0-py2.py3-none-any.whl",url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",hashes = {sha256 = "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"}},
 ]
-marker = "\"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2158,7 +2158,7 @@ sdist = {name = "xmlschema-4.3.2.tar.gz", url = "https://files.pythonhosted.org/
 wheels = [
     {name = "xmlschema-4.3.2-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/5c/fb/8be39dc47b0ed9bbc80f384906eed87fa974c9b377a7a430118c3b405550/xmlschema-4.3.2-py3-none-any.whl",hashes = {sha256 = "cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = [
@@ -2173,7 +2173,7 @@ sdist = {name = "elementpath-5.1.3.tar.gz", url = "https://files.pythonhosted.or
 wheels = [
     {name = "elementpath-5.1.3-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/37/11/317824213350e6bf7af8aa4238cb78bec9ca014b89fdd5e25283f1c40d98/elementpath-5.1.3-py3-none-any.whl",hashes = {sha256 = "c46f5e0e36c149b892308843e1e394bdee17ceafbc18cfa39250403dd8475a4e"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2186,7 +2186,7 @@ sdist = {name = "zipremove-0.10.0.tar.gz", url = "https://files.pythonhosted.org
 wheels = [
     {name = "zipremove-0.10.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/0a/e4/2225c1890ce6e239ca23efabb80a3481229a14a2deaa489f5e89723a5aa6/zipremove-0.10.0-py3-none-any.whl",hashes = {sha256 = "04e15df7083642d5b791e51f597cffef8a92d770ecf5160c529b5a7b53b40100"}},
 ]
-marker = "\"default\" in dependency_groups or \"cb7\" in extras or \"cbr\" in extras or \"pdf\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2218,7 +2218,7 @@ wheels = [
     {name = "psutil-7.2.2-cp36-abi3-musllinux_1_2_aarch64.whl",url = "https://files.pythonhosted.org/packages/8e/13/125093eadae863ce03c6ffdbae9929430d116a246ef69866dad94da3bfbc/psutil-7.2.2-cp36-abi3-musllinux_1_2_aarch64.whl",hashes = {sha256 = "fd04ef36b4a6d599bbdb225dd1d3f51e00105f6d48a28f006da7f9822f2606d8"}},
     {name = "psutil-7.2.2-cp36-abi3-musllinux_1_2_x86_64.whl",url = "https://files.pythonhosted.org/packages/04/78/0acd37ca84ce3ddffaa92ef0f571e073faa6d8ff1f0559ab1272188ea2be/psutil-7.2.2-cp36-abi3-musllinux_1_2_x86_64.whl",hashes = {sha256 = "b58fabe35e80b264a4e3bb23e6b96f9e45a3df7fb7eed419ac0e5947c61e47cc"}},
 ]
-marker = "sys_platform != \"cygwin\" and \"cb7\" in extras"
+marker = "sys_platform != \"cygwin\" and \"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2231,7 +2231,7 @@ sdist = {name = "pycparser-3.0.tar.gz", url = "https://files.pythonhosted.org/pa
 wheels = [
     {name = "pycparser-3.0-py3-none-any.whl",url = "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl",hashes = {sha256 = "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"}},
 ]
-marker = "implementation_name != \"PyPy\" and platform_python_implementation == \"PyPy\" and \"cb7\" in extras"
+marker = "implementation_name != \"PyPy\" and platform_python_implementation == \"PyPy\" and \"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
@@ -2243,13 +2243,13 @@ sdist = {name = "texttable-1.7.0.tar.gz", url = "https://files.pythonhosted.org/
 wheels = [
     {name = "texttable-1.7.0-py2.py3-none-any.whl",url = "https://files.pythonhosted.org/packages/24/99/4772b8e00a136f3e01236de33b0efda31ee7077203ba5967fcc76da94d65/texttable-1.7.0-py2.py3-none-any.whl",hashes = {sha256 = "72227d592c82b3d7f672731ae73e4d1f88cd8e2ef5b075a7a7f01a23a3743917"}},
 ]
-marker = "\"cb7\" in extras"
+marker = "\"default\" in dependency_groups"
 
 [packages.tool.pdm]
 dependencies = []
 
 [tool.pdm]
-hashes = {sha256 = "ab8b4cc6d598a41414424a85abf12d935a51dd00fab9fe14e7dd933a434d4c7b"}
+hashes = {sha256 = "a5a8b5430f33b9627c2f59e1ae3c2e2b7c37c8427e83633d4c264f2ca38c758f"}
 strategy = ["inherit_metadata", "static_urls"]
 
 [[tool.pdm.targets]]
