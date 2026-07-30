@@ -13,9 +13,9 @@
 [![Testing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
 [![Publishing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml)
 
-Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.\
-Perdoo standardizes all your digital comics into a unified format (cbz).\
-It adds and/or updates metadata files using supported services.\
+Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.
+Perdoo standardizes all your digital comics into a unified format (cbz).
+It adds and/or updates metadata files using supported services.
 Unlike other tagging tools, Perdoo employs a manual approach when metadata files are absent, prompting users to enter the necessary Publisher/Series/Issue details for search purposes.
 
 ## Installation
@@ -50,24 +50,20 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 ## Supported Formats
 
-### Input Extensions
-
-- .cbt
-- .cbz
-- .cbr _(Requires installing `cb7` dependencies: `pipx install perdoo[cbr]`)_
-- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
-- .pdf _(Requires installing `pdf` dependencies: `pipx install perdoo[pdf]`)_
-
-### Output Extensions
-
-- .cbz
-- .cbt
-- .cb7 _(Requires installing `cb7` dependencies: `pipx install perdoo[cb7]`)_
+| Format | Input | Output |
+| ------ | :---: | :----: |
+| cb7    |  ✅   |   ✅   |
+| cbr    |  ✅   |   ❌   |
+| cbt    |  ✅   |   ✅   |
+| cbz    |  ✅   |   ✅   |
+| pdf    |  ✅   |   ❌   |
 
 ### Metadata Files
 
-- [MetronInfo.xml](https://github.com/Metron-Project/metroninfo)
-- Perdoo supports a slightly modified [ComicInfo.xml](https://github.com/anansi-project/comicinfo) to ignore field ordering.
+Metadata file support comes from [comic-archive](https://codeberg.org/buriedincode/comic-archive), which currently supports:
+
+- ComicInfo v2.0 (Slightly modified to ignore field ordering)
+- MetronInfo v1.1
 
 ## Services
 
@@ -93,7 +89,9 @@ Naming is done based on the Comic Format, set the value to `""` and it will fall
 ### Options
 
 - **Padding**: Int and Int-like fields, such as `{number}`, can include optional zero-padding by specifying the length (e.g. `{number:3}` will pad 0's to be atleast 3 digits long, `12` => `012`).
-- **Sanitization**: All metadata values are sanitized to remove characters outside the set `0-9a-zA-Z&!-`. Custom characters can still be added directly to patterns.
+- **Sanitization**: All metadata values are sanitized to remove characters outside the set `0-9a-zA-Z&!-`.
+
+Custom characters can still be added directly to patterns.
 
 | Pattern Key          | Description                                            |
 | -------------------- | ------------------------------------------------------ |
@@ -133,64 +131,62 @@ File will be created on first run.
 [output]
 folder = "~/.local/share/perdoo"
 format = "cbz"
-image_extensions = [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
+image-extensions = [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
 
-[output.comic_info]
+[output.comic-info]
 create = true
-handle_pages = true
+handle-pages = true
 
-[output.metron_info]
+[output.metron-info]
 create = true
 
 [output.naming]
 seperator = "-"
 default = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
 annual = ""
-digital_chapter = ""
-graphic_novel = ""
+digital-chapter = ""
+graphic-novel = ""
 hardcover = ""
-limited_series = ""
+limited-series = ""
 omnibus = ""
-one_shot = ""
-single_issue = ""
-trade_paperback = ""
+one-shot = ""
+single-issue = ""
+trade-paperback = ""
 
 [services]
 order = ["Metron", "Comicvine"]
 
 [services.comicvine]
-api_key = "<Comicvine API Key>"
+api-key = "<Comicvine API Key>"
 
 [services.metron]
-username = "<Metron Username>"
-password = "<Metron Password>"
-
+token = "<Metron Token>"
 ```
 
 ### Details
 
 - `output.folder`
   The folder where the output files will be stored.
-  Defaults to `~/.local/share/perdoo`.
+  Defaults to `~/.local/share/perdoo/comics`.
 
 - `output.format`
   The output file format for the comic archives.
   Defaults to `cbz`.
-  Options are `cbz`, `cbt` or `cb7`
+  See table above for options
 
-- `output.image_extensions`
+- `output.image-extensions`
   The list of extensions perdoo determines to be images as part of the cleanup step.
   Defaults to `[".png", ".jpg", ".jpeg", ".webp", ".jxl"]`
 
-- `output.comic_info.create`
+- `output.comic-info.create`
   Whether to create a ComicInfo.xml file in the output archive.
   Defaults to `true`.
 
-- `output.comic_info.handle_pages`
+- `output.comic-info.handle_pages`
   Whether to handle page data in the ComicInfo.xml file.
   Defaults to `true`.
 
-- `output.metron_info.create`
+- `output.metron-info.create`
   Whether to create a MetronInfo.xml file in the output archive.
   Defaults to `true`.
 

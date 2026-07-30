@@ -1,10 +1,9 @@
 __all__ = [
-    "BaseModel",
     "IssueSearch",
     "Search",
     "SeriesSearch",
-    "blank_is_none",
     "delete_empty_folders",
+    "display",
     "flatten_dict",
     "list_files",
     "recursive_delete",
@@ -15,29 +14,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from comic_archive.metadata import ComicInfo, MetronInfo
+from msgspec import to_builtins
 from natsort import humansorted, ns
-from pydantic import BaseModel as PydanticModel
 from rich.panel import Panel
 
 from perdoo.console import CONSOLE
 
 LOGGER = logging.getLogger(__name__)
-
-
-class BaseModel(
-    PydanticModel,
-    populate_by_name=True,
-    str_strip_whitespace=True,
-    validate_assignment=True,
-    revalidate_instances="always",
-    extra="forbid",
-):
-    def display(self) -> None:
-        content = flatten_dict(content=self.model_dump())
-        content_vals = [
-            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in content.items()
-        ]
-        CONSOLE.print(Panel.fit("\n".join(content_vals), title=type(self).__name__))
 
 
 @dataclass
@@ -109,6 +93,14 @@ def delete_empty_folders(folder: Path) -> None:
             LOGGER.info("Deleted empty folder: %s", folder)
 
 
-def blank_is_none(value: str) -> str | None:
-    """Enforces blank strings to be None."""
-    return value or None
+def display(data: ComicInfo | MetronInfo, title: str | None = None) -> None:
+    def encoder(obj: object) -> object:
+        return str(obj) if isinstance(obj, Path) else obj
+
+    title = title or type(data).__name__
+    data_dict = flatten_dict(content=to_builtins(data, enc_hook=encoder))
+    data_vals = [
+        f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in data_dict.items()
+    ]
+
+    CONSOLE.print(Panel.fit("\n".join(data_vals), title=title))

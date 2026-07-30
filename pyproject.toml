@@ -40,19 +40,17 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "comic-archive >= 0.1.0",
+  "comic-archive[cb7,cbr,pdf] >= 0.1.0",
   "comicfn2dict >= 0.3.0",
   "grayven >= 0.6.0",
-  "mokkari >= 4.3.0",
+  "mokkari >= 4.4.0",
+  "msgspec[toml] >= 0.21.0",
   "natsort >= 8.4.0",
   "pillow >= 12.3.0",
-  "pydantic >= 2.13.0",
   "questionary >= 2.1.0",
   "rich >= 15.0.0",
   "rich-argparse >= 1.8.0",
   "simyan >= 3.0.0",
-  "tomli >= 2.4.0 ; python_version < '3.11'",
-  "tomli-w >= 1.2.0",
   "typing-extensions >= 4.16.0 ; python_version < '3.11'",
 ]
 description = "Unify and organize your comic collection."
@@ -66,17 +64,6 @@ maintainers = [
 name = "perdoo"
 readme = "README.md"
 requires-python = ">= 3.10"
-
-[project.optional-dependencies]
-cb7 = [
-  "comic-archive[cb7] >= 0.1.0",
-]
-cbr = [
-  "comic-archive[cbr] >= 0.1.0",
-]
-pdf = [
-  "comic-archive[pdf] >= 0.1.0",
-]
 
 [project.scripts]
 Perdoo = "perdoo.__main__:main"

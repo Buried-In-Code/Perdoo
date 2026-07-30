@@ -2,9 +2,10 @@ __all__ = ["build_parser"]
 
 from argparse import ArgumentParser
 
-from rich_argparse import HelpPreviewAction, RichHelpFormatter
+from rich_argparse import HelpPreviewAction
 
 from perdoo import __project__, __version__
+from perdoo.cli._help import RichHelpFormatter
 from perdoo.cli.archive import register as register_archive
 from perdoo.cli.process import register as register_process
 from perdoo.cli.settings import register as register_settings
@@ -12,7 +13,7 @@ from perdoo.cli.settings import register as register_settings
 
 def build_parser() -> ArgumentParser:
     parser = ArgumentParser(prog=__project__, formatter_class=RichHelpFormatter)
-    parser.add_argument("--version", action="version", version=f"Perdoo v{__version__}")
+    parser.add_argument("--version", action="version", version=f"%(prog)s v{__version__}")
     parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo.svg"
     )

@@ -19,5 +19,4 @@ def register(subparsers: _SubParsersAction) -> None:
 
 
 def run(args) -> None:  # noqa: ANN001, ARG001
-    settings = Settings.load()
-    settings.display()
+    Settings.display()

@@ -8,11 +8,11 @@ from comic_archive import Comic
 from comic_archive.errors import MetadataValidationError
 from comic_archive.metadata import ComicInfo, MetronInfo
 from rich.panel import Panel
-from rich.pretty import Pretty
 from rich_argparse import HelpPreviewAction
 
 from perdoo.cli._help import RichHelpFormatter
 from perdoo.console import CONSOLE
+from perdoo.utils import display
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def register(subparsers: _SubParsersAction) -> None:
         "--skip-metron-info", action="store_true", help="Don't show the MetronInfo details."
     )
     parser.add_argument(
-        "--validate", action="store_true", help="Validate the Metadata is valid for its schema."
+        "--validate", action="store_true", help="Validate the Metadata against its schema."
     )
     parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_archive.svg"
@@ -57,8 +57,8 @@ def run(args) -> None:  # noqa: ANN001
                     try:
                         ci.validate(source=comic.read_file(filename=ComicInfo.filename))
                     except MetadataValidationError as err:
-                        CONSOLE.print(err, style="logging.level.error")
-                CONSOLE.print(Panel(Pretty(ci), title=f"'{comic.file.stem}' ComicInfo"))
+                        CONSOLE.print(Panel.fit(str(err), border_style="logging.level.error"))
+                display(data=ci, title=f"'{comic.file.stem}' ComicInfo")
             else:
                 CONSOLE.print("No ComicInfo found", style="logging.level.error")
         if not args.skip_metron_info:
@@ -67,7 +67,7 @@ def run(args) -> None:  # noqa: ANN001
                     try:
                         mi.validate(source=comic.read_file(filename=MetronInfo.filename))
                     except MetadataValidationError as err:
-                        CONSOLE.print(err, style="logging.level.error")
-                CONSOLE.print(Panel(Pretty(mi), title=f"'{comic.file.stem}' MetronInfo"))
+                        CONSOLE.print(Panel.fit(str(err), border_style="logging.level.error"))
+                display(data=mi, title=f"'{comic.file.stem}' MetronInfo")
             else:
                 CONSOLE.print("No MetronInfo found", style="logging.level.error")
