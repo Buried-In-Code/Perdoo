@@ -21,9 +21,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Metron(BaseService[Series, Issue]):
-    def __init__(self, username: str, password: str):
+    def __init__(self, token: str):
         cache = SqliteCache(db_name=str(get_cache_home() / "mokkari.sqlite"))
-        self.session = Mokkari(username=username, passwd=password, cache=cache)
+        self.session = Mokkari(api_token=token, cache=cache)
 
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
@@ -45,7 +45,7 @@ class Metron(BaseService[Series, Issue]):
                 self.session.series_list(
                     params={"name": name, "volume": volume, "year_began": year}  # ty: ignore[invalid-argument-type]
                 ),
-                key=lambda x: (x.name, x.volume),
+                key=lambda x: (x.display_name, x.volume),
             )
             if options:
                 search = name
@@ -122,7 +122,7 @@ class Metron(BaseService[Series, Issue]):
         try:
             options = humansorted(
                 self.session.issues_list(params={"series_id": series_id, "number": number}),  # ty: ignore[invalid-argument-type]
-                key=lambda x: (x.number, x.name),
+                key=lambda x: (x.number, x.issue_name),
                 alg=ns.NA | ns.G,
             )
             if options:
@@ -234,7 +234,7 @@ class Metron(BaseService[Series, Issue]):
             else None,
             age_rating=AgeRating.load(value=issue.rating.name),
             reprints=[Resource[str](id=str(x.id), value=x.issue) for x in issue.reprints],
-            urls=[Url(primary=True, value=issue.resource_url)],
+            urls=[Url(primary=True, value=str(issue.resource_url))],
             credits=[
                 Credit(
                     creator=Resource[str](id=str(x.id), value=x.creator),
@@ -265,7 +265,7 @@ class Metron(BaseService[Series, Issue]):
             volume=series.volume,
             summary=issue.desc,
             publisher=series.publisher.name,
-            web=issue.resource_url,
+            web=str(issue.resource_url),
             page_count=issue.page_count or 0,
             format=series.series_type.name,
             age_rating=load_age_rating(value=issue.rating.name),

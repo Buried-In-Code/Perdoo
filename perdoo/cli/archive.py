@@ -1,8 +1,7 @@
 __all__ = ["register"]
 
 import logging
-from argparse import ArgumentTypeError, _SubParsersAction
-from pathlib import Path
+from argparse import _SubParsersAction
 
 from comic_archive import Comic
 from comic_archive.errors import MetadataValidationError
@@ -10,20 +9,11 @@ from comic_archive.metadata import ComicInfo, MetronInfo
 from rich.panel import Panel
 from rich_argparse import HelpPreviewAction
 
-from perdoo.cli._help import RichHelpFormatter
+from perdoo.cli._utils import RichHelpFormatter, existing_file
 from perdoo.console import CONSOLE
 from perdoo.utils import display
 
 LOGGER = logging.getLogger(__name__)
-
-
-def existing_file(value: str) -> Path:
-    path = Path(value).expanduser().resolve()
-    if not path.is_file():
-        raise ArgumentTypeError(f"target path is not a file: {value!r}")
-    if not path.exists():
-        raise ArgumentTypeError(f"target file must exist: {value!r}")
-    return path
 
 
 def register(subparsers: _SubParsersAction) -> None:

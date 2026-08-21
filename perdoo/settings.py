@@ -29,49 +29,16 @@ class MetronInfo(Struct, rename="kebab"):
 
 class Naming(Struct, rename="kebab"):
     seperator: Literal["-", "_", ".", " "] = "-"
-    default: str = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
-    annual: str | None = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Annual_#{number:2}"
+    pattern: str = (
+        "{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}"
     )
-    digital_chapter: str | None = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Chapter_#{number:3}"
-    )
-    graphic_novel: str | None = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_GN_#{number:2}"
-    )
-    hardcover: str | None = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_HC_#{number:2}"
-    )
-    limited_series: str | None = None
-    omnibus: str | None = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_OB_#{number:2}"
-    )
-    one_shot: str | None = None
-    single_issue: str | None = None
-    trade_paperback: str | None = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_TPB_#{number:2}"
-    )
-
-    def pattern_for(self, format_: str | None) -> str:
-        overrides = {
-            "Annual": self.annual,
-            "Digitial Chapter": self.digital_chapter,
-            "Graphic Novel": self.graphic_novel,
-            "Hardcover": self.hardcover,
-            "Limited Series": self.limited_series,
-            "Omnibus": self.omnibus,
-            "One-Shot": self.one_shot,
-            "Single Issue": self.single_issue,
-            "Trade Paperback": self.trade_paperback,
-        }
-        return overrides.get(format_ or "") or self.default
 
 
 class Output(Struct, rename="kebab"):
     comic_info: ComicInfo = field(default_factory=ComicInfo)
     folder: Path = get_data_home() / "comics"
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
-    image_extensions: tuple[str, ...] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
+    remove_extensions: tuple[str, ...] = (".nfo", ".sfv", ".db", ".DS_Store")
     metron_info: MetronInfo = field(default_factory=MetronInfo)
     naming: Naming = field(default_factory=Naming)
 
@@ -124,14 +91,12 @@ class Settings(Struct, rename="kebab"):
             raise ValueError(f"Invalid settings file {cls._file}: {err}") from err
 
     def save(self) -> Self:
+        def encoder(obj: object) -> object:
+            return str(obj) if isinstance(obj, Path) else obj
+
         self._file.parent.mkdir(parents=True, exist_ok=True)
         self._file.write_bytes(
-            encode(
-                self,
-                enc_hook=lambda obj: (
-                    str(obj) if isinstance(obj, Path) else "" if obj is None else obj
-                ),
-            )
+            encode(_toml_serializable(value=to_builtins(self, enc_hook=encoder)))
         )
         return self
 
@@ -156,3 +121,13 @@ class Settings(Struct, rename="kebab"):
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default Settings"))
         CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
+
+
+def _toml_serializable(value: object) -> object:
+    if value is None:
+        return ""
+    if isinstance(value, dict):
+        return {key: _toml_serializable(value=item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_toml_serializable(value=item) for item in value]
+    return value

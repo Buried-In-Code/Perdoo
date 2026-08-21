@@ -202,7 +202,7 @@ class Comicvine(BaseService[Volume, Issue]):
             locations=[
                 Resource[str](id=str(x.id), value=x.name) for x in issue.locations if x.name
             ],
-            urls=[Url(primary=True, value=issue.site_url)],
+            urls=[Url(primary=True, value=str(issue.site_url))],
             credits=[
                 Credit(
                     creator=Resource[str](id=str(x.id), value=x.name),
@@ -231,7 +231,7 @@ class Comicvine(BaseService[Volume, Issue]):
             number=issue.number,
             summary=issue.summary,
             publisher=series.publisher.name if series.publisher else None,
-            web=issue.site_url,
+            web=str(issue.site_url),
             pages=[],
         )
 

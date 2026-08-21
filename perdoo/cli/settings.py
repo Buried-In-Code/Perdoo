@@ -4,7 +4,7 @@ from argparse import _SubParsersAction
 
 from rich_argparse import HelpPreviewAction
 
-from perdoo.cli._help import RichHelpFormatter
+from perdoo.cli._utils import RichHelpFormatter
 from perdoo.settings import Settings
 
 
