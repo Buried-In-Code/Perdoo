@@ -5,16 +5,20 @@ __all__ = [
     "delete_empty_folders",
     "display",
     "flatten_dict",
+    "get_id",
     "list_files",
     "recursive_delete",
+    "sanitize",
 ]
 
 import logging
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from comic_archive.metadata import ComicInfo, MetronInfo
+from comic_archive.metadata.metron_info import Id, InformationSource
 from msgspec import to_builtins
 from natsort import humansorted, ns
 from rich.panel import Panel
@@ -104,3 +108,16 @@ def display(data: ComicInfo | MetronInfo, title: str | None = None) -> None:
     ]
 
     CONSOLE.print(Panel.fit("\n".join(data_vals), title=title))
+
+
+def get_id(ids: list[Id], source: InformationSource) -> str | None:
+    return next((x.value for x in ids if x.source is source), None)
+
+
+def sanitize(value: str | int | None, seperator: Literal["-", "_", ".", " "]) -> str | None:
+    if value is None:
+        return value
+    value = str(value)
+    value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace(seperator, " "))
+    value = " ".join(value.split())
+    return value.replace(" ", seperator)

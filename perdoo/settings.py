@@ -39,6 +39,7 @@ class Output(Struct, rename="kebab"):
     folder: Path = get_data_home() / "comics"
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
     remove_extensions: tuple[str, ...] = (".nfo", ".sfv", ".db", ".DS_Store")
+    image_extensions: tuple[str, ...] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
     metron_info: MetronInfo = field(default_factory=MetronInfo)
     naming: Naming = field(default_factory=Naming)
 

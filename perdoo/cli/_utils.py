@@ -1,4 +1,11 @@
-__all__ = ["RichHelpFormatter", "enum_arg", "existing_file", "existing_file_or_directory"]
+__all__ = [
+    "ArchiveType",
+    "RichHelpFormatter",
+    "SyncOption",
+    "enum_arg",
+    "existing_file",
+    "existing_file_or_directory",
+]
 
 from argparse import (
     SUPPRESS,
@@ -64,3 +71,22 @@ def enum_arg(enum_type: type[Enum]) -> Callable[[str], Enum]:
         raise ValueError(f"invalid choice: {value}")
 
     return convert
+
+
+class SyncOption(str, Enum):
+    FORCE = "Force"
+    OUTDATED = "Outdated"
+    SKIP = "Skip"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class ArchiveType(str, Enum):
+    CBR = "cbr"
+    CBT = "cbt"
+    CBZ = "cbz"
+    PDF = "pdf"
+
+    def __str__(self) -> str:
+        return self.value

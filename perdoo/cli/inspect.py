@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 def register(subparsers: _SubParsersAction) -> None:
     parser = subparsers.add_parser(
-        "archive", help="Inspect comic archive metadata.", formatter_class=RichHelpFormatter
+        "inspect", help="Inspect comic archive metadata.", formatter_class=RichHelpFormatter
     )
     parser.add_argument("target", type=existing_file, help="Comic to view details of.")
     parser.add_argument(
@@ -31,7 +31,7 @@ def register(subparsers: _SubParsersAction) -> None:
         "--validate", action="store_true", help="Validate the Metadata against its schema."
     )
     parser.add_argument(
-        "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_archive.svg"
+        "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_inspect.svg"
     )
     parser.set_defaults(func=run)
 
