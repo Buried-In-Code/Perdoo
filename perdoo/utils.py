@@ -1,54 +1,22 @@
 __all__ = [
-    "IssueSearch",
-    "Search",
-    "SeriesSearch",
     "delete_empty_folders",
     "display",
     "flatten_dict",
-    "get_id",
     "list_files",
     "recursive_delete",
     "sanitize",
 ]
 
-import logging
 import re
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
 from comic_archive.metadata import ComicInfo, MetronInfo
-from comic_archive.metadata.metron_info import Id, InformationSource
 from msgspec import to_builtins
 from natsort import humansorted, ns
 from rich.panel import Panel
 
 from perdoo.console import CONSOLE
-
-LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class SeriesSearch:
-    name: str
-    volume: int | None = None
-    year: int | None = None
-    comicvine: int | None = None
-    metron: int | None = None
-
-
-@dataclass
-class IssueSearch:
-    number: str | None = None
-    comicvine: int | None = None
-    metron: int | None = None
-
-
-@dataclass
-class Search:
-    series: SeriesSearch
-    issue: IssueSearch
-    filename: str
 
 
 def list_files(path: Path, *extensions: str) -> list[Path]:
@@ -94,7 +62,7 @@ def delete_empty_folders(folder: Path) -> None:
                 delete_empty_folders(subfolder)
         if not any(folder.iterdir()):
             folder.rmdir()
-            LOGGER.info("Deleted empty folder: %s", folder)
+            CONSOLE.print(f"Deleted empty folder: {folder.name!r}")
 
 
 def display(data: ComicInfo | MetronInfo, title: str | None = None) -> None:
@@ -108,10 +76,6 @@ def display(data: ComicInfo | MetronInfo, title: str | None = None) -> None:
     ]
 
     CONSOLE.print(Panel.fit("\n".join(data_vals), title=title))
-
-
-def get_id(ids: list[Id], source: InformationSource) -> str | None:
-    return next((x.value for x in ids if x.source is source), None)
 
 
 def sanitize(value: str | int | None, seperator: Literal["-", "_", ".", " "]) -> str | None:

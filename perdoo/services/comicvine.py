@@ -14,13 +14,13 @@ from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 
 from perdoo import get_cache_home
-from perdoo.services._base import BaseService
-from perdoo.utils import IssueSearch, Search, SeriesSearch
+from perdoo.services._base import prompt_select
+from perdoo.services._models import IssueSearch, MetadataResult, Search, SeriesSearch
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Comicvine(BaseService[Volume, Issue]):
+class Comicvine:
     def __init__(self, api_key: str):
         self.session = Simyan(
             api_key=api_key,
@@ -63,7 +63,7 @@ class Comicvine(BaseService[Volume, Issue]):
                     )
                     for x in options
                 ]
-                selected = self._prompt_select(
+                selected = prompt_select(
                     message=f"Searching Comicvine for Volumes matching '{filename}'"
                     if not year
                     else f"Searching Comicvine for Volume '{search}'",
@@ -124,7 +124,7 @@ class Comicvine(BaseService[Volume, Issue]):
                     )
                     for x in options
                 ]
-                selected = self._prompt_select(
+                selected = prompt_select(
                     message=f"Searching Comicvine for Issues matching '{filename}'"
                     if not number
                     else f"Searching Comicvine for Issues with number '{number}'",
@@ -160,7 +160,7 @@ class Comicvine(BaseService[Volume, Issue]):
             return self.fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
-    def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
+    def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
         from comic_archive.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
@@ -224,7 +224,7 @@ class Comicvine(BaseService[Volume, Issue]):
             universes=[],
         )
 
-    def _process_comic_info(self, series: Volume, issue: Issue) -> ComicInfo | None:
+    def _build_comic_info(self, series: Volume, issue: Issue) -> ComicInfo | None:
         comic_info = ComicInfo(
             title=issue.name,
             series=series.name,
@@ -248,7 +248,7 @@ class Comicvine(BaseService[Volume, Issue]):
 
         return comic_info
 
-    def fetch(self, search: Search) -> tuple[MetronInfo | None, ComicInfo | None]:
+    def fetch(self, search: Search) -> MetadataResult:
         if not search.series.comicvine and search.issue.comicvine:
             try:
                 temp = self.session.get_issue(issue_id=search.issue.comicvine)
@@ -258,13 +258,13 @@ class Comicvine(BaseService[Volume, Issue]):
 
         series = self.fetch_series(search=search.series, filename=search.filename)
         if not series:
-            return None, None
+            return MetadataResult()
 
         issue = self.fetch_issue(series_id=series.id, search=search.issue, filename=search.filename)
         if not issue:
-            return None, None
+            return MetadataResult()
 
-        metron_info = self._process_metron_info(series=series, issue=issue)
-        comic_info = self._process_comic_info(series=series, issue=issue)
-
-        return metron_info, comic_info
+        return MetadataResult(
+            comic_info=self._build_comic_info(series=series, issue=issue),
+            metron_info=self._build_metron_info(series=series, issue=issue),
+        )

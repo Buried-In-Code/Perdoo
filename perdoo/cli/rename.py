@@ -157,7 +157,7 @@ def rename_comic(comic: Comic, new_filename: str, image_exts: Sequence[str]) -> 
                 idx += 1
                 if filename != new_name:
                     CONSOLE.print(f"Renaming {filename!r} to {new_name!r}")
-                    comic.rename_file(filename=filename, new_name=new_filename, override=True)
+                    comic.rename_file(filename=filename, new_name=new_name, override=True)
     except ArchiveCapabilityError as err:
         CONSOLE.print(
             f"{err}: Consider converting to another format first", style="logging.level.warning"
