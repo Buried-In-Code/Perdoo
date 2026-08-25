@@ -1,6 +1,5 @@
 __all__ = ["Comicvine"]
 
-import logging
 import re
 from datetime import datetime
 
@@ -14,10 +13,9 @@ from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 
 from perdoo import get_cache_home
+from perdoo.console import CONSOLE
 from perdoo.services._base import prompt_select
 from perdoo.services._models import IssueSearch, MetadataResult, Search, SeriesSearch
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Comicvine:
@@ -72,19 +70,20 @@ class Comicvine:
                 if selected:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Volumes on Comicvine for the file: '%s'", filename
+                CONSOLE.print(
+                    f"Unable to find any Volumes on Comicvine for the file: {filename!r}",
+                    style="logging.level.warning",
                 )
             if year:
-                LOGGER.info("Searching again without the StartYear")
+                CONSOLE.print("Searching again without the StartYear", style="logging.level.info")
                 return self._search_series(name=name, volume=volume, year=None, filename=filename)
             if confirm(message="Search Again", default=False).ask():
                 return self._search_series(name=None, volume=None, year=None, filename=filename)
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         return None
 
-    def fetch_series(self, search: SeriesSearch, filename: str) -> Volume | None:
+    def _fetch_series(self, search: SeriesSearch, filename: str) -> Volume | None:
         series_id = search.comicvine or self._search_series(
             name=search.name, volume=search.volume, year=search.year, filename=filename
         )
@@ -95,10 +94,10 @@ class Comicvine:
             search.comicvine = series_id
             return series
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         if search.comicvine:
             search.comicvine = None
-            return self.fetch_series(search=search, filename=filename)
+            return self._fetch_series(search=search, filename=filename)
         return None
 
     def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
@@ -125,25 +124,26 @@ class Comicvine:
                     for x in options
                 ]
                 selected = prompt_select(
-                    message=f"Searching Comicvine for Issues matching '{filename}'"
+                    message=f"Searching Comicvine for Issues matching {filename!r}"
                     if not number
-                    else f"Searching Comicvine for Issues with number '{number}'",
+                    else f"Searching Comicvine for Issues with number {number!r}",
                     choices=choices,
                 )
                 if selected:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Issues on Comicvine for the file: '%s'", filename
+                CONSOLE.print(
+                    f"Unable to find any Issues on Comicvine for the file: {filename!r}",
+                    style="logging.level.warning",
                 )
             if number:
-                LOGGER.info("Searching again without the IssueNumber")
+                CONSOLE.print("Searching again without the IssueNumber", style="logging.leve.info")
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         return None
 
-    def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
+    def _fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
         issue_id = search.comicvine or self._search_issue(
             series_id=series_id, number=search.number, filename=filename
         )
@@ -154,10 +154,10 @@ class Comicvine:
             search.comicvine = issue_id
             return issue
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         if search.comicvine:
             search.comicvine = None
-            return self.fetch_issue(series_id=series_id, search=search, filename=filename)
+            return self._fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
     def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
@@ -256,11 +256,13 @@ class Comicvine:
             except ServiceError:
                 pass
 
-        series = self.fetch_series(search=search.series, filename=search.filename)
+        series = self._fetch_series(search=search.series, filename=search.filename)
         if not series:
             return MetadataResult()
 
-        issue = self.fetch_issue(series_id=series.id, search=search.issue, filename=search.filename)
+        issue = self._fetch_issue(
+            series_id=series.id, search=search.issue, filename=search.filename
+        )
         if not issue:
             return MetadataResult()
 
