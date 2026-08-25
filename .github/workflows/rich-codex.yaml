@@ -34,7 +34,7 @@ jobs:
       - name: Install project
         run: uv sync --locked --dev --all-extras --managed-python
       - name: Generate terminal images with rich-codex
-        uses: ewels/rich-codex@v1.2.11
+        uses: ewels/rich-codex@v1.3.1
         with:
           commit_changes: true
           clean_img_paths: docs/img/*.svg
