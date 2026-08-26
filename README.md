@@ -140,23 +140,7 @@ The default pattern is:
 
 Integer and integer-like fields, such as `{number}`, support optional zero-padding by specifying a length.
 
-For example:
-
-```text
-{number:3}
-```
-
-produces:
-
-```text
-012
-```
-
-from:
-
-```text
-12
-```
+For example: `{number:3}` produces `012` from `12`
 
 #### Sanitization
 
@@ -223,7 +207,7 @@ handle-pages = true
 create = true
 
 [output.naming]
-separator = "-"
+seperator = "-"
 pattern = "{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}"
 
 [services]
@@ -290,7 +274,7 @@ Defaults to `true`.
 
 ### Naming
 
-#### `output.naming.separator`
+#### `output.naming.seperator`
 
 The separator used in generated file names.
 
