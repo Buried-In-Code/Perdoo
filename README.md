@@ -13,63 +13,90 @@
 [![Testing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
 [![Publishing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml)
 
-Perdoo is designed to assist in sorting and organizing your comic collection by utilizing metadata files stored within comic archives.
-Perdoo standardizes all your digital comics into a unified format (cbz).
-It adds and/or updates metadata files using supported services.
-Unlike other tagging tools, Perdoo employs a manual approach when metadata files are absent, prompting users to enter the necessary Publisher/Series/Issue details for search purposes.
+Perdoo helps organize comic collections using metadata stored within comic archives.
+
+It standardizes digital comics into a consistent format (CBZ) and can add or update metadata using supported services.
+
+Unlike fully automated tagging tools, Perdoo takes a manual approach when metadata is unavailable. When necessary, it prompts for Publisher, Series, and Issue details that can be used to search supported metadata services.
 
 ## Installation
 
 ### Pipx
 
-1. Ensure you have [Pipx](https://pipx.pypa.io/stable/) installed: `pipx --version`
-2. Install the project: `pipx install perdoo`
+1. Ensure [Pipx](https://pipx.pypa.io/stable/) is installed:
+
+   ```console
+   pipx --version
+   ```
+
+2. Install Perdoo:
+
+   ```console
+   pipx install perdoo
+   ```
 
 ## Usage
 
-<details><summary>perdoo Commands</summary>
+<details>
+<summary><code>perdoo</code> commands</summary>
 
 ![perdoo help](docs/img/perdoo.svg)
 
-</details>
-<details><summary>perdoo archive Commands</summary>
+<details>
+<summary><code>perdoo archive</code> commands</summary>
 
 ![perdoo archive help](docs/img/perdoo_archive.svg)
 
-</details>
-<details><summary>perdoo archive comic-info</summary>
+<details>
+<summary><code>perdoo archive comic-info</code></summary>
 
 ![perdoo archive comic-info help](docs/img/perdoo_archive_comic-info.svg)
 
 </details>
-<details><summary>perdoo archive metron-info</summary>
+
+<details>
+<summary><code>perdoo archive metron-info</code></summary>
 
 ![perdoo archive metron-info help](docs/img/perdoo_archive_metron-info.svg)
 
 </details>
-<details><summary>perdoo clean</summary>
+
+</details>
+
+<details>
+<summary><code>perdoo clean</code></summary>
 
 ![perdoo clean help](docs/img/perdoo_clean.svg)
 
 </details>
-<details><summary>perdoo convert</summary>
+
+<details>
+<summary><code>perdoo convert</code></summary>
 
 ![perdoo convert help](docs/img/perdoo_convert.svg)
 
 </details>
-<details><summary>perdoo rename</summary>
+
+<details>
+<summary><code>perdoo rename</code></summary>
 
 ![perdoo rename help](docs/img/perdoo_rename.svg)
 
 </details>
-<details><summary>perdoo settings</summary>
+
+<details>
+<summary><code>perdoo settings</code></summary>
 
 ![perdoo settings help](docs/img/perdoo_settings.svg)
 
 </details>
-<details><summary>perdoo sync</summary>
+
+<details>
+<summary><code>perdoo sync</code></summary>
 
 ![perdoo sync help](docs/img/perdoo_sync.svg)
+
+</details>
 
 </details>
 
@@ -77,17 +104,17 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 
 | Format | Input | Output |
 | ------ | :---: | :----: |
-| cb7    |  ✅   |   ✅   |
-| cbr    |  ✅   |   ❌   |
-| cbt    |  ✅   |   ✅   |
-| cbz    |  ✅   |   ✅   |
-| pdf    |  ✅   |   ❌   |
+| CB7    |  ✅   |   ✅   |
+| CBR    |  ✅   |   ❌   |
+| CBT    |  ✅   |   ✅   |
+| CBZ    |  ✅   |   ✅   |
+| PDF    |  ✅   |   ❌   |
 
 ### Metadata Files
 
-Metadata file support comes from [comic-archive](https://codeberg.org/buriedincode/comic-archive), which currently supports:
+Metadata file support is provided by [comic-archive](https://codeberg.org/buriedincode/comic-archive), which currently supports:
 
-- ComicInfo v2.0 (Slightly modified to ignore field ordering)
+- ComicInfo v2.0 (with field ordering ignored)
 - MetronInfo v1.1
 
 ## Services
@@ -97,51 +124,90 @@ Metadata file support comes from [comic-archive](https://codeberg.org/buriedinco
 
 ## File Renaming and Organization
 
-File naming and organization uses a pattern-based approach, it tries to name based on the MetronInfo data with a fallback to ComicInfo.
+Perdoo uses a pattern-based approach for naming and organizing files.
+
+Metadata is taken from MetronInfo when available, with ComicInfo used as a fallback.
 
 The default pattern is:
-`{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}`
 
-### Options
+```text
+{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}
+```
 
-- **Padding**: Int and Int-like fields, such as `{number}`, can include optional zero-padding by specifying the length (e.g. `{number:3}` will pad 0's to be atleast 3 digits long, `12` => `012`).
-- **Sanitization**: All metadata values are sanitized to remove characters outside the set `0-9a-zA-Z&!-`.
+### Pattern Options
+
+#### Padding
+
+Integer and integer-like fields, such as `{number}`, support optional zero-padding by specifying a length.
+
+For example:
+
+```text
+{number:3}
+```
+
+produces:
+
+```text
+012
+```
+
+from:
+
+```text
+12
+```
+
+#### Sanitization
+
+Metadata values are sanitized to remove characters outside:
+
+```text
+0-9a-zA-Z&!-
+```
 
 Custom characters can still be added directly to patterns.
 
-| Pattern Key          | Description                                            |
-| -------------------- | ------------------------------------------------------ |
-| `{cover-date}`       | The issue cover date in `yyyy-mm-dd` format.           |
-| `{cover-day}`        | The day from the issue cover date.                     |
-| `{cover-month}`      | The month from the issue cover date.                   |
-| `{cover-year}`       | The year from the issue cover date.                    |
-| `{format}`           | The full format name of the series.                    |
-| `{id}`               | The primary id of the issue.                           |
-| `{imprint}`          | The publisher's imprint.                               |
-| `{isbn}`             | The issue's ISBN.                                      |
-| `{issue-count}`      | The total number of issues in the series.              |
-| `{lang}`             | The issue's language.                                  |
-| `{number}`           | The issue number.                                      |
-| `{publisher-id}`     | The publisher's unique id.                             |
-| `{publisher-name}`   | The full name of the publisher.                        |
-| `{series-id}`        | The series' unique id.                                 |
-| `{series-name}`      | The full name of the series.                           |
-| `{series-sort-name}` | Sort-friendly name (omits leading "The", "A", etc...). |
-| `{series-year}`      | The year the series started.                           |
-| `{store-date}`       | The store date of the issue in `yyyy-mm-dd` format.    |
-| `{store-day}`        | The day from the issue store date.                     |
-| `{store-month}`      | The month from the issue store date.                   |
-| `{store-year}`       | The year from the issue store date.                    |
-| `{title}`            | The issue title.                                       |
-| `{upc}`              | The issue's UPC.                                       |
-| `{volume}`           | The volume of the series.                              |
+### Pattern Keys
+
+| Pattern Key          | Description                                                              |
+| -------------------- | ------------------------------------------------------------------------ |
+| `{cover-date}`       | The issue cover date in `yyyy-mm-dd` format.                             |
+| `{cover-day}`        | The day from the issue cover date.                                       |
+| `{cover-month}`      | The month from the issue cover date.                                     |
+| `{cover-year}`       | The year from the issue cover date.                                      |
+| `{format}`           | The full format name of the series.                                      |
+| `{id}`               | The primary ID of the issue.                                             |
+| `{imprint}`          | The publisher's imprint.                                                 |
+| `{isbn}`             | The issue's ISBN.                                                        |
+| `{issue-count}`      | The total number of issues in the series.                                |
+| `{lang}`             | The issue's language.                                                    |
+| `{number}`           | The issue number.                                                        |
+| `{publisher-id}`     | The publisher's unique ID.                                               |
+| `{publisher-name}`   | The full name of the publisher.                                          |
+| `{series-id}`        | The series' unique ID.                                                   |
+| `{series-name}`      | The full name of the series.                                             |
+| `{series-sort-name}` | Sort-friendly series name, omitting leading words such as "The" and "A". |
+| `{series-year}`      | The year the series started.                                             |
+| `{store-date}`       | The issue store date in `yyyy-mm-dd` format.                             |
+| `{store-day}`        | The day from the issue store date.                                       |
+| `{store-month}`      | The month from the issue store date.                                     |
+| `{store-year}`       | The year from the issue store date.                                      |
+| `{title}`            | The issue title.                                                         |
+| `{upc}`              | The issue's UPC.                                                         |
+| `{volume}`           | The volume of the series.                                                |
 
 ## Settings
 
-To set Perdoo setting details, update the file: `~/.config/perdoo/settings.toml`.
-File will be created on first run.
+Perdoo's settings are stored in:
 
-### Example File
+```text
+~/.config/perdoo/settings.toml
+```
+
+The file is created automatically on first run.
+
+### Example
 
 ```toml
 [output]
@@ -157,7 +223,7 @@ handle-pages = true
 create = true
 
 [output.naming]
-seperator = "-"
+separator = "-"
 pattern = "{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}"
 
 [services]
@@ -170,47 +236,97 @@ api-key = "<Comicvine API Key>"
 token = "<Metron Token>"
 ```
 
-### Details
+### Output
 
-- `output.folder`
-  The folder where the output files will be stored.
-  Defaults to `~/.local/share/perdoo/comics`.
+#### `output.folder`
 
-- `output.format`
-  The output file format for the comic archives.
-  Defaults to `cbz`.
-  See table above for options
+The folder where output files are stored.
 
-- `output.image-extensions`
-  The list of extensions perdoo determines to be images as part of the cleanup step.
-  Defaults to `[".png", ".jpg", ".jpeg", ".webp", ".jxl"]`
+Defaults to:
 
-- `output.comic-info.create`
-  Whether to create a ComicInfo.xml file in the output archive.
-  Defaults to `true`.
+```text
+~/.local/share/perdoo/comics
+```
 
-- `output.comic-info.handle_pages`
-  Whether to handle page data in the ComicInfo.xml file.
-  Defaults to `true`.
+#### `output.format`
 
-- `output.metron-info.create`
-  Whether to create a MetronInfo.xml file in the output archive.
-  Defaults to `true`.
+The output format used for comic archives.
 
-- `output.naming.seperator`
-  The word separator used in the output file names.
-  Defaults to `-`.
-  Options are `-`, `_`, `.`, or ` ` (space).
+Defaults to `cbz`.
 
-- `output.naming.pattern`
-  The pattern supports various metadata fields as described in the above "File Renaming and Organization" section.
+See [Supported Formats](#supported-formats) for available formats.
 
-- `services.order`
-  The order in which the services will be used for metadata retrieval.
-  Metadata will be fetched from the first service that returns a result.
-  Don't include the service name in the list if you don't want to use it.
-  Defaults to `["Metron", "Comicvine"]`.
-  Options are `Metron` or `Comicvine`.
+#### `output.image-extensions`
+
+The file extensions Perdoo considers to be images during the cleanup step.
+
+Defaults to:
+
+```toml
+[".png", ".jpg", ".jpeg", ".webp", ".jxl"]
+```
+
+### ComicInfo
+
+#### `output.comic-info.create`
+
+Whether to create a `ComicInfo.xml` file in the output archive.
+
+Defaults to `true`.
+
+#### `output.comic-info.handle-pages`
+
+Whether to process page data in `ComicInfo.xml`.
+
+Defaults to `true`.
+
+### MetronInfo
+
+#### `output.metron-info.create`
+
+Whether to create a `MetronInfo.xml` file in the output archive.
+
+Defaults to `true`.
+
+### Naming
+
+#### `output.naming.separator`
+
+The separator used in generated file names.
+
+Defaults to `-`.
+
+Supported values are:
+
+- `-`
+- `_`
+- `.`
+- ` ` (space)
+
+#### `output.naming.pattern`
+
+The pattern used to generate output file names and directories.
+
+See [File Renaming and Organization](#file-renaming-and-organization) for available pattern fields.
+
+### Services
+
+#### `services.order`
+
+The order in which services are queried for metadata.
+
+Perdoo uses the first service that returns a result. Services can be omitted from this list to disable them.
+
+Defaults to:
+
+```toml
+["Metron", "Comicvine"]
+```
+
+Supported services:
+
+- `Metron`
+- `Comicvine`
 
 ## Socials
 
