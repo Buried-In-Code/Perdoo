@@ -32,19 +32,44 @@ Unlike other tagging tools, Perdoo employs a manual approach when metadata files
 ![perdoo help](docs/img/perdoo.svg)
 
 </details>
-<details><summary>perdoo archive</summary>
+<details><summary>perdoo archive Commands</summary>
 
 ![perdoo archive help](docs/img/perdoo_archive.svg)
 
 </details>
-<details><summary>perdoo process</summary>
+<details><summary>perdoo archive comic-info</summary>
 
-![perdoo process help](docs/img/perdoo_process.svg)
+![perdoo archive comic-info help](docs/img/perdoo_archive_comic-info.svg)
+
+</details>
+<details><summary>perdoo archive metron-info</summary>
+
+![perdoo archive metron-info help](docs/img/perdoo_archive_metron-info.svg)
+
+</details>
+<details><summary>perdoo clean</summary>
+
+![perdoo clean help](docs/img/perdoo_clean.svg)
+
+</details>
+<details><summary>perdoo convert</summary>
+
+![perdoo convert help](docs/img/perdoo_convert.svg)
+
+</details>
+<details><summary>perdoo rename</summary>
+
+![perdoo rename help](docs/img/perdoo_rename.svg)
 
 </details>
 <details><summary>perdoo settings</summary>
 
 ![perdoo settings help](docs/img/perdoo_settings.svg)
+
+</details>
+<details><summary>perdoo sync</summary>
+
+![perdoo sync help](docs/img/perdoo_sync.svg)
 
 </details>
 
@@ -73,18 +98,9 @@ Metadata file support comes from [comic-archive](https://codeberg.org/buriedinco
 ## File Renaming and Organization
 
 File naming and organization uses a pattern-based approach, it tries to name based on the MetronInfo data with a fallback to ComicInfo.
-Naming is done based on the Comic Format, set the value to `""` and it will fallback to the default setting.
 
-- **_Default_**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}`
-- **Annual**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Annual_#{number:2}`
-- **Digital Chapter**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Chapter_#{number:3}`
-- **Graphic Novel**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_GN_#{number:2}`
-- **Hardcover**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_HC_#{number:2}`
-- **Limited Series**: `""` _Falls back to Default_
-- **Omnibus**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_OB_#{number:2}`
-- **One-Shot**: `""` _Falls back to Default_
-- **Single Issue**: `""` _Falls back to Default_
-- **Trade Paperback**: `{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_TPB_#{number:2}`
+The default pattern is:
+`{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}`
 
 ### Options
 
@@ -142,16 +158,7 @@ create = true
 
 [output.naming]
 seperator = "-"
-default = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
-annual = ""
-digital-chapter = ""
-graphic-novel = ""
-hardcover = ""
-limited-series = ""
-omnibus = ""
-one-shot = ""
-single-issue = ""
-trade-paperback = ""
+pattern = "{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}"
 
 [services]
 order = ["Metron", "Comicvine"]
@@ -195,10 +202,8 @@ token = "<Metron Token>"
   Defaults to `-`.
   Options are `-`, `_`, `.`, or ` ` (space).
 
-- `output.naming.*`
-  The naming patterns for different comic formats.
-  Each pattern can be customized or left empty to use the default setting.
-  The patterns support various metadata fields as described in the above "File Renaming and Organization" section.
+- `output.naming.pattern`
+  The pattern supports various metadata fields as described in the above "File Renaming and Organization" section.
 
 - `services.order`
   The order in which the services will be used for metadata retrieval.

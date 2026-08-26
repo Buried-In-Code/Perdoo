@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 from typing import Any, Literal
 
-from comic_archive.metadata import ComicInfo, MetronInfo
+from comic_archive.metadata import Metadata
 from msgspec import to_builtins
 from natsort import humansorted, ns
 from rich.panel import Panel
@@ -65,7 +65,7 @@ def delete_empty_folders(folder: Path) -> None:
             CONSOLE.print(f"Deleted empty folder: {folder.name!r}")
 
 
-def display(data: ComicInfo | MetronInfo, title: str | None = None) -> None:
+def display(data: Metadata, title: str | None = None) -> None:
     def encoder(obj: object) -> object:
         return str(obj) if isinstance(obj, Path) else obj
 

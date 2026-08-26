@@ -72,7 +72,7 @@ class Metron:
         try:
             options = sorted(
                 self.session.series_list(
-                    params={"name": name, "volume": volume, "year_began": year}
+                    params={"name": name, "volume": volume, "year_began": year}  # ty: ignore[invalid-argument-type]
                 ),
                 key=lambda x: (x.display_name, x.volume),
             )
@@ -156,7 +156,7 @@ class Metron:
     def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
         try:
             options = humansorted(
-                self.session.issues_list(params={"series_id": series_id, "number": number}),
+                self.session.issues_list(params={"series_id": series_id, "number": number}),  # ty: ignore[invalid-argument-type]
                 key=lambda x: (x.number, x.issue_name),
                 alg=ns.NA | ns.G,
             )
@@ -179,7 +179,7 @@ class Metron:
                     return selected.id
             else:
                 CONSOLE.print(
-                    "Unable to find any Comics on Metron for the file: {filename!r}",
+                    f"Unable to find any Comics on Metron for the file: {filename!r}",
                     style="logging.level.warning",
                 )
             if number:
@@ -209,7 +209,7 @@ class Metron:
             return self._fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
-    def _build_metron_info(self, series: Series, issue: Issue) -> MetronInfo | None:
+    def _build_metron_info(self, series: Series, issue: Issue) -> MetronInfo:
         from comic_archive.metadata.metron_info import (  # noqa: PLC0415
             GTIN,
             AgeRating,
@@ -288,7 +288,7 @@ class Metron:
             tags=[],
         )
 
-    def _build_comic_info(self, series: Series, issue: Issue) -> ComicInfo | None:
+    def _build_comic_info(self, series: Series, issue: Issue) -> ComicInfo:
         from comic_archive.metadata.comic_info import AgeRating  # noqa: PLC0415
 
         def load_age_rating(value: str) -> AgeRating:
@@ -321,7 +321,7 @@ class Metron:
         return comic_info
 
     @rate_limit_retry()
-    def fetch(self, search: Search) -> MetadataResult:
+    def fetch(self, search: Search) -> MetadataResult | None:
         if not search.series.metron and search.issue.metron:
             try:
                 temp = self.session.issue(_id=search.issue.metron)
@@ -332,13 +332,13 @@ class Metron:
 
         series = self._fetch_series(search=search.series, filename=search.filename)
         if not series:
-            return MetadataResult()
+            return None
 
         issue = self._fetch_issue(
             series_id=series.id, search=search.issue, filename=search.filename
         )
         if not issue:
-            return MetadataResult()
+            return None
 
         return MetadataResult(
             comic_info=self._build_comic_info(series=series, issue=issue),

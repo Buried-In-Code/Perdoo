@@ -10,7 +10,7 @@ from comic_archive import Comic
 from comic_archive.errors import ArchiveCapabilityError, UnsupportedArchiveError
 from comic_archive.metadata import ComicInfo, Metadata, MetronInfo
 from natsort import humansorted, ns
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressColumn, TextColumn
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
@@ -61,7 +61,7 @@ def evaluate_pattern(
         return sanitize(value=value, seperator=seperator) or ""
 
     pattern_regex = re.compile(r"{(?P<key>[a-zA-Z-]+)(?::(?P<padding>\d+))?}")
-    return pattern_regex.sub(replace_match, pattern)
+    return pattern_regex.sub(replace_match, pattern).lstrip("/")
 
 
 def from_metron_info(metadata: MetronInfo, settings: Naming) -> str:
@@ -143,17 +143,17 @@ def build_file(comic: Comic, folder: Path, settings: Naming) -> Path | None:
         filename = from_comic_info(metadata=comic_info, settings=settings)
     else:
         return None
-    return folder / (filename + comic.file.suffix)
+    return (folder / (filename + comic.file.suffix)).resolve()
 
 
-def rename_comic(comic: Comic, new_filename: str, image_exts: Sequence[str]) -> None:
+def rename_comic(comic: Comic, image_exts: Sequence[str]) -> None:
     try:
         pad = len(str(len(comic.list_filenames())))
         idx = 0
         for filename in humansorted(comic.list_filenames(), alg=ns.NA | ns.G | ns.P):
             suffix = Path(filename).suffix
             if suffix in image_exts:
-                new_name = f"{new_filename}_{str(idx).zfill(pad)}{suffix}"
+                new_name = f"{str(idx).zfill(pad)}{suffix}"
                 idx += 1
                 if filename != new_name:
                     CONSOLE.print(f"Renaming {filename!r} to {new_name!r}")
@@ -172,15 +172,16 @@ def run(args) -> None:  # noqa: ANN001
         ignore_ext = [f".{x}" for x in args.ignore]
         files = [x for x in files if x.suffix not in ignore_ext]
     progress = Progress(
+        SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
-        TaskProgressColumn(),
         MofNCompleteColumn(),
         console=CONSOLE,
+        expand=True,
     )
 
     with progress:
-        for entry in progress.track(files, description="Checking files for renaming"):
+        for entry in progress.track(files, description="Renaming comics"):
             try:
                 with Comic.open(file=entry) as comic:
                     new_file = build_file(
@@ -188,16 +189,15 @@ def run(args) -> None:  # noqa: ANN001
                     )
                     if not new_file:
                         continue
-                    rename_comic(
-                        comic=comic,
-                        new_filename=new_file.stem,
-                        image_exts=settings.output.image_extensions,
-                    )
+                    new_relative = new_file.relative_to(settings.output.folder.resolve())
+                    if comic.file != new_file and new_file.exists():
+                        CONSOLE.print(f"'{new_relative}' already exists, skipping")
+                        continue
+                    rename_comic(comic=comic, image_exts=settings.output.image_extensions)
                 if new_file.exists():
                     continue
                 new_file.parent.mkdir(parents=True, exist_ok=True)
                 old_relative = entry.relative_to(args.target)
-                new_relative = new_file.relative_to(settings.output.folder)
                 CONSOLE.print(f"'{old_relative}' renamed to '{new_relative}'")
                 entry.rename(new_file)
             except UnsupportedArchiveError:

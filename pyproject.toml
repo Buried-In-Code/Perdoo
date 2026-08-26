@@ -40,7 +40,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "comic-archive[cb7,cbr,pdf] >= 0.1.0",
+  "comic-archive >= 0.3.0",
   "comicfn2dict >= 0.3.0",
   "grayven >= 0.6.0",
   "mokkari >= 4.6.0",
@@ -64,6 +64,17 @@ maintainers = [
 name = "perdoo"
 readme = "README.md"
 requires-python = ">= 3.10"
+
+[project.optional-dependencies]
+cb7 = [
+  "comic-archive[cb7] >= 0.3.0",
+]
+cbr = [
+  "comic-archive[cbr] >= 0.3.0",
+]
+pdf = [
+  "comic-archive[pdf] >= 0.3.0",
+]
 
 [project.scripts]
 Perdoo = "perdoo.__main__:main"

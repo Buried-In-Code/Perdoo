@@ -10,8 +10,8 @@ from comicfn2dict import comicfn2dict
 
 @dataclass(frozen=True)
 class MetadataResult:
-    comic_info: ComicInfo | None = None
-    metron_info: MetronInfo | None = None
+    comic_info: ComicInfo
+    metron_info: MetronInfo
 
 
 @dataclass

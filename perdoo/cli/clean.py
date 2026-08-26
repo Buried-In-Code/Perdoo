@@ -6,7 +6,7 @@ from pathlib import Path
 
 from comic_archive import Comic
 from comic_archive.errors import ArchiveCapabilityError, UnsupportedArchiveError
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressColumn, TextColumn
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
@@ -57,15 +57,16 @@ def run(args) -> None:  # noqa: ANN001
         ignore_ext = [f".{x}" for x in args.ignore]
         files = [x for x in files if x.suffix not in ignore_ext]
     progress = Progress(
+        SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
-        TaskProgressColumn(),
         MofNCompleteColumn(),
         console=CONSOLE,
+        expand=True,
     )
 
     with progress:
-        for entry in progress.track(files, description="Checking files for cleaning"):
+        for entry in progress.track(files, description="Cleaning comics"):
             try:
                 with Comic.open(file=entry) as comic:
                     clean_comic(comic=comic, remove_exts=settings.output.remove_extensions)

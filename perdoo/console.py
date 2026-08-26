@@ -6,12 +6,6 @@ from rich.theme import Theme
 CONSOLE = Console(
     theme=Theme(
         {
-            "prompt": "cyan",
-            "prompt.border": "dim bright_cyan",
-            "prompt.choices": "white",
-            "prompt.default": "italic white",
-            "title": "bold not dim blue",
-            "subtitle": "not dim blue",
             "logging.level.debug": "dim white",
             "logging.level.info": "white",
             "logging.level.warning": "yellow",

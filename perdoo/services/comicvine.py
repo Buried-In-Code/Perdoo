@@ -137,7 +137,7 @@ class Comicvine:
                     style="logging.level.warning",
                 )
             if number:
-                CONSOLE.print("Searching again without the IssueNumber", style="logging.leve.info")
+                CONSOLE.print("Searching again without the IssueNumber", style="logging.level.info")
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ServiceError as err:
             CONSOLE.print(err, style="logging.level.error")
@@ -160,7 +160,7 @@ class Comicvine:
             return self._fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
-    def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
+    def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo:
         from comic_archive.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
@@ -224,7 +224,7 @@ class Comicvine:
             universes=[],
         )
 
-    def _build_comic_info(self, series: Volume, issue: Issue) -> ComicInfo | None:
+    def _build_comic_info(self, series: Volume, issue: Issue) -> ComicInfo:
         comic_info = ComicInfo(
             title=issue.name,
             series=series.name,
@@ -248,7 +248,7 @@ class Comicvine:
 
         return comic_info
 
-    def fetch(self, search: Search) -> MetadataResult:
+    def fetch(self, search: Search) -> MetadataResult | None:
         if not search.series.comicvine and search.issue.comicvine:
             try:
                 temp = self.session.get_issue(issue_id=search.issue.comicvine)
@@ -258,13 +258,13 @@ class Comicvine:
 
         series = self._fetch_series(search=search.series, filename=search.filename)
         if not series:
-            return MetadataResult()
+            return None
 
         issue = self._fetch_issue(
             series_id=series.id, search=search.issue, filename=search.filename
         )
         if not issue:
-            return MetadataResult()
+            return None
 
         return MetadataResult(
             comic_info=self._build_comic_info(series=series, issue=issue),
