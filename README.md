@@ -61,6 +61,20 @@ Unlike fully automated tagging tools, Perdoo takes a manual approach when metada
 
 </details>
 
+<details>
+<summary><code>perdoo archive remove</code></summary>
+
+![perdoo archive remove help](docs/img/perdoo_archive_remove.svg)
+
+</details>
+
+<details>
+<summary><code>perdoo archive tree</code></summary>
+
+![perdoo archive tree help](docs/img/perdoo_archive_tree.svg)
+
+</details>
+
 </details>
 
 <details>
@@ -112,7 +126,7 @@ Unlike fully automated tagging tools, Perdoo takes a manual approach when metada
 
 ### Metadata Files
 
-Metadata file support is provided by [comic-archive](https://codeberg.org/buriedincode/comic-archive), which currently supports:
+Metadata file support is provided by [shortbox](https://codeberg.org/buriedincode/shortbox), which currently supports:
 
 - ComicInfo v2.0 (with field ordering ignored)
 - MetronInfo v1.1

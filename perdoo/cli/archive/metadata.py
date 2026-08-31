@@ -3,11 +3,11 @@ __all__ = ["register_comic_info", "register_metron_info"]
 from argparse import _SubParsersAction
 from pathlib import Path
 
-from comic_archive import Comic
-from comic_archive.errors import MetadataValidationError
-from comic_archive.metadata import ComicInfo, Metadata, MetronInfo
 from rich.panel import Panel
 from rich_argparse import HelpPreviewAction
+from shortbox import Comic
+from shortbox.errors import MetadataValidationError
+from shortbox.metadata import ComicInfo, Metadata, MetronInfo
 
 from perdoo.cli._utils import RichHelpFormatter, existing_file
 from perdoo.console import CONSOLE

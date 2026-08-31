@@ -3,10 +3,10 @@ __all__ = ["Comicvine"]
 import re
 from datetime import datetime
 
-from comic_archive.metadata import ComicInfo, MetronInfo
-from comic_archive.metadata.metron_info import InformationSource
 from natsort import humansorted, ns
 from questionary import Choice, confirm, text
+from shortbox.metadata import ComicInfo, MetronInfo
+from shortbox.metadata.metron_info import InformationSource
 from simyan.comicvine import Comicvine as Simyan
 from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
@@ -161,7 +161,7 @@ class Comicvine:
         return None
 
     def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo:
-        from comic_archive.metadata.metron_info import (  # noqa: PLC0415
+        from shortbox.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
             Id,

@@ -7,7 +7,7 @@ dev = [
   "mdformat >= 1.0.0",
   "mdformat-gfm >= 1.0.0",
   "mdformat-ruff >= 0.1.0",
-  "prek >= 0.4.0",
+  "prek >= 0.5.0",
   "ruff >= 0.16.0",
   "toml-sort >= 0.24.0",
   "ty >= 0.0.70",
@@ -15,7 +15,7 @@ dev = [
 tests = [
   "pytest >= 9.1.0",
   "pytest-cov >= 7.1.0",
-  "tox >= 4.60.0",
+  "tox >= 4.61.0",
   "tox-uv >= 1.36.0",
 ]
 
@@ -40,7 +40,6 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "comic-archive >= 0.3.0",
   "comicfn2dict >= 0.3.0",
   "grayven >= 0.6.0",
   "mokkari >= 4.6.0",
@@ -50,6 +49,7 @@ dependencies = [
   "questionary >= 2.1.0",
   "rich >= 15.0.0",
   "rich-argparse >= 1.8.0",
+  "shortbox >= 0.4.0",
   "simyan >= 3.1.0",
   "typing-extensions >= 4.16.0 ; python_version < '3.11'",
 ]
@@ -67,13 +67,13 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "comic-archive[cb7] >= 0.3.0",
+  "shortbox[cb7] >= 0.4.0",
 ]
 cbr = [
-  "comic-archive[cbr] >= 0.3.0",
+  "shortbox[cbr] >= 0.4.0",
 ]
 pdf = [
-  "comic-archive[pdf] >= 0.3.0",
+  "shortbox[pdf] >= 0.4.0",
 ]
 
 [project.scripts]

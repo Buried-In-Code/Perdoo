@@ -7,8 +7,6 @@ from functools import wraps
 from math import ceil
 from typing import TypeVar
 
-from comic_archive.metadata import ComicInfo, MetronInfo
-from comic_archive.metadata.metron_info import InformationSource
 from mokkari.exceptions import ApiError, RateLimitError
 from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
@@ -16,6 +14,8 @@ from mokkari.session import Session as Mokkari
 from mokkari.sqlite_cache import SqliteCache
 from natsort import humansorted, ns
 from questionary import Choice, confirm, text
+from shortbox.metadata import ComicInfo, MetronInfo
+from shortbox.metadata.metron_info import InformationSource
 
 from perdoo import get_cache_home
 from perdoo.console import CONSOLE
@@ -210,7 +210,7 @@ class Metron:
         return None
 
     def _build_metron_info(self, series: Series, issue: Issue) -> MetronInfo:
-        from comic_archive.metadata.metron_info import (  # noqa: PLC0415
+        from shortbox.metadata.metron_info import (  # noqa: PLC0415
             GTIN,
             AgeRating,
             Arc,
@@ -289,7 +289,7 @@ class Metron:
         )
 
     def _build_comic_info(self, series: Series, issue: Issue) -> ComicInfo:
-        from comic_archive.metadata.comic_info import AgeRating  # noqa: PLC0415
+        from shortbox.metadata.comic_info import AgeRating  # noqa: PLC0415
 
         def load_age_rating(value: str) -> AgeRating:
             try:

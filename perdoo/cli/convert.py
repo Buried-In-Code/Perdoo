@@ -2,11 +2,11 @@ __all__ = ["register"]
 
 from argparse import _SubParsersAction
 
-from comic_archive import Comic
-from comic_archive.archives import Archive, PdfArchive, SevenZipArchive, TarArchive, ZipArchive
-from comic_archive.errors import UnsupportedArchiveError
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
+from shortbox import Comic
+from shortbox.archives import Archive, PdfArchive, SevenZipArchive, TarArchive, ZipArchive
+from shortbox.errors import UnsupportedArchiveError
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE

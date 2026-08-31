@@ -4,10 +4,10 @@ from argparse import _SubParsersAction
 from collections.abc import Sequence
 from pathlib import Path
 
-from comic_archive import Comic
-from comic_archive.errors import ArchiveCapabilityError, UnsupportedArchiveError
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
+from shortbox import Comic
+from shortbox.errors import ArchiveCapabilityError, UnsupportedArchiveError
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE

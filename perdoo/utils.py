@@ -11,10 +11,10 @@ import re
 from pathlib import Path
 from typing import Any, Literal
 
-from comic_archive.metadata import Metadata
 from msgspec import to_builtins
 from natsort import humansorted, ns
 from rich.panel import Panel
+from shortbox.metadata import Metadata
 
 from perdoo.console import CONSOLE
 

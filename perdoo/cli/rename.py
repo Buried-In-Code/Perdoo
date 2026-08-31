@@ -6,12 +6,12 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Literal
 
-from comic_archive import Comic
-from comic_archive.errors import ArchiveCapabilityError, UnsupportedArchiveError
-from comic_archive.metadata import ComicInfo, Metadata, MetronInfo
 from natsort import humansorted, ns
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
+from shortbox import Comic
+from shortbox.errors import ArchiveCapabilityError, UnsupportedArchiveError
+from shortbox.metadata import ComicInfo, Metadata, MetronInfo
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE

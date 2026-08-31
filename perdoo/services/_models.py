@@ -2,10 +2,10 @@ __all__ = ["MetadataResult", "Search"]
 
 from dataclasses import dataclass
 
-from comic_archive import Comic
-from comic_archive.metadata import ComicInfo, MetronInfo
-from comic_archive.metadata.metron_info import Id, InformationSource
 from comicfn2dict import comicfn2dict
+from shortbox import Comic
+from shortbox.metadata import ComicInfo, MetronInfo
+from shortbox.metadata.metron_info import Id, InformationSource
 
 
 @dataclass(frozen=True)

@@ -6,6 +6,8 @@ from rich_argparse import HelpPreviewAction
 
 from perdoo.cli._utils import RichHelpFormatter
 from perdoo.cli.archive.metadata import register_comic_info, register_metron_info
+from perdoo.cli.archive.remove import register as register_remove
+from perdoo.cli.archive.tree import register as register_tree
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -17,3 +19,5 @@ def register(subparsers: _SubParsersAction) -> None:
 
     register_comic_info(subparsers=subparsers)
     register_metron_info(subparsers=subparsers)
+    register_remove(subparsers=subparsers)
+    register_tree(subparsers=subparsers)
