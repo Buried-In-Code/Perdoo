@@ -15,7 +15,13 @@ from simyan.schemas.volume import Volume
 from perdoo import get_cache_home
 from perdoo.console import CONSOLE
 from perdoo.services._base import prompt_select
-from perdoo.services._models import IssueSearch, MetadataResult, Search, SeriesSearch
+from perdoo.services._models import (
+    IssueSearch,
+    MetadataResult,
+    Search,
+    SeriesSearch,
+    set_comic_info_note_id,
+)
 
 
 class Comicvine:
@@ -245,6 +251,7 @@ class Comicvine:
         comic_info.team_list = [x.name for x in issue.teams if x.name]
         comic_info.location_list = [x.name for x in issue.locations if x.name]
         comic_info.story_arc_list = [x.name for x in issue.story_arcs if x.name]
+        set_comic_info_note_id(comic_info, source=InformationSource.COMIC_VINE, value=issue.id)
 
         return comic_info
 

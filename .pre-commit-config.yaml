@@ -36,7 +36,7 @@ repos:
       - id: ty
         entry: ty check .
         language: system
-        name: ruff check
+        name: ty check
         pass_filenames: false
         types:
           - python
@@ -61,8 +61,9 @@ repos:
       - id: check-added-large-files
         args:
           - "--enforce-all"
+        exclude: "uv.lock|pylock.toml"
       - id: check-case-conflict
-#      - id: check-executables-have-shebangs
+      - id: check-executables-have-shebangs
 #      - id: check-illegal-windows-names
 #      - id: check-json
 #      - id: check-json5

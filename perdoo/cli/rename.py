@@ -1,7 +1,7 @@
 __all__ = ["register"]
 
 import re
-from argparse import _SubParsersAction
+from argparse import Namespace, _SubParsersAction
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Literal
@@ -20,11 +20,16 @@ from perdoo.utils import list_files, sanitize
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser("rename", help="TODO", formatter_class=RichHelpFormatter)
+    parser = subparsers.add_parser(
+        "rename",
+        help="Rename and organize comic archives using their metadata.",
+        description="Rename and organize comic archives using the configured naming pattern.",
+        formatter_class=RichHelpFormatter,
+    )
     parser.add_argument(
         "target",
         type=existing_file_or_directory,
-        help="Process comics from the specified file/directory.",
+        help="Comic archive or directory of comic archives to rename.",
     )
     parser.add_argument(
         "-i",
@@ -32,8 +37,8 @@ def register(subparsers: _SubParsersAction) -> None:
         action="append",
         type=enum_arg(enum_type=ArchiveType),
         choices=list(ArchiveType),
-        metavar="ARCHIVE",
-        help="TODO",
+        metavar="EXT",
+        help="Skip archives with this extension. Repeat to ignore multiple extensions.",
     )
     parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_rename.svg"
@@ -164,7 +169,7 @@ def rename_comic(comic: Comic, image_exts: Sequence[str]) -> None:
         )
 
 
-def run(args) -> None:  # noqa: ANN001
+def run(args: Namespace) -> None:
     settings = Settings.load().save()
 
     files = list_files(args.target) if args.target.is_dir() else [args.target]

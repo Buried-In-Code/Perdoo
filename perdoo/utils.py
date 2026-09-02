@@ -1,11 +1,4 @@
-__all__ = [
-    "delete_empty_folders",
-    "display",
-    "flatten_dict",
-    "list_files",
-    "recursive_delete",
-    "sanitize",
-]
+__all__ = ["display", "flatten_dict", "list_files", "sanitize"]
 
 import re
 from pathlib import Path
@@ -44,25 +37,6 @@ def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any
         else:
             items[new_key] = value
     return dict(humansorted(items.items(), alg=ns.NA | ns.G))
-
-
-def recursive_delete(path: Path) -> None:
-    for item in path.iterdir():
-        if item.is_dir():
-            recursive_delete(item)
-        else:
-            item.unlink()
-    path.rmdir()
-
-
-def delete_empty_folders(folder: Path) -> None:
-    if folder.is_dir():
-        for subfolder in folder.iterdir():
-            if subfolder.is_dir():
-                delete_empty_folders(subfolder)
-        if not any(folder.iterdir()):
-            folder.rmdir()
-            CONSOLE.print(f"Deleted empty folder: {folder.name!r}")
 
 
 def display(data: Metadata, title: str | None = None) -> None:

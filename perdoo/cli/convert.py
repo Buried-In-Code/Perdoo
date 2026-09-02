@@ -1,11 +1,11 @@
 __all__ = ["register"]
 
-from argparse import _SubParsersAction
+from argparse import Namespace, _SubParsersAction
 
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
 from shortbox import Comic
-from shortbox.archives import Archive, PdfArchive, SevenZipArchive, TarArchive, ZipArchive
+from shortbox.archives import Archive, TarArchive, ZipArchive
 from shortbox.errors import UnsupportedArchiveError
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
@@ -15,11 +15,16 @@ from perdoo.utils import list_files
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser("convert", help="TODO", formatter_class=RichHelpFormatter)
+    parser = subparsers.add_parser(
+        "convert",
+        help="Convert comic archives to the configured output format.",
+        description="Convert comic archives to the format configured in output.format.",
+        formatter_class=RichHelpFormatter,
+    )
     parser.add_argument(
         "target",
         type=existing_file_or_directory,
-        help="Process comics from the specified file/directory.",
+        help="Comic archive or directory of comic archives to convert.",
     )
     parser.add_argument(
         "-i",
@@ -27,8 +32,8 @@ def register(subparsers: _SubParsersAction) -> None:
         action="append",
         type=enum_arg(enum_type=ArchiveType),
         choices=list(ArchiveType),
-        metavar="ARCHIVE",
-        help="TODO",
+        metavar="EXT",
+        help="Skip archives with this extension. Repeat to ignore multiple extensions.",
     )
     parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_convert.svg"
@@ -37,16 +42,29 @@ def register(subparsers: _SubParsersAction) -> None:
 
 
 def determine_format(format_: str) -> type[Archive]:
-    formats = {
+    formats: dict[str, type[Archive]] = {
         ZipArchive.extension: ZipArchive,
         TarArchive.extension: TarArchive,
-        SevenZipArchive.extension: SevenZipArchive,
-        PdfArchive.extension: PdfArchive,
     }
-    return formats.get(f".{format_}", ZipArchive)
+    from shortbox import archives  # noqa: PLC0415
+
+    if sevenzip_archive := getattr(archives, "SevenZipArchive", None):
+        formats[sevenzip_archive.extension] = sevenzip_archive
+    if rar_archive := getattr(archives, "RarArchive", None):
+        formats[rar_archive.extension] = rar_archive
+    if pdf_archive := getattr(archives, "PdfArchive", None):
+        formats[pdf_archive.extension] = pdf_archive
+    output = formats.get(f".{format_}")
+    if output is None:
+        CONSOLE.print(
+            f"{format_!r} output requires `perdoo[{format_}]`; install it and retry",
+            style="logging.level.warning",
+        )
+        raise SystemExit(1)
+    return output
 
 
-def run(args) -> None:  # noqa: ANN001
+def run(args: Namespace) -> None:
     settings = Settings.load().save()
 
     target_format = determine_format(format_=settings.output.format)

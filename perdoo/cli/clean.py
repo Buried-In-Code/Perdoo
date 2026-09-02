@@ -1,6 +1,6 @@
 __all__ = ["register"]
 
-from argparse import _SubParsersAction
+from argparse import Namespace, _SubParsersAction
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -16,11 +16,16 @@ from perdoo.utils import list_files
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser("clean", help="TODO", formatter_class=RichHelpFormatter)
+    parser = subparsers.add_parser(
+        "clean",
+        help="Remove configured unwanted files from comic archives.",
+        description="Remove files with extensions configured in output.remove-extensions from comic archives.",  # noqa: E501
+        formatter_class=RichHelpFormatter,
+    )
     parser.add_argument(
         "target",
         type=existing_file_or_directory,
-        help="Process comics from the specified file/directory.",
+        help="Comic archive or directory of comic archives to clean.",
     )
     parser.add_argument(
         "-i",
@@ -28,8 +33,8 @@ def register(subparsers: _SubParsersAction) -> None:
         action="append",
         type=enum_arg(enum_type=ArchiveType),
         choices=list(ArchiveType),
-        metavar="ARCHIVE",
-        help="TODO",
+        metavar="EXT",
+        help="Skip archives with this extension. Repeat to ignore multiple extensions.",
     )
     parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_clean.svg"
@@ -49,7 +54,7 @@ def clean_comic(comic: Comic, remove_exts: Sequence[str]) -> None:
         )
 
 
-def run(args) -> None:  # noqa: ANN001
+def run(args: Namespace) -> None:
     settings = Settings.load().save()
 
     files = list_files(args.target) if args.target.is_dir() else [args.target]

@@ -7,6 +7,7 @@ from functools import wraps
 from math import ceil
 from typing import TypeVar
 
+from imagehash import hex_to_hash
 from mokkari.exceptions import ApiError, RateLimitError
 from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
@@ -20,7 +21,13 @@ from shortbox.metadata.metron_info import InformationSource
 from perdoo import get_cache_home
 from perdoo.console import CONSOLE
 from perdoo.services._base import prompt_select
-from perdoo.services._models import IssueSearch, MetadataResult, Search, SeriesSearch
+from perdoo.services._models import (
+    IssueSearch,
+    MetadataResult,
+    Search,
+    SeriesSearch,
+    set_comic_info_note_id,
+)
 
 T = TypeVar("T")
 
@@ -48,9 +55,10 @@ def rate_limit_retry(max_retries: int = 5) -> Callable[[Callable[..., T]], Calla
 
 
 class Metron:
-    def __init__(self, token: str):
+    def __init__(self, token: str, cover_hash_distance: int = 10):
         cache = SqliteCache(db_name=str(get_cache_home() / "mokkari.sqlite"))
         self.session = Mokkari(api_token=token, cache=cache)
+        self.cover_hash_distance = cover_hash_distance
 
     @rate_limit_retry()
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
@@ -151,6 +159,51 @@ class Metron:
         except ApiError as err:
             CONSOLE.print(err, style="logging.level.error")
         return None
+
+    @rate_limit_retry()
+    def _search_issue_by_cover_hash(self, cover_hash: str | None, filename: str) -> int | None:
+        if not cover_hash:
+            return None
+        try:
+            source_hash = hex_to_hash(hexstr=cover_hash)
+            options = [
+                issue
+                for issue in self.session.issues_list(params={"cover_hash": cover_hash})
+                if source_hash - hex_to_hash(hexstr=issue.cover_hash) <= self.cover_hash_distance
+            ]
+            if not options:
+                return None
+            choices = [
+                Choice(
+                    title=[("class:dim", f"{x.id} | "), ("class:title", x.issue_name)],
+                    description=f"https://metron.cloud/issues/{x.id}",
+                    value=x,
+                )
+                for x in options
+            ]
+            selected = prompt_select(
+                message=f"Select the Metron issue matching the cover of {filename!r}",
+                choices=choices,
+            )
+            return selected.id if selected else None
+        except ApiError as err:
+            CONSOLE.print(err, style="logging.level.error")
+        return None
+
+    def _set_series_from_issue(self, search: Search, issue_id: int | None) -> None:
+        if not issue_id:
+            return
+        search.issue.metron = issue_id
+        try:
+            issue = self.session.issue(_id=issue_id)
+        except ApiError as err:
+            CONSOLE.print(err, style="logging.level.error")
+            search.issue.metron = None
+        else:
+            if issue:
+                search.series.metron = issue.series.id
+            else:
+                search.issue.metron = None
 
     @rate_limit_retry()
     def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
@@ -317,18 +370,28 @@ class Metron:
         comic_info.character_list = [x.name for x in issue.characters]
         comic_info.team_list = [x.name for x in issue.teams]
         comic_info.story_arc_list = [x.name for x in issue.arcs]
+        set_comic_info_note_id(comic_info, source=InformationSource.METRON, value=issue.id)
 
         return comic_info
 
     @rate_limit_retry()
     def fetch(self, search: Search) -> MetadataResult | None:
-        if not search.series.metron and search.issue.metron:
-            try:
-                temp = self.session.issue(_id=search.issue.metron)
-                if temp:
-                    search.series.metron = temp.series.id
-            except ApiError:
-                pass
+        if not search.series.metron and not search.series.comicvine and search.issue.metron:
+            self._set_series_from_issue(search=search, issue_id=search.issue.metron)
+
+        if not search.series.metron and not search.series.comicvine and search.issue.comicvine:
+            self._set_series_from_issue(
+                search=search,
+                issue_id=self._search_issue_by_comicvine(comicvine_id=search.issue.comicvine),
+            )
+
+        if not search.series.metron and not search.series.comicvine:
+            self._set_series_from_issue(
+                search=search,
+                issue_id=self._search_issue_by_cover_hash(
+                    cover_hash=search.cover_hash, filename=search.filename
+                ),
+            )
 
         series = self._fetch_series(search=search.series, filename=search.filename)
         if not series:

@@ -1,10 +1,11 @@
 __all__ = ["Settings"]
 
+from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import ClassVar, Literal
+from typing import Annotated, ClassVar, Literal
 
-from msgspec import Struct, ValidationError, field, to_builtins
+from msgspec import Meta, Struct, ValidationError, field, to_builtins
 from msgspec.toml import decode, encode
 from rich.panel import Panel
 
@@ -38,8 +39,8 @@ class Output(Struct, rename="kebab"):
     comic_info: ComicInfo = field(default_factory=ComicInfo)
     folder: Path = get_data_home() / "comics"
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
-    remove_extensions: tuple[str, ...] = (".nfo", ".sfv", ".db", ".DS_Store")
-    image_extensions: tuple[str, ...] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
+    remove_extensions: Sequence[str] = (".nfo", ".sfv", ".db", ".DS_Store")
+    image_extensions: Sequence[str] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
     metron_info: MetronInfo = field(default_factory=MetronInfo)
     naming: Naming = field(default_factory=Naming)
 
@@ -63,7 +64,14 @@ class Service(str, Enum):
 class Services(Struct, rename="kebab"):
     comicvine: Comicvine = field(default_factory=Comicvine)
     metron: Metron = field(default_factory=Metron)
-    order: tuple[Service, ...] = (Service.METRON, Service.COMICVINE)
+    order: Sequence[Service] = (Service.METRON, Service.COMICVINE)
+
+
+class Sync(Struct, rename="kebab"):
+    days: Annotated[int, Meta(ge=7, description="'days' must be greater than 6")] = 28
+    cover_hash_distance: Annotated[
+        int, Meta(ge=0, le=64, description="'cover-hash-distance' must be between 0 and 64")
+    ] = 10
 
 
 class Settings(Struct, rename="kebab"):
@@ -71,6 +79,7 @@ class Settings(Struct, rename="kebab"):
 
     output: Output = field(default_factory=Output)
     services: Services = field(default_factory=Services)
+    sync: Sync = field(default_factory=Sync)
 
     @property
     def path(self) -> Path:

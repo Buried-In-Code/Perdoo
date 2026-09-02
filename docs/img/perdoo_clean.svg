@@ -1,4 +1,4 @@
-<svg class="rich-terminal" viewBox="0 0 1482 269.6" xmlns="http://www.w3.org/2000/svg">
+<svg class="rich-terminal" viewBox="0 0 1482 318.4" xmlns="http://www.w3.org/2000/svg">
     <!-- Generated with Rich https://www.textualize.io -->
     <style>
 
@@ -19,75 +19,84 @@
         font-weight: 700;
     }
 
-    .terminal-245122718-matrix {
+    .terminal-1592311331-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-245122718-title {
+    .terminal-1592311331-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-245122718-r1 { fill: #ff8700 }
-.terminal-245122718-r2 { fill: #c5c8c6 }
-.terminal-245122718-r3 { fill: #808080 }
-.terminal-245122718-r4 { fill: #68a0b3 }
-.terminal-245122718-r5 { fill: #00af87 }
+    .terminal-1592311331-r1 { fill: #ff8700 }
+.terminal-1592311331-r2 { fill: #c5c8c6 }
+.terminal-1592311331-r3 { fill: #808080 }
+.terminal-1592311331-r4 { fill: #68a0b3 }
+.terminal-1592311331-r5 { fill: #00af87 }
+.terminal-1592311331-r6 { fill: #d0b344 }
     </style>
 
     <defs>
-    <clipPath id="terminal-245122718-clip-terminal">
-      <rect x="0" y="0" width="1463.0" height="218.6" />
+    <clipPath id="terminal-1592311331-clip-terminal">
+      <rect x="0" y="0" width="1463.0" height="267.4" />
     </clipPath>
-    <clipPath id="terminal-245122718-line-0">
+    <clipPath id="terminal-1592311331-line-0">
     <rect x="0" y="1.5" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-1">
+<clipPath id="terminal-1592311331-line-1">
     <rect x="0" y="25.9" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-2">
+<clipPath id="terminal-1592311331-line-2">
     <rect x="0" y="50.3" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-3">
+<clipPath id="terminal-1592311331-line-3">
     <rect x="0" y="74.7" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-4">
+<clipPath id="terminal-1592311331-line-4">
     <rect x="0" y="99.1" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-5">
+<clipPath id="terminal-1592311331-line-5">
     <rect x="0" y="123.5" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-6">
+<clipPath id="terminal-1592311331-line-6">
     <rect x="0" y="147.9" width="1464" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-245122718-line-7">
+<clipPath id="terminal-1592311331-line-7">
     <rect x="0" y="172.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1592311331-line-8">
+    <rect x="0" y="196.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1592311331-line-9">
+    <rect x="0" y="221.1" width="1464" height="24.65"/>
             </clipPath>
     </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1480" height="267.6" rx="8"/>
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1480" height="316.4" rx="8"/>
             <g transform="translate(26,22)">
             <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
             <circle cx="22" cy="0" r="7" fill="#febc2e"/>
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
 
-    <g transform="translate(9, 41)" clip-path="url(#terminal-245122718-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-1592311331-clip-terminal)">
 
-    <g class="terminal-245122718-matrix">
-    <text class="terminal-245122718-r1" x="0" y="20" textLength="73.2" clip-path="url(#terminal-245122718-line-0)">Usage:</text><text class="terminal-245122718-r3" x="85.4" y="20" textLength="146.4" clip-path="url(#terminal-245122718-line-0)">perdoo&#160;clean</text><text class="terminal-245122718-r2" x="231.8" y="20" textLength="24.4" clip-path="url(#terminal-245122718-line-0)">&#160;[</text><text class="terminal-245122718-r4" x="256.2" y="20" textLength="24.4" clip-path="url(#terminal-245122718-line-0)">-h</text><text class="terminal-245122718-r2" x="280.6" y="20" textLength="36.6" clip-path="url(#terminal-245122718-line-0)">]&#160;[</text><text class="terminal-245122718-r4" x="317.2" y="20" textLength="24.4" clip-path="url(#terminal-245122718-line-0)">-i</text><text class="terminal-245122718-r5" x="353.8" y="20" textLength="85.4" clip-path="url(#terminal-245122718-line-0)">ARCHIVE</text><text class="terminal-245122718-r2" x="439.2" y="20" textLength="24.4" clip-path="url(#terminal-245122718-line-0)">]&#160;</text><text class="terminal-245122718-r4" x="463.6" y="20" textLength="73.2" clip-path="url(#terminal-245122718-line-0)">target</text><text class="terminal-245122718-r2" x="1464" y="20" textLength="12.2" clip-path="url(#terminal-245122718-line-0)">
-</text><text class="terminal-245122718-r2" x="1464" y="44.4" textLength="12.2" clip-path="url(#terminal-245122718-line-1)">
-</text><text class="terminal-245122718-r1" x="0" y="68.8" textLength="256.2" clip-path="url(#terminal-245122718-line-2)">Positional&#160;Arguments:</text><text class="terminal-245122718-r2" x="1464" y="68.8" textLength="12.2" clip-path="url(#terminal-245122718-line-2)">
-</text><text class="terminal-245122718-r4" x="24.4" y="93.2" textLength="73.2" clip-path="url(#terminal-245122718-line-3)">target</text><text class="terminal-245122718-r2" x="292.8" y="93.2" textLength="597.8" clip-path="url(#terminal-245122718-line-3)">Process&#160;comics&#160;from&#160;the&#160;specified&#160;file/directory.</text><text class="terminal-245122718-r2" x="1464" y="93.2" textLength="12.2" clip-path="url(#terminal-245122718-line-3)">
-</text><text class="terminal-245122718-r2" x="1464" y="117.6" textLength="12.2" clip-path="url(#terminal-245122718-line-4)">
-</text><text class="terminal-245122718-r1" x="0" y="142" textLength="97.6" clip-path="url(#terminal-245122718-line-5)">Options:</text><text class="terminal-245122718-r2" x="1464" y="142" textLength="12.2" clip-path="url(#terminal-245122718-line-5)">
-</text><text class="terminal-245122718-r4" x="24.4" y="166.4" textLength="24.4" clip-path="url(#terminal-245122718-line-6)">-h</text><text class="terminal-245122718-r2" x="48.8" y="166.4" textLength="24.4" clip-path="url(#terminal-245122718-line-6)">,&#160;</text><text class="terminal-245122718-r4" x="73.2" y="166.4" textLength="73.2" clip-path="url(#terminal-245122718-line-6)">--help</text><text class="terminal-245122718-r2" x="292.8" y="166.4" textLength="378.2" clip-path="url(#terminal-245122718-line-6)">show&#160;this&#160;help&#160;message&#160;and&#160;exit</text><text class="terminal-245122718-r2" x="1464" y="166.4" textLength="12.2" clip-path="url(#terminal-245122718-line-6)">
-</text><text class="terminal-245122718-r4" x="24.4" y="190.8" textLength="24.4" clip-path="url(#terminal-245122718-line-7)">-i</text><text class="terminal-245122718-r2" x="48.8" y="190.8" textLength="24.4" clip-path="url(#terminal-245122718-line-7)">,&#160;</text><text class="terminal-245122718-r4" x="73.2" y="190.8" textLength="97.6" clip-path="url(#terminal-245122718-line-7)">--ignore</text><text class="terminal-245122718-r5" x="183" y="190.8" textLength="85.4" clip-path="url(#terminal-245122718-line-7)">ARCHIVE</text><text class="terminal-245122718-r2" x="292.8" y="190.8" textLength="48.8" clip-path="url(#terminal-245122718-line-7)">TODO</text><text class="terminal-245122718-r2" x="1464" y="190.8" textLength="12.2" clip-path="url(#terminal-245122718-line-7)">
-</text><text class="terminal-245122718-r2" x="1464" y="215.2" textLength="12.2" clip-path="url(#terminal-245122718-line-8)">
+    <g class="terminal-1592311331-matrix">
+    <text class="terminal-1592311331-r1" x="0" y="20" textLength="73.2" clip-path="url(#terminal-1592311331-line-0)">Usage:</text><text class="terminal-1592311331-r3" x="85.4" y="20" textLength="146.4" clip-path="url(#terminal-1592311331-line-0)">perdoo&#160;clean</text><text class="terminal-1592311331-r2" x="231.8" y="20" textLength="24.4" clip-path="url(#terminal-1592311331-line-0)">&#160;[</text><text class="terminal-1592311331-r4" x="256.2" y="20" textLength="24.4" clip-path="url(#terminal-1592311331-line-0)">-h</text><text class="terminal-1592311331-r2" x="280.6" y="20" textLength="36.6" clip-path="url(#terminal-1592311331-line-0)">]&#160;[</text><text class="terminal-1592311331-r4" x="317.2" y="20" textLength="24.4" clip-path="url(#terminal-1592311331-line-0)">-i</text><text class="terminal-1592311331-r5" x="353.8" y="20" textLength="36.6" clip-path="url(#terminal-1592311331-line-0)">EXT</text><text class="terminal-1592311331-r2" x="390.4" y="20" textLength="24.4" clip-path="url(#terminal-1592311331-line-0)">]&#160;</text><text class="terminal-1592311331-r4" x="414.8" y="20" textLength="73.2" clip-path="url(#terminal-1592311331-line-0)">target</text><text class="terminal-1592311331-r2" x="1464" y="20" textLength="12.2" clip-path="url(#terminal-1592311331-line-0)">
+</text><text class="terminal-1592311331-r2" x="1464" y="44.4" textLength="12.2" clip-path="url(#terminal-1592311331-line-1)">
+</text><text class="terminal-1592311331-r2" x="0" y="68.8" textLength="1073.6" clip-path="url(#terminal-1592311331-line-2)">Remove&#160;files&#160;with&#160;extensions&#160;configured&#160;in&#160;output.remove-extensions&#160;from&#160;comic&#160;archives.</text><text class="terminal-1592311331-r2" x="1464" y="68.8" textLength="12.2" clip-path="url(#terminal-1592311331-line-2)">
+</text><text class="terminal-1592311331-r2" x="1464" y="93.2" textLength="12.2" clip-path="url(#terminal-1592311331-line-3)">
+</text><text class="terminal-1592311331-r1" x="0" y="117.6" textLength="256.2" clip-path="url(#terminal-1592311331-line-4)">Positional&#160;Arguments:</text><text class="terminal-1592311331-r2" x="1464" y="117.6" textLength="12.2" clip-path="url(#terminal-1592311331-line-4)">
+</text><text class="terminal-1592311331-r4" x="24.4" y="142" textLength="73.2" clip-path="url(#terminal-1592311331-line-5)">target</text><text class="terminal-1592311331-r2" x="292.8" y="142" textLength="658.8" clip-path="url(#terminal-1592311331-line-5)">Comic&#160;archive&#160;or&#160;directory&#160;of&#160;comic&#160;archives&#160;to&#160;clean.</text><text class="terminal-1592311331-r2" x="1464" y="142" textLength="12.2" clip-path="url(#terminal-1592311331-line-5)">
+</text><text class="terminal-1592311331-r2" x="1464" y="166.4" textLength="12.2" clip-path="url(#terminal-1592311331-line-6)">
+</text><text class="terminal-1592311331-r1" x="0" y="190.8" textLength="97.6" clip-path="url(#terminal-1592311331-line-7)">Options:</text><text class="terminal-1592311331-r2" x="1464" y="190.8" textLength="12.2" clip-path="url(#terminal-1592311331-line-7)">
+</text><text class="terminal-1592311331-r4" x="24.4" y="215.2" textLength="24.4" clip-path="url(#terminal-1592311331-line-8)">-h</text><text class="terminal-1592311331-r2" x="48.8" y="215.2" textLength="24.4" clip-path="url(#terminal-1592311331-line-8)">,&#160;</text><text class="terminal-1592311331-r4" x="73.2" y="215.2" textLength="73.2" clip-path="url(#terminal-1592311331-line-8)">--help</text><text class="terminal-1592311331-r2" x="292.8" y="215.2" textLength="378.2" clip-path="url(#terminal-1592311331-line-8)">show&#160;this&#160;help&#160;message&#160;and&#160;exit</text><text class="terminal-1592311331-r2" x="1464" y="215.2" textLength="12.2" clip-path="url(#terminal-1592311331-line-8)">
+</text><text class="terminal-1592311331-r4" x="24.4" y="239.6" textLength="24.4" clip-path="url(#terminal-1592311331-line-9)">-i</text><text class="terminal-1592311331-r2" x="48.8" y="239.6" textLength="24.4" clip-path="url(#terminal-1592311331-line-9)">,&#160;</text><text class="terminal-1592311331-r4" x="73.2" y="239.6" textLength="97.6" clip-path="url(#terminal-1592311331-line-9)">--ignore</text><text class="terminal-1592311331-r5" x="183" y="239.6" textLength="36.6" clip-path="url(#terminal-1592311331-line-9)">EXT</text><text class="terminal-1592311331-r2" x="292.8" y="239.6" textLength="890.6" clip-path="url(#terminal-1592311331-line-9)">Skip&#160;archives&#160;with&#160;this&#160;extension.&#160;Repeat&#160;to&#160;ignore&#160;multiple&#160;extensions.&#160;</text><text class="terminal-1592311331-r6" x="1183.4" y="239.6" textLength="256.2" clip-path="url(#terminal-1592311331-line-9)">[cb7|cbr|cbt|cbz|pdf]</text><text class="terminal-1592311331-r2" x="1464" y="239.6" textLength="12.2" clip-path="url(#terminal-1592311331-line-9)">
+</text><text class="terminal-1592311331-r2" x="1464" y="264" textLength="12.2" clip-path="url(#terminal-1592311331-line-10)">
 </text>
     </g>
     </g>

@@ -42,6 +42,7 @@ classifiers = [
 dependencies = [
   "comicfn2dict >= 0.3.0",
   "grayven >= 0.6.0",
+  "ImageHash >= 4.3.0",
   "mokkari >= 4.6.0",
   "msgspec[toml] >= 0.21.0",
   "natsort >= 8.4.0",

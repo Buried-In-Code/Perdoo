@@ -1,6 +1,6 @@
 __all__ = ["register"]
 
-from argparse import _SubParsersAction
+from argparse import Namespace, _SubParsersAction
 
 from rich_argparse import HelpPreviewAction
 from shortbox import Comic
@@ -11,9 +11,16 @@ from perdoo.console import CONSOLE
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser("remove", help="TODO", formatter_class=RichHelpFormatter)
-    parser.add_argument("target", type=existing_file, help="Comic to view details of.")
-    parser.add_argument("entry", type=str, help="TODO")
+    parser = subparsers.add_parser(
+        "remove",
+        help="Remove an entry from a comic archive.",
+        description="Remove a file or directory entry from a comic archive.",
+        formatter_class=RichHelpFormatter,
+    )
+    parser.add_argument(
+        "target", type=existing_file, help="Comic archive from which to remove an entry."
+    )
+    parser.add_argument("entry", type=str, help="Exact path of the archive entry to remove.")
     parser.add_argument(
         "--generate-help-preview",
         action=HelpPreviewAction,
@@ -22,7 +29,7 @@ def register(subparsers: _SubParsersAction) -> None:
     parser.set_defaults(func=run)
 
 
-def run(args) -> None:  # noqa: ANN001
+def run(args: Namespace) -> None:
     with Comic.open(args.target) as comic:
         try:
             comic.remove_file(args.entry)

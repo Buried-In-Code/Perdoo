@@ -1,7 +1,6 @@
 __all__ = [
     "ArchiveType",
     "RichHelpFormatter",
-    "SyncOption",
     "enum_arg",
     "existing_file",
     "existing_file_or_directory",
@@ -20,6 +19,7 @@ from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
 
+from rich.markup import escape
 from rich_argparse import RichHelpFormatter as _RichHelpFormatter
 
 _FLAG_ACTIONS = (_StoreTrueAction, _StoreFalseAction, BooleanOptionalAction)
@@ -33,13 +33,15 @@ class RichHelpFormatter(ArgumentDefaultsHelpFormatter, _RichHelpFormatter):
         if action.help:
             help_text = action.help
         if action.choices:
-            choices = " [yellow][" + ("|".join(map(str, action.choices))) + "][/]"
+            choices_str = escape("[" + ("|".join(map(str, action.choices))) + "]")
+            choices = f" [yellow]{choices_str}[/]"
         if (
             action.default is not None
             and action.default != SUPPRESS
             and not isinstance(action, _FLAG_ACTIONS)
         ):
-            default = f" [dim][Default: {action.default}][/]"
+            default_str = escape(f"[Default: {action.default}]")
+            default = f" [dim]{default_str}[/]"
         return help_text + choices + default
 
 
@@ -73,16 +75,8 @@ def enum_arg(enum_type: type[Enum]) -> Callable[[str], Enum]:
     return convert
 
 
-class SyncOption(str, Enum):
-    FORCE = "Force"
-    OUTDATED = "Outdated"
-    SKIP = "Skip"
-
-    def __str__(self) -> str:
-        return self.value
-
-
 class ArchiveType(str, Enum):
+    CB7 = "cb7"
     CBR = "cbr"
     CBT = "cbt"
     CBZ = "cbz"

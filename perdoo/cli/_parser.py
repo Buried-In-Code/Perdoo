@@ -15,8 +15,17 @@ from perdoo.cli.sync import register as register_sync
 
 
 def build_parser() -> ArgumentParser:
-    parser = ArgumentParser(prog=__project__, formatter_class=RichHelpFormatter)
-    parser.add_argument("--version", action="version", version=f"%(prog)s v{__version__}")
+    parser = ArgumentParser(
+        prog=__project__,
+        description="Organize comic collections using metadata stored in comic archives.",
+        formatter_class=RichHelpFormatter,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s v{__version__}",
+        help="Show the installed version and exit.",
+    )
     parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo.svg"
     )

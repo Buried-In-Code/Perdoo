@@ -13,9 +13,9 @@
 [![Testing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
 [![Publishing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/publishing.yaml)
 
-Perdoo helps organize comic collections using metadata stored within comic archives.
+Perdoo helps organise comic collections using metadata stored within comic archives.
 
-It standardizes digital comics into a consistent format (CBZ) and can add or update metadata using supported services.
+It standardises digital comics into a consistent format and can add or update metadata using supported services.
 
 Unlike fully automated tagging tools, Perdoo takes a manual approach when metadata is unavailable. When necessary, it prompts for Publisher, Series, and Issue details that can be used to search supported metadata services.
 
@@ -232,6 +232,10 @@ api-key = "<Comicvine API Key>"
 
 [services.metron]
 token = "<Metron Token>"
+
+[sync]
+days = 28
+cover-hash-distance = 10
 ```
 
 ### Output
@@ -256,7 +260,7 @@ See [Supported Formats](#supported-formats) for available formats.
 
 #### `output.image-extensions`
 
-The file extensions Perdoo considers to be images during the cleanup step.
+The file extensions Perdoo considers to be images during the clean-up step.
 
 Defaults to:
 
@@ -325,6 +329,20 @@ Supported services:
 
 - `Metron`
 - `Comicvine`
+
+### Sync
+
+#### `sync.days`
+
+The number of days before an archive with existing MetronInfo is synchronised again.
+
+Defaults to `28`.
+
+#### `sync.cover-hash-distance`
+
+The maximum Hamming distance accepted when matching an archive cover.
+
+Defaults to `10`. Supported values range from `0` to `64`.
 
 ## Socials
 
