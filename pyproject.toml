@@ -51,7 +51,7 @@ dependencies = [
   "rich >= 15.0.0",
   "rich-argparse >= 1.8.0",
   "shortbox >= 0.4.0",
-  "simyan >= 3.1.0",
+  "simyan >= 4.0.0",
   "typing-extensions >= 4.16.0 ; python_version < '3.11'",
 ]
 description = "Unify and organize your comic collection."
