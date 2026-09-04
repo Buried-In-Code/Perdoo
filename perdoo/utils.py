@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 from msgspec import to_builtins
 from natsort import humansorted, ns
+from rich.markup import escape
 from rich.panel import Panel
 from shortbox.metadata import Metadata
 
@@ -46,7 +47,8 @@ def display(data: Metadata, title: str | None = None) -> None:
     title = title or type(data).__name__
     data_dict = flatten_dict(content=to_builtins(data, enc_hook=encoder))
     data_vals = [
-        f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in data_dict.items()
+        f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{'' if v is None else escape(str(v))}[/]"
+        for k, v in data_dict.items()
     ]
 
     CONSOLE.print(Panel.fit("\n".join(data_vals), title=title))
