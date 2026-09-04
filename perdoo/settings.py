@@ -1,82 +1,56 @@
-__all__ = ["SETTINGS"]
+__all__ = ["Settings"]
 
+from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, ClassVar, Literal
+from typing import Annotated, ClassVar, Literal
 
-import tomli_w as tomlwriter
-from pydantic import BeforeValidator
+from msgspec import Meta, Struct, ValidationError, field, to_builtins
+from msgspec.toml import decode, encode
 from rich.panel import Panel
 
-from perdoo import get_config_root, get_data_root
+from perdoo import get_config_home, get_data_home
 from perdoo.console import CONSOLE
-from perdoo.utils import BaseModel, blank_is_none, flatten_dict
+from perdoo.utils import flatten_dict
 
 try:
     from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
 except ImportError:
     from typing_extensions import Self  # Python < 3.11
 
-try:
-    import tomllib as tomlreader  # Python >= 3.11  # ty:ignore[unresolved-import]
-except ModuleNotFoundError:
-    import tomli as tomlreader  # Python < 3.11
 
-
-class SettingsModel(BaseModel, extra="ignore"): ...
-
-
-class ComicInfo(SettingsModel):
+class ComicInfo(Struct, rename="kebab"):
     create: bool = True
     handle_pages: bool = True
 
 
-class MetronInfo(SettingsModel):
+class MetronInfo(Struct, rename="kebab"):
     create: bool = True
 
 
-class Naming(SettingsModel):
+class Naming(Struct, rename="kebab"):
     seperator: Literal["-", "_", ".", " "] = "-"
-    default: str = "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_#{number:3}"
-    annual: Annotated[str | None, BeforeValidator(blank_is_none)] = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Annual_#{number:2}"
-    )
-    digital_chapter: Annotated[str | None, BeforeValidator(blank_is_none)] = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_Chapter_#{number:3}"
-    )
-    graphic_novel: Annotated[str | None, BeforeValidator(blank_is_none)] = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_GN_#{number:2}"
-    )
-    hardcover: Annotated[str | None, BeforeValidator(blank_is_none)] = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_HC_#{number:2}"
-    )
-    limited_series: Annotated[str | None, BeforeValidator(blank_is_none)] = None
-    omnibus: Annotated[str | None, BeforeValidator(blank_is_none)] = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_OB_#{number:2}"
-    )
-    one_shot: Annotated[str | None, BeforeValidator(blank_is_none)] = None
-    single_issue: Annotated[str | None, BeforeValidator(blank_is_none)] = None
-    trade_paperback: Annotated[str | None, BeforeValidator(blank_is_none)] = (
-        "{publisher-name}/{series-name}-v{volume}/{series-name}-v{volume}_TPB_#{number:2}"
+    pattern: str = (
+        "{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}"
     )
 
 
-class Output(SettingsModel):
-    comic_info: ComicInfo = ComicInfo()
-    folder: Path = get_data_root()
+class Output(Struct, rename="kebab"):
+    comic_info: ComicInfo = field(default_factory=ComicInfo)
+    folder: Path = get_data_home() / "comics"
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
-    image_extensions: tuple[str, ...] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
-    metron_info: MetronInfo = MetronInfo()
-    naming: Naming = Naming()
+    remove_extensions: Sequence[str] = (".nfo", ".sfv", ".db", ".DS_Store")
+    image_extensions: Sequence[str] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
+    metron_info: MetronInfo = field(default_factory=MetronInfo)
+    naming: Naming = field(default_factory=Naming)
 
 
-class Comicvine(SettingsModel):
-    api_key: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+class Comicvine(Struct, rename="kebab"):
+    api_key: str | None = None
 
 
-class Metron(SettingsModel):
-    password: Annotated[str | None, BeforeValidator(blank_is_none)] = None
-    username: Annotated[str | None, BeforeValidator(blank_is_none)] = None
+class Metron(Struct, rename="kebab"):
+    token: str | None = None
 
 
 class Service(str, Enum):
@@ -87,73 +61,83 @@ class Service(str, Enum):
         return self.value
 
 
-class Services(SettingsModel):
-    comicvine: Comicvine = Comicvine()
-    metron: Metron = Metron()
-    order: tuple[Service, ...] = (Service.METRON, Service.COMICVINE)
+class Services(Struct, rename="kebab"):
+    comicvine: Comicvine = field(default_factory=Comicvine)
+    metron: Metron = field(default_factory=Metron)
+    order: Sequence[Service] = (Service.METRON, Service.COMICVINE)
 
 
-def _stringify_values(content: dict[str, Any]) -> dict[str, Any]:
-    output = {}
-    for key, value in content.items():
-        if not isinstance(value, bool):
-            if not value:
-                continue
-            if isinstance(value, dict):
-                value = _stringify_values(content=value)
-            elif isinstance(value, list | tuple | set):
-                value = [
-                    _stringify_values(content=x) if isinstance(x, dict) else str(x) for x in value
-                ]
-            else:
-                value = str(value)
-        output[key] = value
-    return output
+class Sync(Struct, rename="kebab"):
+    days: Annotated[int, Meta(ge=7, description="'days' must be greater than 6")] = 28
+    cover_hash_distance: Annotated[
+        int, Meta(ge=0, le=64, description="'cover-hash-distance' must be between 0 and 64")
+    ] = 10
 
 
-class Settings(SettingsModel):
-    _file: ClassVar[Path] = get_config_root() / "settings.toml"
+class Settings(Struct, rename="kebab"):
+    _file: ClassVar[Path] = get_config_home() / "settings.toml"
 
-    output: Output = Output()
-    services: Services = Services()
+    output: Output = field(default_factory=Output)
+    services: Services = field(default_factory=Services)
+    sync: Sync = field(default_factory=Sync)
 
     @property
     def path(self) -> Path:
         return self._file
 
     @classmethod
-    def load(cls) -> Self:
+    def load(cls) -> "Settings":
         if not cls._file.exists():
-            cls().save()
-        with cls._file.open("rb") as stream:
-            content = tomlreader.load(stream)
-        return cls(**content)
+            return cls().save()
+        try:
+            return decode(
+                cls._file.read_bytes(),
+                type=cls,
+                dec_hook=lambda typ, obj: (
+                    Path(obj) if typ is Path and isinstance(obj, str) else obj
+                ),
+            )
+        except ValidationError as err:
+            raise ValueError(f"Invalid settings file {cls._file}: {err}") from err
 
     def save(self) -> Self:
-        with self.path.open("wb") as stream:
-            content = self.model_dump(by_alias=False)
-            content = _stringify_values(content=content)
-            tomlwriter.dump(content, stream)
+        def encoder(obj: object) -> object:
+            return str(obj) if isinstance(obj, Path) else obj
+
+        self._file.parent.mkdir(parents=True, exist_ok=True)
+        self._file.write_bytes(
+            encode(_toml_serializable(value=to_builtins(self, enc_hook=encoder)))
+        )
         return self
 
     @classmethod
     def display(cls) -> None:
-        default = flatten_dict(content=cls().model_dump())
-        file_overrides = flatten_dict(content=cls.load().model_dump())
+        def encoder(obj: object) -> object:
+            return str(obj) if isinstance(obj, Path) else obj
+
+        default = flatten_dict(content=to_builtins(cls(), enc_hook=encoder))
+        override = flatten_dict(content=to_builtins(cls.load(), enc_hook=encoder))
         default_vals = [
             f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]"
-            if k in file_overrides and file_overrides[k] == v
+            if k in override and override[k] == v
             else f"[dim][repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/][/]"
             for k, v in default.items()
         ]
         override_vals = [
             f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]"
-            for k, v in file_overrides.items()
+            for k, v in override.items()
             if k not in default or default[k] != v
         ]
 
-        CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default"))
+        CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default Settings"))
         CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
 
 
-SETTINGS = Settings.load().save()
+def _toml_serializable(value: object) -> object:
+    if value is None:
+        return ""
+    if isinstance(value, dict):
+        return {key: _toml_serializable(value=item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_toml_serializable(value=item) for item in value]
+    return value

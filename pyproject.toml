@@ -7,16 +7,16 @@ dev = [
   "mdformat >= 1.0.0",
   "mdformat-gfm >= 1.0.0",
   "mdformat-ruff >= 0.1.0",
-  "prek >= 0.4.0",
-  "ruff >= 0.15.0",
+  "prek >= 0.5.0",
+  "ruff >= 0.16.0",
   "toml-sort >= 0.24.0",
-  "ty >= 0.0.30",
+  "ty >= 0.0.70",
 ]
 tests = [
-  "pytest >= 9.0.0",
+  "pytest >= 9.1.0",
   "pytest-cov >= 7.1.0",
-  "tox >= 4.54.0",
-  "tox-uv >= 1.35.0",
+  "tox >= 4.61.0",
+  "tox-uv >= 1.36.0",
 ]
 
 [project]
@@ -41,20 +41,18 @@ classifiers = [
 ]
 dependencies = [
   "comicfn2dict >= 0.3.0",
-  "grayven >= 0.5.0",
+  "grayven >= 0.6.0",
+  "ImageHash >= 4.3.0",
+  "mokkari >= 4.6.0",
+  "msgspec[toml] >= 0.21.0",
   "natsort >= 8.4.0",
-  "pillow >= 12.2.0",
-  "pydantic >= 2.13.0",
-  "pydantic-xml[lxml] >= 2.21.0",
+  "pillow >= 12.3.0",
   "questionary >= 2.1.0",
-  "rarfile >= 4.2",
   "rich >= 15.0.0",
-  "seagrin >= 0.5.0",
-  "simyan >= 2.0.0",
-  "tomli >= 2.4.0 ; python_version < '3.11'",
-  "tomli-w >= 1.2.0",
-  "typer >= 0.25.0",
-  "zipremove >= 0.8.0",
+  "rich-argparse >= 1.8.0",
+  "shortbox >= 0.4.0",
+  "simyan >= 4.0.0",
+  "typing-extensions >= 4.16.0 ; python_version < '3.11'",
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -70,12 +68,18 @@ requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 cb7 = [
-  "py7zr >= 1.1.0",
+  "shortbox[cb7] >= 0.4.0",
+]
+cbr = [
+  "shortbox[cbr] >= 0.4.0",
+]
+pdf = [
+  "shortbox[pdf] >= 0.4.0",
 ]
 
 [project.scripts]
-Perdoo = "perdoo.__main__:app"
-perdoo = "perdoo.__main__:app"
+Perdoo = "perdoo.__main__:main"
+perdoo = "perdoo.__main__:main"
 
 [project.urls]
 Homepage = "https://pypi.org/project/Perdoo"
@@ -111,20 +115,20 @@ skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 ignore = [
-  "C901",
   "COM812",
+  "CPY001",
   "D",
-  "DTZ",
-  "EM",
-  "FBT",
-  "FIX",
-  "PLR0912",
+  "EM101",
+  "EM102",
+  "FBT001",
+  "FBT002",
   "PLR0913",
+  "PLR0917",
   "PLR2004",
   "PLW2901",
-  "TCH",
-  "TD",
-  "TRY",
+  "TRY003",
+  "TRY300",
+  "TRY400",
 ]
 select = ["ALL"]
 
@@ -146,13 +150,10 @@ split-on-trailing-comma = false
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["PLR2004", "S101"]
+"tests/*" = ["D", "PLR2004", "S101"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ruff.lint.pyupgrade]
-keep-runtime-typing = true
 
 [tool.tomlsort]
 all = true
@@ -168,6 +169,7 @@ min_version = "4.22"
 [tool.tox.env_run_base]
 commands = [["pytest"]]
 dependency_groups = ["tests"]
+passenv = []
 
 [tool.ty.src]
 exclude = ["**/tests/"]

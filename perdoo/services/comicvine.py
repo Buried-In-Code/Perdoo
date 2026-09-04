@@ -1,32 +1,36 @@
 __all__ = ["Comicvine"]
 
-import logging
 import re
 from datetime import datetime
 
 from natsort import humansorted, ns
-from prompt_toolkit.styles import Style
-from questionary import Choice, confirm, select, text
-from simyan.cache import SQLiteCache
+from questionary import Choice, confirm, text
+from shortbox.metadata import ComicInfo, MetronInfo
+from shortbox.metadata.metron_info import InformationSource
 from simyan.comicvine import Comicvine as Simyan
 from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
 from simyan.schemas.volume import Volume
 
-from perdoo import get_cache_root
-from perdoo.comic.metadata import ComicInfo, MetronInfo
-from perdoo.comic.metadata.metron_info import InformationSource
-from perdoo.services._base import BaseService
-from perdoo.utils import IssueSearch, Search, SeriesSearch
+from perdoo import get_cache_home
+from perdoo.console import CONSOLE
+from perdoo.services._base import prompt_select
+from perdoo.services._models import (
+    IssueSearch,
+    MetadataResult,
+    Search,
+    SeriesSearch,
+    set_comic_info_note_id,
+)
 
-LOGGER = logging.getLogger(__name__)
-DEFAULT_CHOICE = Choice(title="None of the Above", value=None)
 
-
-class Comicvine(BaseService[Volume, Issue]):
+class Comicvine:
     def __init__(self, api_key: str):
-        cache = SQLiteCache(path=get_cache_root() / "simyan.sqlite")
-        self.session = Simyan(api_key=api_key, cache=cache)
+        self.session = Simyan(
+            api_key=api_key,
+            cache_path=get_cache_home() / "simyan.sqlite",
+            ratelimit_path=get_cache_home() / "simyan-rates.sqlite",
+        )
 
     def _search_series(
         self, name: str | None, volume: int | None, year: int | None, filename: str
@@ -63,31 +67,29 @@ class Comicvine(BaseService[Volume, Issue]):
                     )
                     for x in options
                 ]
-                choices.append(DEFAULT_CHOICE)
-                selected = select(
-                    f"Searching Comicvine for Volumes matching '{filename}'"
+                selected = prompt_select(
+                    message=f"Searching Comicvine for Volumes matching '{filename}'"
                     if not year
                     else f"Searching Comicvine for Volume '{search}'",
-                    default=DEFAULT_CHOICE,
                     choices=choices,
-                    style=Style([("dim", "dim")]),
-                ).ask()
-                if selected and selected != DEFAULT_CHOICE.title:
+                )
+                if selected:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Volumes on Comicvine for the file: '%s'", filename
+                CONSOLE.print(
+                    f"Unable to find any Volumes on Comicvine for the file: {filename!r}",
+                    style="logging.level.warning",
                 )
             if year:
-                LOGGER.info("Searching again without the StartYear")
+                CONSOLE.print("Searching again without the StartYear", style="logging.level.info")
                 return self._search_series(name=name, volume=volume, year=None, filename=filename)
             if confirm(message="Search Again", default=False).ask():
                 return self._search_series(name=None, volume=None, year=None, filename=filename)
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         return None
 
-    def fetch_series(self, search: SeriesSearch, filename: str) -> Volume | None:
+    def _fetch_series(self, search: SeriesSearch, filename: str) -> Volume | None:
         series_id = search.comicvine or self._search_series(
             name=search.name, volume=search.volume, year=search.year, filename=filename
         )
@@ -98,10 +100,10 @@ class Comicvine(BaseService[Volume, Issue]):
             search.comicvine = series_id
             return series
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         if search.comicvine:
             search.comicvine = None
-            return self.fetch_series(search=search, filename=filename)
+            return self._fetch_series(search=search, filename=filename)
         return None
 
     def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
@@ -127,29 +129,27 @@ class Comicvine(BaseService[Volume, Issue]):
                     )
                     for x in options
                 ]
-                choices.append(DEFAULT_CHOICE)
-                selected = select(
-                    f"Searching Comicvine for Issues matching '{filename}'"
+                selected = prompt_select(
+                    message=f"Searching Comicvine for Issues matching {filename!r}"
                     if not number
-                    else f"Searching Comicvine for Issues with number '{number}'",
-                    default=DEFAULT_CHOICE,
+                    else f"Searching Comicvine for Issues with number {number!r}",
                     choices=choices,
-                    style=Style([("dim", "dim")]),
-                ).ask()
-                if selected and selected != DEFAULT_CHOICE.title:
+                )
+                if selected:
                     return selected.id
             else:
-                LOGGER.warning(
-                    "Unable to find any Issues on Comicvine for the file: '%s'", filename
+                CONSOLE.print(
+                    f"Unable to find any Issues on Comicvine for the file: {filename!r}",
+                    style="logging.level.warning",
                 )
             if number:
-                LOGGER.info("Searching again without the IssueNumber")
+                CONSOLE.print("Searching again without the IssueNumber", style="logging.level.info")
                 return self._search_issue(series_id=series_id, number=None, filename=filename)
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         return None
 
-    def fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
+    def _fetch_issue(self, series_id: int, search: IssueSearch, filename: str) -> Issue | None:
         issue_id = search.comicvine or self._search_issue(
             series_id=series_id, number=search.number, filename=filename
         )
@@ -160,14 +160,14 @@ class Comicvine(BaseService[Volume, Issue]):
             search.comicvine = issue_id
             return issue
         except ServiceError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
         if search.comicvine:
             search.comicvine = None
-            return self.fetch_issue(series_id=series_id, search=search, filename=filename)
+            return self._fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
-    def _process_metron_info(self, series: Volume, issue: Issue) -> MetronInfo | None:
-        from perdoo.comic.metadata.metron_info import (  # noqa: PLC0415
+    def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo:
+        from shortbox.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
             Id,
@@ -208,7 +208,7 @@ class Comicvine(BaseService[Volume, Issue]):
             locations=[
                 Resource[str](id=str(x.id), value=x.name) for x in issue.locations if x.name
             ],
-            urls=[Url(primary=True, value=issue.site_url)],
+            urls=[Url(primary=True, value=str(issue.site_url))],
             credits=[
                 Credit(
                     creator=Resource[str](id=str(x.id), value=x.name),
@@ -221,7 +221,7 @@ class Comicvine(BaseService[Volume, Issue]):
                 for x in issue.creators
                 if x.name
             ],
-            last_modified=datetime.now(),
+            last_modified=datetime.now().astimezone(),
             genres=[],
             prices=[],
             reprints=[],
@@ -230,14 +230,14 @@ class Comicvine(BaseService[Volume, Issue]):
             universes=[],
         )
 
-    def _process_comic_info(self, series: Volume, issue: Issue) -> ComicInfo | None:
+    def _build_comic_info(self, series: Volume, issue: Issue) -> ComicInfo:
         comic_info = ComicInfo(
             title=issue.name,
             series=series.name,
             number=issue.number,
             summary=issue.summary,
             publisher=series.publisher.name if series.publisher else None,
-            web=issue.site_url,
+            web=str(issue.site_url),
             pages=[],
         )
 
@@ -251,10 +251,11 @@ class Comicvine(BaseService[Volume, Issue]):
         comic_info.team_list = [x.name for x in issue.teams if x.name]
         comic_info.location_list = [x.name for x in issue.locations if x.name]
         comic_info.story_arc_list = [x.name for x in issue.story_arcs if x.name]
+        set_comic_info_note_id(comic_info, source=InformationSource.COMIC_VINE, value=issue.id)
 
         return comic_info
 
-    def fetch(self, search: Search) -> tuple[MetronInfo | None, ComicInfo | None]:
+    def fetch(self, search: Search) -> MetadataResult | None:
         if not search.series.comicvine and search.issue.comicvine:
             try:
                 temp = self.session.get_issue(issue_id=search.issue.comicvine)
@@ -262,15 +263,17 @@ class Comicvine(BaseService[Volume, Issue]):
             except ServiceError:
                 pass
 
-        series = self.fetch_series(search=search.series, filename=search.filename)
+        series = self._fetch_series(search=search.series, filename=search.filename)
         if not series:
-            return None, None
+            return None
 
-        issue = self.fetch_issue(series_id=series.id, search=search.issue, filename=search.filename)
+        issue = self._fetch_issue(
+            series_id=series.id, search=search.issue, filename=search.filename
+        )
         if not issue:
-            return None, None
+            return None
 
-        metron_info = self._process_metron_info(series=series, issue=issue)
-        comic_info = self._process_comic_info(series=series, issue=issue)
-
-        return metron_info, comic_info
+        return MetadataResult(
+            comic_info=self._build_comic_info(series=series, issue=issue),
+            metron_info=self._build_metron_info(series=series, issue=issue),
+        )

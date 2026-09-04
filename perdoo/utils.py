@@ -1,66 +1,15 @@
-__all__ = [
-    "BaseModel",
-    "IssueSearch",
-    "Search",
-    "SeriesSearch",
-    "blank_is_none",
-    "delete_empty_folders",
-    "flatten_dict",
-    "list_files",
-    "recursive_delete",
-]
+__all__ = ["display", "flatten_dict", "list_files", "sanitize"]
 
-import logging
-from dataclasses import dataclass
+import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
+from msgspec import to_builtins
 from natsort import humansorted, ns
-from pydantic import BaseModel as PydanticModel
 from rich.panel import Panel
+from shortbox.metadata import Metadata
 
 from perdoo.console import CONSOLE
-
-LOGGER = logging.getLogger(__name__)
-
-
-class BaseModel(
-    PydanticModel,
-    populate_by_name=True,
-    str_strip_whitespace=True,
-    validate_assignment=True,
-    revalidate_instances="always",
-    extra="forbid",
-):
-    def display(self) -> None:
-        content = flatten_dict(content=self.model_dump())
-        content_vals = [
-            f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in content.items()
-        ]
-        CONSOLE.print(Panel.fit("\n".join(content_vals), title=type(self).__name__))
-
-
-@dataclass
-class SeriesSearch:
-    name: str
-    volume: int | None = None
-    year: int | None = None
-    comicvine: int | None = None
-    metron: int | None = None
-
-
-@dataclass
-class IssueSearch:
-    number: str | None = None
-    comicvine: int | None = None
-    metron: int | None = None
-
-
-@dataclass
-class Search:
-    series: SeriesSearch
-    issue: IssueSearch
-    filename: str
 
 
 def list_files(path: Path, *extensions: str) -> list[Path]:
@@ -84,31 +33,29 @@ def flatten_dict(content: dict[str, Any], parent_key: str = "") -> dict[str, Any
             items.update(flatten_dict(content=value, parent_key=new_key))
         elif isinstance(value, list) and value and isinstance(value[0], dict):
             for index, entry in enumerate(value):
-                items.update(flatten_dict(content=entry, parent_key=f"{new_key}[{index}]"))  # ty: ignore[invalid-argument-type]
+                items.update(flatten_dict(content=entry, parent_key=f"{new_key}[{index}]"))
         else:
             items[new_key] = value
     return dict(humansorted(items.items(), alg=ns.NA | ns.G))
 
 
-def recursive_delete(path: Path) -> None:
-    for item in path.iterdir():
-        if item.is_dir():
-            recursive_delete(item)
-        else:
-            item.unlink()
-    path.rmdir()
+def display(data: Metadata, title: str | None = None) -> None:
+    def encoder(obj: object) -> object:
+        return str(obj) if isinstance(obj, Path) else obj
+
+    title = title or type(data).__name__
+    data_dict = flatten_dict(content=to_builtins(data, enc_hook=encoder))
+    data_vals = [
+        f"[repr.attrib_name]{k}[/]: [repr.attrib_value]{v}[/]" for k, v in data_dict.items()
+    ]
+
+    CONSOLE.print(Panel.fit("\n".join(data_vals), title=title))
 
 
-def delete_empty_folders(folder: Path) -> None:
-    if folder.is_dir():
-        for subfolder in folder.iterdir():
-            if subfolder.is_dir():
-                delete_empty_folders(subfolder)
-        if not any(folder.iterdir()):
-            folder.rmdir()
-            LOGGER.info("Deleted empty folder: %s", folder)
-
-
-def blank_is_none(value: str) -> str | None:
-    """Enforces blank strings to be None."""
-    return value or None
+def sanitize(value: str | int | None, seperator: Literal["-", "_", ".", " "]) -> str | None:
+    if value is None:
+        return value
+    value = str(value)
+    value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace(seperator, " "))
+    value = " ".join(value.split())
+    return value.replace(" ", seperator)

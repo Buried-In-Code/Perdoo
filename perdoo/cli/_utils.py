@@ -1,0 +1,86 @@
+__all__ = [
+    "ArchiveType",
+    "RichHelpFormatter",
+    "enum_arg",
+    "existing_file",
+    "existing_file_or_directory",
+]
+
+from argparse import (
+    SUPPRESS,
+    Action,
+    ArgumentDefaultsHelpFormatter,
+    ArgumentTypeError,
+    BooleanOptionalAction,
+    _StoreFalseAction,
+    _StoreTrueAction,
+)
+from collections.abc import Callable
+from enum import Enum
+from pathlib import Path
+
+from rich.markup import escape
+from rich_argparse import RichHelpFormatter as _RichHelpFormatter
+
+_FLAG_ACTIONS = (_StoreTrueAction, _StoreFalseAction, BooleanOptionalAction)
+
+
+class RichHelpFormatter(ArgumentDefaultsHelpFormatter, _RichHelpFormatter):
+    def _get_help_string(self, action: Action) -> str | None:
+        help_text = ""
+        choices = ""
+        default = ""
+        if action.help:
+            help_text = action.help
+        if action.choices:
+            choices_str = escape("[" + ("|".join(map(str, action.choices))) + "]")
+            choices = f" [yellow]{choices_str}[/]"
+        if (
+            action.default is not None
+            and action.default != SUPPRESS
+            and not isinstance(action, _FLAG_ACTIONS)
+        ):
+            default_str = escape(f"[Default: {action.default}]")
+            default = f" [dim]{default_str}[/]"
+        return help_text + choices + default
+
+
+def existing_file(value: str) -> Path:
+    path = Path(value).expanduser().resolve()
+    if not path.is_file():
+        raise ArgumentTypeError(f"target path is not a file: {value!r}")
+    if not path.exists():
+        raise ArgumentTypeError(f"target file must exist: {value!r}")
+    return path
+
+
+def existing_file_or_directory(value: str) -> Path:
+    path = Path(value).expanduser().resolve()
+    if not path.exists():
+        raise ArgumentTypeError(f"target file/directory must exist: {value!r}")
+    return path
+
+
+def enum_arg(enum_type: type[Enum]) -> Callable[[str], Enum]:
+    def convert(value: str) -> Enum:
+        value = value.lower()
+        for member in enum_type:
+            if (
+                member.value.casefold() == value.casefold()
+                or member.name.casefold() == value.casefold()
+            ):
+                return member
+        raise ValueError(f"invalid choice: {value}")
+
+    return convert
+
+
+class ArchiveType(str, Enum):
+    CB7 = "cb7"
+    CBR = "cbr"
+    CBT = "cbt"
+    CBZ = "cbz"
+    PDF = "pdf"
+
+    def __str__(self) -> str:
+        return self.value
