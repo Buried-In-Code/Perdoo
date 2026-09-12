@@ -19,7 +19,7 @@ def prompt_select(message: str, choices: list[Choice]) -> Any:  # noqa: ANN401
         choices=[*choices, DEFAULT_CHOICE],
         style=Style([("dim", "dim")]),
     ).ask()
-    if select and selected != DEFAULT_CHOICE.title:
+    if selected and selected != DEFAULT_CHOICE.title:
         return selected
     return None
 
