@@ -9,6 +9,7 @@ from perdoo.cli._utils import RichHelpFormatter
 from perdoo.cli.archive import register as register_archive
 from perdoo.cli.clean import register as register_clean
 from perdoo.cli.convert import register as register_convert
+from perdoo.cli.pipeline import register as register_pipeline
 from perdoo.cli.rename import register as register_rename
 from perdoo.cli.settings import register as register_settings
 from perdoo.cli.sync import register as register_sync
@@ -34,6 +35,7 @@ def build_parser() -> ArgumentParser:
     register_archive(subparsers=subparsers)
     register_clean(subparsers=subparsers)
     register_convert(subparsers=subparsers)
+    register_pipeline(subparsers=subparsers)
     register_rename(subparsers=subparsers)
     register_settings(subparsers=subparsers)
     register_sync(subparsers=subparsers)

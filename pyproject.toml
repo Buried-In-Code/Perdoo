@@ -10,7 +10,7 @@ dev = [
   "prek >= 0.5.0",
   "ruff >= 0.16.0",
   "toml-sort >= 0.24.0",
-  "ty >= 0.0.70",
+  "ty >= 0.0.80",
 ]
 tests = [
   "pytest >= 9.1.0",
@@ -43,7 +43,7 @@ dependencies = [
   "comicfn2dict >= 0.3.0",
   "grayven >= 0.6.0",
   "ImageHash >= 4.3.0",
-  "mokkari >= 4.6.0",
+  "mokkari >= 4.7.0",
   "msgspec[toml] >= 0.21.0",
   "natsort >= 8.4.0",
   "pillow >= 12.3.0",
@@ -51,7 +51,7 @@ dependencies = [
   "rich >= 15.0.0",
   "rich-argparse >= 1.8.0",
   "shortbox >= 0.4.0",
-  "simyan >= 4.0.0",
+  "simyan >= 4.1.0",
   "typing-extensions >= 4.16.0 ; python_version < '3.11'",
 ]
 description = "Unify and organize your comic collection."

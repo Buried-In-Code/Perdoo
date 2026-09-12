@@ -86,8 +86,10 @@ def sync_comic(comic: Comic, services: Sequence[Service], days: int, force: bool
     try:
         for svc in services:
             if result := svc.fetch(search=query):
-                comic.set_metadata(result.comic_info)
-                comic.set_metadata(result.metron_info)
+                with CONSOLE.status("Writing ComicInfo.xml to archive"):
+                    comic.set_metadata(result.comic_info)
+                with CONSOLE.status("Writing MetronInfo.xml to archive"):
+                    comic.set_metadata(result.metron_info)
                 break
     except ArchiveCapabilityError as err:
         CONSOLE.print(
