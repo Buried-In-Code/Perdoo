@@ -1,4 +1,4 @@
-__all__ = ["display", "flatten_dict", "list_files", "sanitize"]
+__all__ = ["SEPARATOR_CHARS", "display", "flatten_dict", "list_files", "sanitize"]
 
 import re
 from pathlib import Path
@@ -54,10 +54,20 @@ def display(data: Metadata, title: str | None = None) -> None:
     CONSOLE.print(Panel.fit("\n".join(data_vals), title=title))
 
 
+SEPARATOR_CHARS = "-_. "
+_DECIMAL_PLACEHOLDER = "\0"
+
+
 def sanitize(value: str | int | None, seperator: Literal["-", "_", ".", " "]) -> str | None:
     if value is None:
-        return value
-    value = str(value)
-    value = re.sub(r"[^0-9a-zA-Z&! ]+", "", value.replace(seperator, " "))
-    value = " ".join(value.split())
-    return value.replace(" ", seperator)
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    text = re.sub(r"(?<=\d)\.(?=\d)", _DECIMAL_PLACEHOLDER, text)
+    for char in SEPARATOR_CHARS:
+        text = text.replace(char, " ")
+    text = "".join(char for char in text if char.isalnum() or char in f" &!{_DECIMAL_PLACEHOLDER}")
+    text = text.replace(_DECIMAL_PLACEHOLDER, ".")
+    text = " ".join(text.split())
+    return text.replace(" ", seperator) or None

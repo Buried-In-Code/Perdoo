@@ -29,20 +29,18 @@ class MetronInfo(Struct, rename="kebab"):
 
 
 class Naming(Struct, rename="kebab"):
+    pattern: str = "{publisher-name}/{series-name}[-v{volume}]/{series-name}[-v{volume}][_{format-short}]_#{number:3}"  # noqa: E501
     seperator: Literal["-", "_", ".", " "] = "-"
-    pattern: str = (
-        "{publisher-name}/{series-name}-v{volume}/{format}/{series-name}-v{volume}_#{number:3}"
-    )
 
 
 class Output(Struct, rename="kebab"):
     comic_info: ComicInfo = field(default_factory=ComicInfo)
     folder: Path = get_data_home() / "comics"
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
-    remove_extensions: Sequence[str] = (".nfo", ".sfv", ".db", ".DS_Store")
     image_extensions: Sequence[str] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
     metron_info: MetronInfo = field(default_factory=MetronInfo)
     naming: Naming = field(default_factory=Naming)
+    remove_extensions: Sequence[str] = (".nfo", ".sfv", ".db", ".DS_Store")
 
 
 class Comicvine(Struct, rename="kebab"):
@@ -68,10 +66,10 @@ class Services(Struct, rename="kebab"):
 
 
 class Sync(Struct, rename="kebab"):
-    days: Annotated[int, Meta(ge=7, description="'days' must be greater than 6")] = 28
     cover_hash_distance: Annotated[
         int, Meta(ge=0, le=64, description="'cover-hash-distance' must be between 0 and 64")
     ] = 10
+    days: Annotated[int, Meta(ge=7, description="'days' must be greater than 6")] = 28
 
 
 class Settings(Struct, rename="kebab"):
