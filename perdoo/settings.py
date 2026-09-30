@@ -1,9 +1,9 @@
 __all__ = ["Settings"]
 
 from collections.abc import Sequence
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, ClassVar, Literal
+from typing import Annotated, ClassVar, Literal, Self
 
 from msgspec import Meta, Struct, ValidationError, field, to_builtins
 from msgspec.toml import decode, encode
@@ -12,11 +12,6 @@ from rich.panel import Panel
 from perdoo import get_config_home, get_data_home
 from perdoo.console import CONSOLE
 from perdoo.utils import flatten_dict
-
-try:
-    from typing import Self  # Python >= 3.11  # ty:ignore[unresolved-import]
-except ImportError:
-    from typing_extensions import Self  # Python < 3.11
 
 
 class ComicInfo(Struct, rename="kebab"):
@@ -51,7 +46,7 @@ class Metron(Struct, rename="kebab"):
     token: str | None = None
 
 
-class Service(str, Enum):
+class Service(StrEnum):
     COMICVINE = "Comicvine"
     METRON = "Metron"
 

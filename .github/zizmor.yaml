@@ -7,11 +7,11 @@ rules:
   anonymous-definition:
     ignore:
       - 'linting.yaml:22'
-      - 'publishing.yaml:12'
-      - 'publishing.yaml:33'
-      - 'publishing.yaml:49'
+      - 'publishing.yaml:24'
+      - 'publishing.yaml:45'
+      - 'publishing.yaml:61'
       - 'testing.yaml:20'
       - 'testing.yaml:50'
   undocumented-permissions:
     ignore:
-      - 'publishing.yaml:58'
+      - 'publishing.yaml:70'

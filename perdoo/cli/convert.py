@@ -88,5 +88,5 @@ def run(args: Namespace) -> None:
                     comic.convert(
                         archive_type=target_format, delete_original=True, raise_on_existing=False
                     )
-            except UnsupportedArchiveError:  # noqa: PERF203
+            except UnsupportedArchiveError:
                 pass

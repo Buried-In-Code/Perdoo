@@ -75,5 +75,5 @@ def run(args: Namespace) -> None:
             try:
                 with Comic.open(file=entry) as comic:
                     clean_comic(comic=comic, remove_exts=settings.output.remove_extensions)
-            except UnsupportedArchiveError:  # noqa: PERF203
+            except UnsupportedArchiveError:
                 pass

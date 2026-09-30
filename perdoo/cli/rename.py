@@ -103,7 +103,7 @@ def run(args: Namespace) -> None:
         for entry in progress.track(files, description="Renaming comics"):
             try:
                 rename_entry(entry=entry, target=args.target, settings=settings)
-            except UnsupportedArchiveError:  # noqa: PERF203
+            except UnsupportedArchiveError:
                 CONSOLE.print(f"'{entry.name}' is not a supported archive, skipping")
             except Exception as err:  # noqa: BLE001
                 CONSOLE.print(

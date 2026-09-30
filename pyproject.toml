@@ -26,16 +26,15 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console",
-  "Framework :: Pydantic :: 2",
   "Intended Audience :: End Users/Desktop",
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Internet",
   "Typing :: Typed",
 ]
@@ -44,15 +43,14 @@ dependencies = [
   "grayven >= 0.6.0",
   "ImageHash >= 4.3.0",
   "mokkari >= 4.8.0",
-  "msgspec[toml] >= 0.21.0",
+  "msgspec[toml] >= 0.22.0",
   "natsort >= 8.4.0",
   "pillow >= 12.3.0",
   "questionary >= 2.1.0",
   "rich >= 15.0.0",
   "rich-argparse >= 1.8.0",
   "shortbox >= 0.4.0",
-  "simyan >= 4.1.0",
-  "typing-extensions >= 4.16.0 ; python_version < '3.11'",
+  "simyan >= 4.2.0",
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
@@ -64,7 +62,7 @@ maintainers = [
 ]
 name = "perdoo"
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 
 [project.optional-dependencies]
 cb7 = [
@@ -163,7 +161,7 @@ overrides."tool.tox.env_run_base.commands".inline_arrays = false
 trailing_comma_inline_array = true
 
 [tool.tox]
-env_list = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+env_list = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 min_version = "4.22"
 
 [tool.tox.env_run_base]
