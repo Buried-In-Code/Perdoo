@@ -1,11 +1,23 @@
 name: Publishing
-on: push
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - docs/**
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - docs/**
+    tags:
+      - '*'
 
 concurrency:
   cancel-in-progress: true
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
 env:
-  PY_VERSION: '3.14'
+  PY_VERSION: '3.11'
 permissions: {}
 
 jobs:

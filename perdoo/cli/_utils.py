@@ -16,7 +16,7 @@ from argparse import (
     _StoreTrueAction,
 )
 from collections.abc import Callable
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 
 from rich.markup import escape
@@ -75,7 +75,7 @@ def enum_arg(enum_type: type[Enum]) -> Callable[[str], Enum]:
     return convert
 
 
-class ArchiveType(str, Enum):
+class ArchiveType(StrEnum):
     CB7 = "cb7"
     CBR = "cbr"
     CBT = "cbt"

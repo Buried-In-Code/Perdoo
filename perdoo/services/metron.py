@@ -39,7 +39,7 @@ def rate_limit_retry(max_retries: int = 5) -> Callable[[Callable[..., T]], Calla
             for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)
-                except RateLimitError as err:  # noqa: PERF203
+                except RateLimitError as err:
                     if attempt == max_retries - 1:
                         raise
                     CONSOLE.print(

@@ -4,6 +4,7 @@ from argparse import Namespace, _SubParsersAction
 from collections.abc import Sequence
 from datetime import datetime
 
+from msgspec import ValidationError
 from rich_argparse import HelpPreviewAction
 from shortbox import Comic
 from shortbox.errors import ArchiveCapabilityError, UnsupportedArchiveError
@@ -73,14 +74,15 @@ def should_sync(metron_info: MetronInfo | None, comic_info: ComicInfo | None, da
 
 
 def sync_comic(comic: Comic, services: Sequence[Service], days: int, force: bool = False) -> None:
-    if (
-        not should_sync(
-            metron_info=comic.get_metadata(MetronInfo),
-            comic_info=comic.get_metadata(ComicInfo),
-            days=days,
-        )
-        and not force
-    ):
+    try:
+        metron_info = comic.get_metadata(MetronInfo)
+    except ValidationError as err:
+        CONSOLE.print(str(err), style="logging.level.error")
+    try:
+        comic_info = comic.get_metadata(ComicInfo)
+    except ValidationError as err:
+        CONSOLE.print(str(err), style="logging.level.error")
+    if not should_sync(metron_info=metron_info, comic_info=comic_info, days=days) and not force:
         return
     query = Search.build(comic=comic)
     try:
@@ -117,5 +119,5 @@ def run(args: Namespace) -> None:
                 sync_comic(
                     comic=comic, services=services, days=settings.sync.days, force=args.force
                 )
-        except UnsupportedArchiveError:  # noqa: PERF203
+        except UnsupportedArchiveError:
             pass

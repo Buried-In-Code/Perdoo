@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from shortbox.metadata import ComicInfo
@@ -56,7 +56,7 @@ def test_get_comic_info_note_id_requires_the_requested_source() -> None:
             (
                 "Tagged with Perdoo v2026.2.0 using info from Metron at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
             ),
-            datetime(2026, 9, 4, 12, tzinfo=timezone.utc),
+            datetime(2026, 9, 4, 12, tzinfo=UTC),
         ),
         (
             (
@@ -82,7 +82,7 @@ def test_get_comic_info_note_modified_parses_supported_dates(
 
 def test_set_comic_info_note_id_records_source_identifier_and_timestamp() -> None:
     metadata = ComicInfo()
-    modified = datetime(2026, 9, 4, 12, tzinfo=timezone.utc)
+    modified = datetime(2026, 9, 4, 12, tzinfo=UTC)
 
     set_comic_info_note_id(metadata, InformationSource.METRON, 456, modified)
 
