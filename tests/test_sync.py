@@ -37,7 +37,7 @@ def test_should_sync_uses_the_metron_last_modified_date(
 def test_should_sync_uses_the_comic_info_note_when_metron_info_is_missing() -> None:
     comic_info = SimpleNamespace(
         notes=(
-            "Tagged with Perdoo v2026.2.0 using info from Metron at 2026-08-07T12:00:00+00:00. [issue_id:123]"  # noqa: E501
+            "Tagged with Perdoo v2026.3.0 using info from Metron at 2026-08-07T12:00:00+00:00. [issue_id:123]"  # noqa: E501
         )
     )
 
