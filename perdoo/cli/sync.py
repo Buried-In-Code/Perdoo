@@ -4,10 +4,9 @@ from argparse import Namespace, _SubParsersAction
 from collections.abc import Sequence
 from datetime import datetime
 
-from msgspec import ValidationError
 from rich_argparse import HelpPreviewAction
 from shortbox import Comic
-from shortbox.errors import ArchiveCapabilityError, UnsupportedArchiveError
+from shortbox.errors import ArchiveCapabilityError, MetadataValidationError, UnsupportedArchiveError
 from shortbox.metadata import ComicInfo, MetronInfo
 
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
@@ -76,12 +75,14 @@ def should_sync(metron_info: MetronInfo | None, comic_info: ComicInfo | None, da
 def sync_comic(comic: Comic, services: Sequence[Service], days: int, force: bool = False) -> None:
     try:
         metron_info = comic.get_metadata(MetronInfo)
-    except ValidationError as err:
+    except MetadataValidationError as err:
         CONSOLE.print(str(err), style="logging.level.error")
+        metron_info = None
     try:
         comic_info = comic.get_metadata(ComicInfo)
-    except ValidationError as err:
+    except MetadataValidationError as err:
         CONSOLE.print(str(err), style="logging.level.error")
+        comic_info = None
     if not should_sync(metron_info=metron_info, comic_info=comic_info, days=days) and not force:
         return
     query = Search.build(comic=comic)

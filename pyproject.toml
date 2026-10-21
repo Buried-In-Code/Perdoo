@@ -8,15 +8,15 @@ dev = [
   "mdformat-gfm >= 1.0.0",
   "mdformat-ruff >= 0.1.0",
   "prek >= 0.5.0",
-  "ruff >= 0.16.0",
+  "ruff >= 0.17.0",
   "toml-sort >= 0.25.0",
-  "ty >= 0.0.80",
+  "ty >= 0.0.90",
 ]
 tests = [
   "pytest >= 9.1.0",
   "pytest-cov >= 7.1.0",
-  "tox >= 4.64.0",
-  "tox-uv >= 1.36.0",
+  "tox >= 4.67.0",
+  "tox-uv >= 1.37.0",
 ]
 
 [project]
@@ -39,17 +39,17 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "comicfn2dict >= 0.3.0",
-  "grayven >= 0.6.0",
+  "comicfn2dict >= 1.0.0",
+  "grayven >= 0.7.0",
   "ImageHash >= 4.3.0",
-  "mokkari >= 4.8.0",
+  "mokkari >= 4.10.0",
   "msgspec[toml] >= 0.22.0",
   "natsort >= 8.4.0",
-  "pillow >= 12.3.0",
+  "pillow >= 13.0.0",
   "questionary >= 2.1.0",
   "rich >= 15.0.0",
   "rich-argparse >= 1.8.0",
-  "shortbox >= 0.4.0",
+  "shortbox >= 0.5.0",
   "simyan >= 4.2.0",
 ]
 description = "Unify and organize your comic collection."
@@ -66,13 +66,13 @@ requires-python = ">= 3.11"
 
 [project.optional-dependencies]
 cb7 = [
-  "shortbox[cb7] >= 0.4.0",
+  "shortbox[cb7] >= 0.5.0",
 ]
 cbr = [
-  "shortbox[cbr] >= 0.4.0",
+  "shortbox[cbr] >= 0.5.0",
 ]
 pdf = [
-  "shortbox[pdf] >= 0.4.0",
+  "shortbox[pdf] >= 0.5.0",
 ]
 
 [project.scripts]
