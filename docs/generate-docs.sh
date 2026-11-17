@@ -8,6 +8,7 @@ COLUMNS=120 pdm run perdoo archive remove --generate-help-preview
 COLUMNS=120 pdm run perdoo archive tree --generate-help-preview
 COLUMNS=120 pdm run perdoo clean --generate-help-preview
 COLUMNS=120 pdm run perdoo convert --generate-help-preview
+COLUMNS=120 pdm run perdoo pipeline --generate-help-preview
 COLUMNS=120 pdm run perdoo rename --generate-help-preview
 COLUMNS=120 pdm run perdoo settings --generate-help-preview
 COLUMNS=120 pdm run perdoo sync --generate-help-preview

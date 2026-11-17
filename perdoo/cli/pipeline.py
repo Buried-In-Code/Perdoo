@@ -15,7 +15,10 @@ from perdoo.console import CONSOLE
 
 def register(subparsers: _SubParsersAction) -> None:
     parser = subparsers.add_parser(
-        "pipeline", help="", description="", formatter_class=RichHelpFormatter
+        "pipeline",
+        help="Runs convert, clean, sync and rename one after another",
+        description="Runs convert, clean, sync and rename one after another",
+        formatter_class=RichHelpFormatter,
     )
     parser.add_argument(
         "target",
