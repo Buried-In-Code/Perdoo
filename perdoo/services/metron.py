@@ -9,6 +9,7 @@ from typing import TypeVar
 
 from imagehash import hex_to_hash
 from mokkari.exceptions import ApiError, RateLimitError
+from mokkari.rate_limit import HeaderPacedRateLimiter
 from mokkari.schemas.issue import Issue
 from mokkari.schemas.series import Series
 from mokkari.session import Session as Mokkari
@@ -57,7 +58,8 @@ def rate_limit_retry(max_retries: int = 5) -> Callable[[Callable[..., T]], Calla
 class Metron:
     def __init__(self, token: str, cover_hash_distance: int = 10):
         cache = SqliteCache(db_name=str(get_cache_home() / "mokkari.sqlite"))
-        self.session = Mokkari(api_token=token, cache=cache)
+        rate_limiter = HeaderPacedRateLimiter()
+        self.session = Mokkari(api_token=token, cache=cache, rate_limiter=rate_limiter)
         self.cover_hash_distance = cover_hash_distance
 
     @rate_limit_retry()

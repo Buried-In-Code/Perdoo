@@ -129,7 +129,7 @@ Unlike fully automated tagging tools, Perdoo takes a manual approach when metada
 Metadata file support is provided by [shortbox](https://codeberg.org/buriedincode/shortbox), which currently supports:
 
 - ComicInfo v2.0 (with field ordering ignored)
-- MetronInfo v1.1
+- MetronInfo v1.2
 
 ## Services
 
@@ -175,6 +175,7 @@ Custom characters can still be added directly to patterns.
 | `{cover-month}`      | The month from the issue cover date.                                     |
 | `{cover-year}`       | The year from the issue cover date.                                      |
 | `{format}`           | The full format name of the series.                                      |
+| `{format-short}`     | Abbreviation of the format name of the series.                           |
 | `{id}`               | The primary ID of the issue.                                             |
 | `{imprint}`          | The publisher's imprint.                                                 |
 | `{isbn}`             | The issue's ISBN.                                                        |
