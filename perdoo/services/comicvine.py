@@ -6,7 +6,7 @@ from datetime import datetime
 from natsort import humansorted, ns
 from questionary import Choice, confirm, text
 from shortbox.metadata import ComicInfo, MetronInfo
-from shortbox.metadata.metron_info import InformationSource
+from shortbox.metadata.metron_info import Format, InformationSource
 from simyan.comicvine import Comicvine as Simyan
 from simyan.errors import ServiceError
 from simyan.schemas.issue import Issue
@@ -166,7 +166,9 @@ class Comicvine:
             return self._fetch_issue(series_id=series_id, search=search, filename=filename)
         return None
 
-    def _build_metron_info(self, series: Volume, issue: Issue) -> MetronInfo:
+    def _build_metron_info(
+        self, series: Volume, issue: Issue, format_: Format | None = None
+    ) -> MetronInfo:
         from shortbox.metadata.metron_info import (  # noqa: PLC0415
             Arc,
             Credit,
@@ -185,30 +187,12 @@ class Comicvine:
                 return Role.OTHER
 
         return MetronInfo(
-            ids=[Id(primary=True, source=InformationSource.COMIC_VINE, value=str(issue.id))],
-            publisher=Publisher(id=str(series.publisher.id), name=series.publisher.name)
-            if series.publisher and series.publisher.name
-            else None,
-            series=Series(
-                id=str(series.id),
-                name=series.name,
-                start_year=series.start_year,
-                alternative_names=[],
-            ),
-            collection_title=issue.name,
-            number=issue.number,
-            summary=issue.summary,
-            cover_date=issue.cover_date,
-            store_date=issue.store_date,
             arcs=[Arc(id=str(x.id), name=x.name) for x in issue.story_arcs if x.name],
             characters=[
                 Resource[str](id=str(x.id), value=x.name) for x in issue.characters if x.name
             ],
-            teams=[Resource[str](id=str(x.id), value=x.name) for x in issue.teams if x.name],
-            locations=[
-                Resource[str](id=str(x.id), value=x.name) for x in issue.locations if x.name
-            ],
-            urls=[Url(primary=True, value=str(issue.site_url))],
+            collection_title=issue.name,
+            cover_date=issue.cover_date,
             credits=[
                 Credit(
                     creator=Resource[str](id=str(x.id), value=x.name),
@@ -221,24 +205,46 @@ class Comicvine:
                 for x in issue.creators
                 if x.name
             ],
-            last_modified=datetime.now().astimezone(),
             genres=[],
+            ids=[Id(primary=True, source=InformationSource.COMIC_VINE, value=str(issue.id))],
+            last_modified=datetime.now().astimezone(),
+            locations=[
+                Resource[str](id=str(x.id), value=x.name) for x in issue.locations if x.name
+            ],
+            number=issue.number,
             prices=[],
+            publisher=Publisher(id=str(series.publisher.id), name=series.publisher.name)
+            if series.publisher and series.publisher.name
+            else None,
             reprints=[],
+            series=Series(
+                alternative_names=[],
+                format=format_,
+                id=str(series.id),
+                name=series.name,
+                start_year=series.start_year,
+            ),
+            store_date=issue.store_date,
             stories=[],
+            summary=issue.summary,
             tags=[],
+            teams=[Resource[str](id=str(x.id), value=x.name) for x in issue.teams if x.name],
             universes=[],
+            urls=[Url(primary=True, value=str(issue.site_url))],
         )
 
-    def _build_comic_info(self, series: Volume, issue: Issue) -> ComicInfo:
+    def _build_comic_info(
+        self, series: Volume, issue: Issue, format_: Format | None = None
+    ) -> ComicInfo:
         comic_info = ComicInfo(
-            title=issue.name,
-            series=series.name,
+            format=str(format_) if format_ else None,
             number=issue.number,
-            summary=issue.summary,
-            publisher=series.publisher.name if series.publisher else None,
-            web=str(issue.site_url),
             pages=[],
+            publisher=series.publisher.name if series.publisher else None,
+            series=series.name,
+            summary=issue.summary,
+            title=issue.name,
+            web=str(issue.site_url),
         )
 
         comic_info.cover_date = issue.cover_date
@@ -272,8 +278,12 @@ class Comicvine:
         )
         if not issue:
             return None
+        if search.override_cv_format:
+            format_ = prompt_select(
+                message="Select a format", choices=[Choice(title=str(x), value=x) for x in Format]
+            )
 
         return MetadataResult(
-            comic_info=self._build_comic_info(series=series, issue=issue),
-            metron_info=self._build_metron_info(series=series, issue=issue),
+            comic_info=self._build_comic_info(series=series, issue=issue, format_=format_),
+            metron_info=self._build_metron_info(series=series, issue=issue, format_=format_),
         )

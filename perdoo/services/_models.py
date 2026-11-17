@@ -60,9 +60,10 @@ class Search:
     issue: IssueSearch
     filename: str
     cover_hash: str | None = None
+    override_cv_format: bool = False
 
     @staticmethod
-    def build(comic: Comic) -> "Search":
+    def build(comic: Comic, override_cv_format: bool) -> "Search":
         search: Search
         if (
             (metron_info := comic.get_metadata(MetronInfo))
@@ -75,6 +76,7 @@ class Search:
         else:
             search = search_from_filename(filename=comic.file.stem)
         search.cover_hash = _get_cover_hash(comic=comic)
+        search.override_cv_format = override_cv_format
         return search
 
 

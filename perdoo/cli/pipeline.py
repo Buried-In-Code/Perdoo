@@ -38,6 +38,12 @@ def register(subparsers: _SubParsersAction) -> None:
         help="Synchronize even if the stored metadata was updated within the configured interval.",
     )
     parser.add_argument(
+        "-o",
+        "--override-cv-format",
+        action="store_true",
+        help="Override the format provided by Comicvine",
+    )
+    parser.add_argument(
         "-c",
         "--clean-empty",
         action="store_true",

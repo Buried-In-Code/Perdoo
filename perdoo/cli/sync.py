@@ -45,6 +45,12 @@ def register(subparsers: _SubParsersAction) -> None:
         help="Synchronize even if the stored metadata was updated within the configured interval.",
     )
     parser.add_argument(
+        "-o",
+        "--override-cv-format",
+        action="store_true",
+        help="Override the format provided by Comicvine",
+    )
+    parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_sync.svg"
     )
     parser.set_defaults(func=run)
@@ -72,7 +78,13 @@ def should_sync(metron_info: MetronInfo | None, comic_info: ComicInfo | None, da
     return True
 
 
-def sync_comic(comic: Comic, services: Sequence[Service], days: int, force: bool = False) -> None:
+def sync_comic(
+    comic: Comic,
+    services: Sequence[Service],
+    days: int,
+    force: bool = False,
+    override_cv_format: bool = False,
+) -> None:
     try:
         metron_info = comic.get_metadata(MetronInfo)
     except MetadataValidationError as err:
@@ -85,7 +97,7 @@ def sync_comic(comic: Comic, services: Sequence[Service], days: int, force: bool
         comic_info = None
     if not should_sync(metron_info=metron_info, comic_info=comic_info, days=days) and not force:
         return
-    query = Search.build(comic=comic)
+    query = Search.build(comic=comic, override_cv_format=override_cv_format)
     try:
         for svc in services:
             if result := svc.fetch(search=query):
@@ -118,7 +130,11 @@ def run(args: Namespace) -> None:
         try:
             with Comic.open(file=entry) as comic:
                 sync_comic(
-                    comic=comic, services=services, days=settings.sync.days, force=args.force
+                    comic=comic,
+                    services=services,
+                    days=settings.sync.days,
+                    force=args.force,
+                    override_cv_format=args.override_cv_format,
                 )
         except UnsupportedArchiveError:
             pass
