@@ -92,6 +92,13 @@ Unlike fully automated tagging tools, Perdoo takes a manual approach when metada
 </details>
 
 <details>
+<summary><code>perdoo pipeline</code></summary>
+
+![perdoo pipeline help](docs/img/perdoo_pipeline.svg)
+
+</details>
+
+<details>
 <summary><code>perdoo rename</code></summary>
 
 ![perdoo rename help](docs/img/perdoo_rename.svg)

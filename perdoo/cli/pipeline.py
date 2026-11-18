@@ -15,7 +15,10 @@ from perdoo.console import CONSOLE
 
 def register(subparsers: _SubParsersAction) -> None:
     parser = subparsers.add_parser(
-        "pipeline", help="", description="", formatter_class=RichHelpFormatter
+        "pipeline",
+        help="Runs convert, clean, sync and rename one after another",
+        description="Runs convert, clean, sync and rename one after another",
+        formatter_class=RichHelpFormatter,
     )
     parser.add_argument(
         "target",
@@ -36,6 +39,12 @@ def register(subparsers: _SubParsersAction) -> None:
         "--force",
         action="store_true",
         help="Synchronize even if the stored metadata was updated within the configured interval.",
+    )
+    parser.add_argument(
+        "-o",
+        "--override-cv-format",
+        action="store_true",
+        help="Override the format provided by Comicvine",
     )
     parser.add_argument(
         "-c",
