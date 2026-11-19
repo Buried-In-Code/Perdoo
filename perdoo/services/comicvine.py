@@ -25,12 +25,13 @@ from perdoo.services._models import (
 
 
 class Comicvine:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, override_format: bool = False):
         self.session = Simyan(
             api_key=api_key,
             cache_path=get_cache_home() / "simyan.sqlite",
             ratelimit_path=get_cache_home() / "simyan-rates.sqlite",
         )
+        self._override_format = override_format
 
     def _search_series(
         self, name: str | None, volume: int | None, year: int | None, filename: str
@@ -278,7 +279,8 @@ class Comicvine:
         )
         if not issue:
             return None
-        if search.override_cv_format:
+        format_: Format | None = None
+        if self._override_format:
             format_ = prompt_select(
                 message="Select a format", choices=[Choice(title=str(x), value=x) for x in Format]
             )

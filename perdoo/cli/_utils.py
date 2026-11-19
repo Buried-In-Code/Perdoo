@@ -47,10 +47,10 @@ class RichHelpFormatter(ArgumentDefaultsHelpFormatter, _RichHelpFormatter):
 
 def existing_file(value: str) -> Path:
     path = Path(value).expanduser().resolve()
-    if not path.is_file():
-        raise ArgumentTypeError(f"target path is not a file: {value!r}")
     if not path.exists():
         raise ArgumentTypeError(f"target file must exist: {value!r}")
+    if not path.is_file():
+        raise ArgumentTypeError(f"target path is not a file: {value!r}")
     return path
 
 
@@ -58,6 +58,8 @@ def existing_file_or_directory(value: str) -> Path:
     path = Path(value).expanduser().resolve()
     if not path.exists():
         raise ArgumentTypeError(f"target file/directory must exist: {value!r}")
+    if not path.is_file() and not path.is_dir():
+        raise ArgumentTypeError(f"target path is not a file/directory: {value!r}")
     return path
 
 
