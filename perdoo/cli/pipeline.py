@@ -13,7 +13,7 @@ from perdoo.cli.clean import run as run_clean
 from perdoo.cli.convert import run as run_convert
 from perdoo.cli.rename import run as run_rename
 from perdoo.cli.sync import run as run_sync
-from perdoo.console import CONSOLE
+from perdoo.console import CONSOLE, Grid
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -73,7 +73,7 @@ def delete_empty_folders(root: Path, folder: Path) -> None:
 
 
 def build_pipeline_summary(stages: Mapping[str, RunSummary]) -> Table:
-    table = Table(title="Pipeline Summary", show_header=False, padding=(0, 2))
+    table = Grid(title="Pipeline Summary")
     for name, summary in stages.items():
         table.add_row(name, summary.status.value)
     return table

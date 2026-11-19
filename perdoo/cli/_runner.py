@@ -12,7 +12,7 @@ from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
 from shortbox.errors import ArchiveCapabilityError, UnsupportedArchiveError
 
-from perdoo.console import CONSOLE
+from perdoo.console import CONSOLE, Grid
 from perdoo.utils import list_files
 
 
@@ -39,7 +39,7 @@ class RunSummary:
         return Outcome.SKIPPED
 
     def __rich__(self) -> Table:
-        table = Table(title=f"{self.action} Summary", show_header=False, padding=(0, 2))
+        table = Grid(title=f"{self.action} Summary")
         for outcome in Outcome:
             table.add_row(outcome.value, str(self.counts[outcome]))
         return table
