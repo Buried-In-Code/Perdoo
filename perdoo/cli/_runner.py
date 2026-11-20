@@ -25,23 +25,23 @@ class Outcome(StrEnum):
 
 @dataclass
 class RunSummary:
-    action: str = "Run"
     counts: Counter[Outcome] = field(default_factory=Counter)
 
     def record(self, outcome: Outcome) -> None:
         self.counts[outcome] += 1
 
-    @property
-    def status(self) -> Outcome:
-        for outcome in (Outcome.FAILED, Outcome.SUCCESS, Outcome.UNCHANGED):
-            if self.counts[outcome]:
-                return outcome
-        return Outcome.SKIPPED
-
     def __rich__(self) -> Table:
-        table = Grid(title=f"{self.action} Summary")
+        table = Grid(title="Summary")
         for outcome in Outcome:
-            table.add_row(outcome.value, str(self.counts[outcome]))
+            table.add_row(
+                outcome.value,
+                str(self.counts[outcome]),
+                style="logging.level.debug"
+                if self.counts[outcome] == 0
+                else "logging.level.error"
+                if outcome is Outcome.FAILED
+                else "logging.level.info",
+            )
         return table
 
 
@@ -59,7 +59,7 @@ def run_on_files(
     show_progress: bool = True,
     capability_hint: str | None = "Consider converting to another format first",
 ) -> RunSummary:
-    summary = RunSummary(action=action)
+    summary = RunSummary()
     progress = (
         Progress(
             SpinnerColumn(),
@@ -89,5 +89,5 @@ def run_on_files(
                     f"{action} failed for '{entry.name}': {err}", style="logging.level.error"
                 )
                 summary.record(outcome=Outcome.FAILED)
-    CONSOLE.print(summary)
+    CONSOLE.print(summary, style="logging.level.info")
     return summary

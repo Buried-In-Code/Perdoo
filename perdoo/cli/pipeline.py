@@ -9,6 +9,7 @@ from perdoo.cli.clean import run as run_clean
 from perdoo.cli.convert import run as run_convert
 from perdoo.cli.rename import run as run_rename
 from perdoo.cli.sync import run as run_sync
+from perdoo.settings import Settings
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -57,7 +58,8 @@ def register(subparsers: _SubParsersAction) -> None:
 
 
 def run(args: Namespace) -> None:
-    run_convert(args)
-    run_clean(args)
-    run_sync(args)
-    run_rename(args)
+    settings = Settings.load().save()
+    run_convert(args, settings)
+    run_clean(args, settings)
+    run_sync(args, settings)
+    run_rename(args, settings)

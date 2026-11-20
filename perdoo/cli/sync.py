@@ -13,9 +13,9 @@ from shortbox.metadata import ComicInfo, MetronInfo
 from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE
-from perdoo.services import Comicvine, Metron, Search, Service
+from perdoo.services import Fetcher, build_fetchers, build_query
 from perdoo.services._models import get_comic_info_note_modified
-from perdoo.settings import Service as ServiceOption, Services, Settings
+from perdoo.settings import Settings
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -57,21 +57,6 @@ def register(subparsers: _SubParsersAction) -> None:
     parser.set_defaults(func=run)
 
 
-def build_services(
-    services: Services, cover_hash_distance: int, override_cv_format: bool = False
-) -> Sequence[Service]:
-    tmp = {}
-    if services.comicvine.api_key:
-        tmp[ServiceOption.COMICVINE] = Comicvine(
-            api_key=services.comicvine.api_key, override_format=override_cv_format
-        )
-    if services.metron.token:
-        tmp[ServiceOption.METRON] = Metron(
-            token=services.metron.token, cover_hash_distance=cover_hash_distance
-        )
-    return [tmp[k] for k in services.order if k in tmp]
-
-
 def should_sync(metron_info: MetronInfo | None, comic_info: ComicInfo | None, days: int) -> bool:
     last_modified = metron_info.last_modified if metron_info else None
     last_modified = last_modified or get_comic_info_note_modified(
@@ -84,7 +69,7 @@ def should_sync(metron_info: MetronInfo | None, comic_info: ComicInfo | None, da
 
 
 def sync_comic(
-    comic: Comic, services: Sequence[Service], days: int, force: bool = False
+    comic: Comic, fetchers: Sequence[Fetcher], days: int, force: bool = False
 ) -> Outcome:
     try:
         metron_info = comic.get_metadata(MetronInfo)
@@ -98,9 +83,9 @@ def sync_comic(
         comic_info = None
     if not should_sync(metron_info=metron_info, comic_info=comic_info, days=days) and not force:
         return Outcome.UNCHANGED
-    query = Search.build(comic=comic)
-    for svc in services:
-        if result := svc.fetch(search=query):
+    query = build_query(comic=comic)
+    for fetcher in fetchers:
+        if result := fetcher.fetch(query):
             with CONSOLE.status("Writing ComicInfo.xml to archive"):
                 comic.set_metadata(result.comic_info)
             with CONSOLE.status("Writing MetronInfo.xml to archive"):
@@ -110,21 +95,18 @@ def sync_comic(
     return Outcome.FAILED
 
 
-def run(args: Namespace) -> None:
-    settings = Settings.load().save()
-    services = build_services(
-        services=settings.services,
-        cover_hash_distance=settings.sync.cover_hash_distance,
-        override_cv_format=args.override_cv_format,
-    )
-    if not services:
+def run(args: Namespace, settings: Settings | None = None) -> None:
+    CONSOLE.rule(f"Syncing '{args.target}'", style="title")
+    settings = settings or Settings.load().save()
+    fetchers = build_fetchers(settings, ask_format=args.override_cv_format)
+    if not fetchers:
         CONSOLE.print("No services configured", style="logging.level.error")
         return
 
     def handle(entry: Path) -> Outcome:
         with Comic.open(file=entry) as comic:
             return sync_comic(
-                comic=comic, services=services, days=settings.sync.days, force=args.force
+                comic=comic, fetchers=fetchers, days=settings.sync.days, force=args.force
             )
 
     run_on_files(files=collect_files(args), action="Syncing", handler=handle, show_progress=False)
