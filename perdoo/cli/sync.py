@@ -10,7 +10,7 @@ from shortbox import Comic
 from shortbox.errors import MetadataValidationError
 from shortbox.metadata import ComicInfo, MetronInfo
 
-from perdoo.cli._runner import Outcome, RunSummary, collect_files, run_on_files
+from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE
 from perdoo.services import Comicvine, Metron, Search, Service
@@ -110,7 +110,7 @@ def sync_comic(
     return Outcome.FAILED
 
 
-def run(args: Namespace) -> RunSummary:
+def run(args: Namespace) -> None:
     settings = Settings.load().save()
     services = build_services(
         services=settings.services,
@@ -119,7 +119,7 @@ def run(args: Namespace) -> RunSummary:
     )
     if not services:
         CONSOLE.print("No services configured", style="logging.level.error")
-        return RunSummary(action="Syncing")
+        return
 
     def handle(entry: Path) -> Outcome:
         with Comic.open(file=entry) as comic:
@@ -127,6 +127,4 @@ def run(args: Namespace) -> RunSummary:
                 comic=comic, services=services, days=settings.sync.days, force=args.force
             )
 
-    return run_on_files(
-        files=collect_files(args), action="Syncing", handler=handle, show_progress=False
-    )
+    run_on_files(files=collect_files(args), action="Syncing", handler=handle, show_progress=False)

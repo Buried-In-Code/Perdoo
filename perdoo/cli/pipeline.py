@@ -1,19 +1,16 @@
 __all__ = ["register"]
 
 from argparse import Namespace, _SubParsersAction
-from collections.abc import Mapping
 from pathlib import Path
 
-from rich.table import Table
 from rich_argparse import HelpPreviewAction
 
-from perdoo.cli._runner import RunSummary
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.cli.clean import run as run_clean
 from perdoo.cli.convert import run as run_convert
 from perdoo.cli.rename import run as run_rename
 from perdoo.cli.sync import run as run_sync
-from perdoo.console import CONSOLE, Grid
+from perdoo.console import CONSOLE
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -72,21 +69,11 @@ def delete_empty_folders(root: Path, folder: Path) -> None:
             CONSOLE.print(f"Deleted empty folder: '{relative}'")
 
 
-def build_pipeline_summary(stages: Mapping[str, RunSummary]) -> Table:
-    table = Grid(title="Pipeline Summary")
-    for name, summary in stages.items():
-        table.add_row(name, summary.status.value)
-    return table
-
-
 def run(args: Namespace) -> None:
-    stages = {
-        "Convert": run_convert(args),
-        "Clean": run_clean(args),
-        "Sync": run_sync(args),
-        "Rename": run_rename(args),
-    }
+    run_convert(args)
+    run_clean(args)
+    run_sync(args)
+    run_rename(args)
     if args.clean_empty:
         with CONSOLE.status("Cleaning up empty folders"):
             delete_empty_folders(root=args.target, folder=args.target)
-    CONSOLE.print(build_pipeline_summary(stages))

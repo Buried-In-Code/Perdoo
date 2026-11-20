@@ -7,7 +7,7 @@ from rich_argparse import HelpPreviewAction
 from shortbox import Comic
 from shortbox.archives import Archive, TarArchive, ZipArchive
 
-from perdoo.cli._runner import Outcome, RunSummary, collect_files, run_on_files
+from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE
 from perdoo.settings import Settings
@@ -63,7 +63,7 @@ def determine_format(format_: str) -> type[Archive]:
     return output
 
 
-def run(args: Namespace) -> RunSummary:
+def run(args: Namespace) -> None:
     settings = Settings.load().save()
     target_format = determine_format(format_=settings.output.format)
 
@@ -75,6 +75,6 @@ def run(args: Namespace) -> RunSummary:
             )
             return Outcome.UNCHANGED if new_file == original_file else Outcome.SUCCESS
 
-    return run_on_files(
+    run_on_files(
         files=collect_files(args), action="Converting", handler=handle, capability_hint=None
     )

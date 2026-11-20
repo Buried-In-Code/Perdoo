@@ -9,7 +9,7 @@ from rich_argparse import HelpPreviewAction
 from shortbox import Comic
 from shortbox.errors import ArchiveCapabilityError
 
-from perdoo.cli._runner import Outcome, RunSummary, collect_files, run_on_files
+from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE
 from perdoo.naming import build_file
@@ -86,10 +86,10 @@ def rename_entry(entry: Path, target: Path, settings: Settings) -> Outcome:
     return Outcome.SUCCESS
 
 
-def run(args: Namespace) -> RunSummary:
+def run(args: Namespace) -> None:
     settings = Settings.load().save()
 
     def handle(entry: Path) -> Outcome:
         return rename_entry(entry=entry, target=args.target, settings=settings)
 
-    return run_on_files(files=collect_files(args), action="Renaming", handler=handle)
+    run_on_files(files=collect_files(args), action="Renaming", handler=handle)
