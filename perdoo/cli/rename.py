@@ -38,6 +38,12 @@ def register(subparsers: _SubParsersAction) -> None:
         help="Skip archives with this extension. Repeat to ignore multiple extensions.",
     )
     parser.add_argument(
+        "-c",
+        "--clean-empty",
+        action="store_true",
+        help="Remove any empty folders after processing inside the target, including the target",
+    )
+    parser.add_argument(
         "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_rename.svg"
     )
     parser.set_defaults(func=run)
@@ -86,6 +92,17 @@ def rename_entry(entry: Path, target: Path, settings: Settings) -> Outcome:
     return Outcome.SUCCESS
 
 
+def delete_empty_folders(root: Path, folder: Path) -> None:
+    if folder.is_dir():
+        for subfolder in folder.iterdir():
+            if subfolder.is_dir():
+                delete_empty_folders(root=root, folder=subfolder)
+        if not any(folder.iterdir()):
+            folder.rmdir()
+            relative = folder.relative_to(root)
+            CONSOLE.print(f"Deleted empty folder: '{relative}'")
+
+
 def run(args: Namespace) -> None:
     settings = Settings.load().save()
 
@@ -93,3 +110,6 @@ def run(args: Namespace) -> None:
         return rename_entry(entry=entry, target=args.target, settings=settings)
 
     run_on_files(files=collect_files(args), action="Renaming", handler=handle)
+    if args.clean_empty:
+        with CONSOLE.status("Cleaning up empty folders"):
+            delete_empty_folders(root=args.target, folder=args.target)
