@@ -4,15 +4,13 @@ from argparse import Namespace, _SubParsersAction
 from collections.abc import Sequence
 from pathlib import Path
 
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
 from shortbox import Comic
-from shortbox.errors import ArchiveCapabilityError, UnsupportedArchiveError
 
+from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE
 from perdoo.settings import Settings
-from perdoo.utils import list_files
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -42,38 +40,19 @@ def register(subparsers: _SubParsersAction) -> None:
     parser.set_defaults(func=run)
 
 
-def clean_comic(comic: Comic, remove_exts: Sequence[str]) -> None:
-    try:
-        for filename in comic.list_filenames():
-            if Path(filename).suffix in remove_exts:
-                CONSOLE.print(f"Removing {filename!r}")
-                comic.remove_file(filename=filename)
-    except ArchiveCapabilityError as err:
-        CONSOLE.print(
-            f"{err}: Consider converting to another format first", style="logging.level.warning"
-        )
+def clean_comic(comic: Comic, remove_extensions: Sequence[str]) -> Outcome:
+    removed = [name for name in comic.list_filenames() if Path(name).suffix in remove_extensions]
+    for filename in removed:
+        CONSOLE.print(f"Removing {filename!r}")
+        comic.remove_file(filename=filename)
+    return Outcome.SUCCESS if removed else Outcome.UNCHANGED
 
 
 def run(args: Namespace) -> None:
     settings = Settings.load().save()
 
-    files = list_files(args.target) if args.target.is_dir() else [args.target]
-    if args.ignore:
-        ignore_ext = [f".{x}" for x in args.ignore]
-        files = [x for x in files if x.suffix not in ignore_ext]
-    progress = Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        console=CONSOLE,
-        expand=True,
-    )
+    def handle(entry: Path) -> Outcome:
+        with Comic.open(file=entry) as comic:
+            return clean_comic(comic=comic, remove_extensions=settings.output.remove_extensions)
 
-    with progress:
-        for entry in progress.track(files, description="Cleaning comics"):
-            try:
-                with Comic.open(file=entry) as comic:
-                    clean_comic(comic=comic, remove_exts=settings.output.remove_extensions)
-            except UnsupportedArchiveError:
-                pass
+    run_on_files(files=collect_files(args), action="Cleaning", handler=handle)

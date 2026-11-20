@@ -1,17 +1,16 @@
 __all__ = ["register"]
 
 from argparse import Namespace, _SubParsersAction
+from pathlib import Path
 
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 from rich_argparse import HelpPreviewAction
 from shortbox import Comic
 from shortbox.archives import Archive, TarArchive, ZipArchive
-from shortbox.errors import UnsupportedArchiveError
 
+from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
 from perdoo.console import CONSOLE
 from perdoo.settings import Settings
-from perdoo.utils import list_files
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -66,27 +65,16 @@ def determine_format(format_: str) -> type[Archive]:
 
 def run(args: Namespace) -> None:
     settings = Settings.load().save()
-
     target_format = determine_format(format_=settings.output.format)
-    files = list_files(args.target) if args.target.is_dir() else [args.target]
-    if args.ignore:
-        ignore_ext = [f".{x}" for x in args.ignore]
-        files = [x for x in files if x.suffix not in ignore_ext]
-    progress = Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        console=CONSOLE,
-        expand=True,
-    )
 
-    with progress:
-        for entry in progress.track(files, description="Converting comics"):
-            try:
-                with Comic.open(file=entry) as comic:
-                    comic.convert(
-                        archive_type=target_format, delete_original=True, raise_on_existing=False
-                    )
-            except UnsupportedArchiveError:
-                pass
+    def handle(entry: Path) -> Outcome:
+        with Comic.open(file=entry) as comic:
+            original_file = comic.file
+            new_file = comic.convert(
+                archive_type=target_format, delete_original=True, raise_on_existing=False
+            )
+            return Outcome.UNCHANGED if new_file == original_file else Outcome.SUCCESS
+
+    run_on_files(
+        files=collect_files(args), action="Converting", handler=handle, capability_hint=None
+    )

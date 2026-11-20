@@ -59,15 +59,15 @@ class Metron:
     def __init__(self, token: str, cover_hash_distance: int = 10):
         cache = SqliteCache(db_name=str(get_cache_home() / "mokkari.sqlite"))
         rate_limiter = HeaderPacedRateLimiter()
-        self.session = Mokkari(api_token=token, cache=cache, rate_limiter=rate_limiter)
-        self.cover_hash_distance = cover_hash_distance
+        self._session = Mokkari(api_token=token, cache=cache, rate_limiter=rate_limiter)
+        self._cover_hash_distance = cover_hash_distance
 
     @rate_limit_retry()
     def _search_series_by_comicvine(self, comicvine_id: int | None) -> int | None:
         if not comicvine_id:
             return None
         try:
-            series = self.session.series_list(params={"cv_id": comicvine_id})
+            series = self._session.series_list(params={"cv_id": comicvine_id})
             if series and len(series) >= 1:
                 return series[0].id
         except ApiError as err:
@@ -81,7 +81,7 @@ class Metron:
         name = name or text(message="Series Name").ask()
         try:
             options = sorted(
-                self.session.series_list(
+                self._session.series_list(
                     params={"name": name, "volume": volume, "year_began": year}  # ty: ignore[invalid-argument-type]
                 ),
                 key=lambda x: (x.display_name, x.volume),
@@ -140,7 +140,7 @@ class Metron:
         if not series_id:
             return None
         try:
-            series = self.session.series(_id=series_id)
+            series = self._session.series(_id=series_id)
             search.metron = series_id
             return series
         except ApiError as err:
@@ -155,7 +155,7 @@ class Metron:
         if not comicvine_id:
             return None
         try:
-            issues = self.session.issues_list(params={"cv_id": comicvine_id})
+            issues = self._session.issues_list(params={"cv_id": comicvine_id})
             if issues and len(issues) >= 1:
                 return issues[0].id
         except ApiError as err:
@@ -170,8 +170,8 @@ class Metron:
             source_hash = hex_to_hash(hexstr=cover_hash)
             options = [
                 issue
-                for issue in self.session.issues_list(params={"cover_hash": cover_hash})
-                if source_hash - hex_to_hash(hexstr=issue.cover_hash) <= self.cover_hash_distance
+                for issue in self._session.issues_list(params={"cover_hash": cover_hash})
+                if source_hash - hex_to_hash(hexstr=issue.cover_hash) <= self._cover_hash_distance
             ]
             if not options:
                 return None
@@ -197,7 +197,7 @@ class Metron:
             return
         search.issue.metron = issue_id
         try:
-            issue = self.session.issue(_id=issue_id)
+            issue = self._session.issue(_id=issue_id)
         except ApiError as err:
             CONSOLE.print(err, style="logging.level.error")
             search.issue.metron = None
@@ -211,7 +211,7 @@ class Metron:
     def _search_issue(self, series_id: int, number: str | None, filename: str) -> int | None:
         try:
             options = humansorted(
-                self.session.issues_list(params={"series_id": series_id, "number": number}),  # ty: ignore[invalid-argument-type]
+                self._session.issues_list(params={"series_id": series_id, "number": number}),  # ty: ignore[invalid-argument-type]
                 key=lambda x: (x.number, x.issue_name),
                 alg=ns.NA | ns.G,
             )
@@ -254,7 +254,7 @@ class Metron:
         if not issue_id:
             return None
         try:
-            issue = self.session.issue(_id=issue_id)
+            issue = self._session.issue(_id=issue_id)
             search.metron = issue_id
             return issue
         except ApiError as err:

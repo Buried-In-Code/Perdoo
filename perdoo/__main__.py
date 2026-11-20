@@ -1,4 +1,4 @@
-from perdoo.cli._parser import build_parser
+from perdoo.cli import build_parser
 
 
 def main() -> None:
