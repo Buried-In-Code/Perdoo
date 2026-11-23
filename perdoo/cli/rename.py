@@ -103,8 +103,9 @@ def delete_empty_folders(root: Path, folder: Path) -> None:
             CONSOLE.print(f"Deleted empty folder: '{relative}'")
 
 
-def run(args: Namespace) -> None:
-    settings = Settings.load().save()
+def run(args: Namespace, settings: Settings | None = None) -> None:
+    CONSOLE.rule(f"Renaming '{args.target}'", style="title")
+    settings = settings or Settings.load().save()
 
     def handle(entry: Path) -> Outcome:
         return rename_entry(entry=entry, target=args.target, settings=settings)

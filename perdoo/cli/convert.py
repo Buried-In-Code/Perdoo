@@ -63,8 +63,9 @@ def determine_format(format_: str) -> type[Archive]:
     return output
 
 
-def run(args: Namespace) -> None:
-    settings = Settings.load().save()
+def run(args: Namespace, settings: Settings | None = None) -> None:
+    CONSOLE.rule(f"Converting '{args.target}'", style="title")
+    settings = settings or Settings.load().save()
     target_format = determine_format(format_=settings.output.format)
 
     def handle(entry: Path) -> Outcome:

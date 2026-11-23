@@ -1,14 +1,20 @@
 __all__ = [
+    "Ids",
     "MetadataResult",
-    "Search",
+    "Query",
     "get_comic_info_note_id",
     "get_comic_info_note_modified",
+    "query_from_comic_info",
+    "query_from_filename",
+    "query_from_metron_info",
     "set_comic_info_note_id",
 ]
 
 import re
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
 from datetime import datetime
+from functools import cached_property
 from io import BytesIO
 
 from comicfn2dict import comicfn2dict
@@ -21,6 +27,7 @@ from shortbox.metadata.metron_info import Id, InformationSource
 
 from perdoo import __version__
 from perdoo.console import CONSOLE
+from perdoo.settings import Service
 
 _PERDOO_NOTE = re.compile(
     r"^Tagged with Perdoo v\S+ using info from (?P<source>.+?) at (?P<modified>.+?)\. \[issue_id:(?P<id>\d+)\]$",  # noqa: E501
@@ -39,43 +46,47 @@ class MetadataResult:
 
 
 @dataclass
-class SeriesSearch:
+class Ids:
+    series: int | None = None
+    issue: int | None = None
+
+
+def _no_cover() -> str | None:
+    return None
+
+
+@dataclass
+class Query:
+    filename: str
     name: str
+    number: str | None = None
     volume: int | None = None
     year: int | None = None
-    comicvine: int | None = None
-    metron: int | None = None
+    ids: dict[Service, Ids] = field(default_factory=dict)
+    cover_source: Callable[[], str | None] = field(default=_no_cover, repr=False)
+    announced: bool = field(default=False, repr=False)
 
+    def ids_for(self, service: Service) -> Ids:
+        return self.ids.setdefault(service, Ids())
 
-@dataclass
-class IssueSearch:
-    number: str | None = None
-    comicvine: int | None = None
-    metron: int | None = None
-
-
-@dataclass
-class Search:
-    series: SeriesSearch
-    issue: IssueSearch
-    filename: str
-    cover_hash: str | None = None
+    @cached_property
+    def cover_hash(self) -> str | None:
+        return self.cover_source()
 
     @staticmethod
-    def build(comic: Comic) -> "Search":
-        search: Search
+    def build(comic: Comic, sources: Mapping[InformationSource, Service]) -> "Query":
         if (
             (metron_info := comic.get_metadata(MetronInfo))
             and metron_info.series
             and metron_info.series.name
         ):
-            search = search_from_metron_info(metadata=metron_info, filename=comic.file.stem)
+            query = query_from_metron_info(metron_info, comic.file.stem, sources)
         elif (comic_info := comic.get_metadata(ComicInfo)) and comic_info.series:
-            search = search_from_comic_info(metadata=comic_info, filename=comic.file.stem)
+            query = query_from_comic_info(comic_info, comic.file.stem, sources)
         else:
-            search = search_from_filename(filename=comic.file.stem)
-        search.cover_hash = _get_cover_hash(comic=comic)
-        return search
+            query = query_from_filename(comic.file.stem)
+        query.cover_source = lambda: _get_cover_hash(comic=comic)
+        return query
 
 
 def _get_cover_hash(comic: Comic) -> str | None:
@@ -134,46 +145,44 @@ def set_comic_info_note_id(
     comic_info.notes = f"Tagged with Perdoo v{__version__} using info from {source.value} at {modified.isoformat()}. [issue_id:{value}]"  # noqa: E501
 
 
-def search_from_metron_info(metadata: MetronInfo, filename: str) -> Search:
-    series_id = metadata.series.id
-    comicvine_id = get_id(metadata.ids, InformationSource.COMIC_VINE)
-    metron_id = get_id(metadata.ids, InformationSource.METRON)
-    source = next((x.source for x in metadata.ids if x.primary), None)
-    return Search(
-        series=SeriesSearch(
-            name=metadata.series.name,
-            volume=metadata.series.volume,
-            year=metadata.series.start_year,
-            comicvine=int(series_id)
-            if series_id and source == InformationSource.COMIC_VINE
-            else None,
-            metron=int(series_id) if series_id and source == InformationSource.METRON else None,
-        ),
-        issue=IssueSearch(
-            number=metadata.number,
-            comicvine=int(comicvine_id) if comicvine_id else None,
-            metron=int(metron_id) if metron_id else None,
-        ),
+def query_from_metron_info(
+    metadata: MetronInfo, filename: str, sources: Mapping[InformationSource, Service]
+) -> Query:
+    query = Query(
         filename=filename,
+        name=metadata.series.name,
+        number=metadata.number,
+        volume=metadata.series.volume,
+        year=metadata.series.start_year,
     )
+    for source, service in sources.items():
+        if issue_id := get_id(metadata.ids, source):
+            query.ids_for(service).issue = int(issue_id)
+    primary = next((x.source for x in metadata.ids if x.primary), None)
+    if (series_id := metadata.series.id) and primary and (service := sources.get(primary)):
+        query.ids_for(service).series = int(series_id)
+    return query
 
 
-def search_from_comic_info(metadata: ComicInfo, filename: str) -> Search:
+def query_from_comic_info(
+    metadata: ComicInfo, filename: str, sources: Mapping[InformationSource, Service]
+) -> Query:
     volume = metadata.volume
     year = volume if volume and volume > 1900 else None
     volume = volume if volume and volume < 1900 else None
-    return Search(
-        series=SeriesSearch(name=metadata.series or filename, volume=volume, year=year),
-        issue=IssueSearch(
-            number=metadata.number,
-            comicvine=get_comic_info_note_id(metadata.notes, InformationSource.COMIC_VINE),
-            metron=get_comic_info_note_id(metadata.notes, InformationSource.METRON),
-        ),
+    query = Query(
         filename=filename,
+        name=metadata.series or filename,
+        number=metadata.number,
+        volume=volume,
+        year=year,
     )
+    for source, service in sources.items():
+        if issue_id := get_comic_info_note_id(metadata.notes, source):
+            query.ids_for(service).issue = issue_id
+    return query
 
 
-def search_from_filename(filename: str) -> Search:
+def query_from_filename(filename: str) -> Query:
     series_name = comicfn2dict(filename).get("series", filename)
-    series_name = str(series_name).replace("-", " ")
-    return Search(series=SeriesSearch(name=series_name), issue=IssueSearch(), filename=filename)
+    return Query(filename=filename, name=str(series_name).replace("-", " "))

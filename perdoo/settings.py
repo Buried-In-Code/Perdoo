@@ -3,7 +3,7 @@ __all__ = ["Settings"]
 from collections.abc import Sequence
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, ClassVar, Literal, Self
+from typing import Annotated, Literal, Self
 
 from msgspec import Meta, Struct, ValidationError, field, to_builtins
 from msgspec.toml import decode, encode
@@ -30,7 +30,7 @@ class Naming(Struct, rename="kebab"):
 
 class Output(Struct, rename="kebab"):
     comic_info: ComicInfo = field(default_factory=ComicInfo)
-    folder: Path = get_data_home() / "comics"
+    folder: Path = field(default_factory=lambda: get_data_home() / "comics")
     format: Literal["cbz", "cbt", "cb7"] = "cbz"
     image_extensions: Sequence[str] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
     metron_info: MetronInfo = field(default_factory=MetronInfo)
@@ -68,39 +68,37 @@ class Sync(Struct, rename="kebab"):
 
 
 class Settings(Struct, rename="kebab"):
-    _file: ClassVar[Path] = get_config_home() / "settings.toml"
-
     output: Output = field(default_factory=Output)
     services: Services = field(default_factory=Services)
     sync: Sync = field(default_factory=Sync)
 
     @property
     def path(self) -> Path:
-        return self._file
+        return _settings_file()
 
     @classmethod
     def load(cls) -> "Settings":
-        if not cls._file.exists():
+        file = _settings_file()
+        if not file.exists():
             return cls().save()
         try:
             return decode(
-                cls._file.read_bytes(),
+                file.read_bytes(),
                 type=cls,
                 dec_hook=lambda typ, obj: (
                     Path(obj) if typ is Path and isinstance(obj, str) else obj
                 ),
             )
         except ValidationError as err:
-            raise ValueError(f"Invalid settings file {cls._file}: {err}") from err
+            raise ValueError(f"Invalid settings file {file}: {err}") from err
 
     def save(self) -> Self:
         def encoder(obj: object) -> object:
             return str(obj) if isinstance(obj, Path) else obj
 
-        self._file.parent.mkdir(parents=True, exist_ok=True)
-        self._file.write_bytes(
-            encode(_toml_serializable(value=to_builtins(self, enc_hook=encoder)))
-        )
+        file = _settings_file()
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_bytes(encode(_toml_serializable(value=to_builtins(self, enc_hook=encoder))))
         return self
 
     @classmethod
@@ -123,7 +121,7 @@ class Settings(Struct, rename="kebab"):
         ]
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default Settings"))
-        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
+        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(_settings_file())))
 
 
 def _toml_serializable(value: object) -> object:
@@ -134,3 +132,7 @@ def _toml_serializable(value: object) -> object:
     if isinstance(value, list):
         return [_toml_serializable(value=item) for item in value]
     return value
+
+
+def _settings_file() -> Path:
+    return get_config_home() / "settings.toml"

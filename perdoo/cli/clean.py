@@ -48,8 +48,9 @@ def clean_comic(comic: Comic, remove_extensions: Sequence[str]) -> Outcome:
     return Outcome.SUCCESS if removed else Outcome.UNCHANGED
 
 
-def run(args: Namespace) -> None:
-    settings = Settings.load().save()
+def run(args: Namespace, settings: Settings | None = None) -> None:
+    CONSOLE.rule(f"Cleaning '{args.target}'", style="title")
+    settings = settings or Settings.load().save()
 
     def handle(entry: Path) -> Outcome:
         with Comic.open(file=entry) as comic:

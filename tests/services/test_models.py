@@ -7,9 +7,15 @@ from shortbox.metadata.metron_info import InformationSource
 from perdoo.services._models import (
     get_comic_info_note_id,
     get_comic_info_note_modified,
-    search_from_comic_info,
+    query_from_comic_info,
     set_comic_info_note_id,
 )
+from perdoo.settings import Service
+
+SOURCES = {
+    InformationSource.COMIC_VINE: Service.COMICVINE,
+    InformationSource.METRON: Service.METRON,
+}
 
 
 @pytest.mark.parametrize(
@@ -96,14 +102,24 @@ def test_set_comic_info_note_id_records_source_identifier_and_timestamp() -> Non
     [(3, 3, None), (2024, None, 2024)],
     ids=["volume-number", "publication-year"],
 )
-def test_search_from_comic_info_distinguishes_volume_numbers_from_years(
+def test_query_from_comic_info_distinguishes_volume_numbers_from_years(
     volume: int, expected_volume: int | None, expected_year: int | None
 ) -> None:
     metadata = ComicInfo(series="Spider-Man", number="1", volume=volume)
 
-    result = search_from_comic_info(metadata, filename="Spider-Man 001")
+    result = query_from_comic_info(metadata, "Spider-Man 001", SOURCES)
 
-    assert result.series.name == "Spider-Man"
-    assert result.series.volume == expected_volume
-    assert result.series.year == expected_year
-    assert result.issue.number == "1"
+    assert result.name == "Spider-Man"
+    assert result.volume == expected_volume
+    assert result.year == expected_year
+    assert result.number == "1"
+
+
+def test_query_from_comic_info_reads_known_issue_ids_from_the_notes() -> None:
+    metadata = ComicInfo(series="Spider-Man")
+    set_comic_info_note_id(metadata, InformationSource.METRON, 456)
+
+    result = query_from_comic_info(metadata, "Spider-Man 001", SOURCES)
+
+    assert result.ids_for(Service.METRON).issue == 456
+    assert result.ids_for(Service.COMICVINE).issue is None

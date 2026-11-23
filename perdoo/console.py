@@ -9,6 +9,7 @@ from rich.theme import Theme
 CONSOLE = Console(
     theme=Theme(
         {
+            "title": "#4682B4",
             "logging.level.debug": "dim white",
             "logging.level.info": "white",
             "logging.level.warning": "yellow",
@@ -26,12 +27,8 @@ class Grid(Table):
         box: Box | None = None,
         padding: PaddingDimensions = (0, 2),
         show_header: bool = False,
-        show_edge: bool | None = None,
+        show_edge: bool = False,
     ):
         super().__init__(
-            title=title,
-            box=box or Box(" ── \n    \n    \n    \n    \n    \n    \n    \n"),
-            padding=padding,
-            show_header=show_header,
-            show_edge=title is not None if show_edge is None else show_edge,
+            title=title, box=box, padding=padding, show_header=show_header, show_edge=show_edge
         )
