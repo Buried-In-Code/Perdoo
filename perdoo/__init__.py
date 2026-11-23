@@ -6,7 +6,7 @@ __all__ = [
     "get_state_home",
     "setup_logging",
 ]
-__version__ = "2026.4.0"
+__version__ = "2026.4.1"
 __project__ = "perdoo"
 
 import logging
