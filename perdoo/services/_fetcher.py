@@ -13,12 +13,12 @@ T = TypeVar("T")
 Q = TypeVar("Q", SeriesQuery, IssueQuery)
 
 
-def _relaxed(query: Q, filters: Sequence[str]) -> Iterator[tuple[Q, str | None]]:
+def _relaxed(query: Q, filters: Sequence[tuple[str, str]]) -> Iterator[tuple[Q, str | None]]:
     yield query, None
-    for name in filters:
+    for name, label in filters:
         if getattr(query, name):
             query = replace(query, **{name: None})
-            yield query, name
+            yield query, label
 
 
 class Fetcher(Generic[S, I]):
@@ -52,7 +52,7 @@ class Fetcher(Generic[S, I]):
                 series_id = self.provider.series_id_of(issue)
                 series = self.provider.get_series(series_id)
             except ProviderError as err:
-                CONSOLE.print(err, style="logging.level.error")
+                _say(query=query, message=err, style="logging.level.error")
                 continue
             ids.series, ids.issue = series_id, issue_id
             return series, issue
@@ -70,7 +70,7 @@ class Fetcher(Generic[S, I]):
                     continue
                 issue = self.provider.get_issue(issue_id)
             except ProviderError as err:
-                CONSOLE.print(err, style="logging.level.error")
+                _say(query=query, message=err, style="logging.level.error")
                 continue
             ids.series, ids.issue = series_id, issue_id
             return series, issue
@@ -87,71 +87,77 @@ class Fetcher(Generic[S, I]):
         try:
             return func(query)
         except ProviderError as err:
-            CONSOLE.print(err, style="logging.level.error")
+            _say(query=query, message=err, style="logging.level.error")
             return None
 
     def _pick_by_cover(self, query: Query) -> int | None:
+        _announce(query=query)
         options = self._guard(self.provider.find_by_cover, query)
         if not options:
             return None
-        message = f"Select the {self.name} issue matching the cover of {query.filename!r}"
+        message = f"Searching {self.name} for {self.provider.issue_noun} by cover"
         chosen = self.prompts.select(message, options)
         return chosen.id if chosen else None
 
     def _search_series(self, query: Query) -> int | None:
-        current = SeriesQuery(name=query.name, volume=query.volume, year=query.year)
+        noun, current = self.provider.series_noun, SeriesQuery(query.name, query.volume, query.year)
         try:
             while True:
                 for attempt, dropped in _relaxed(current, self.provider.series_filters):
                     if dropped:
-                        CONSOLE.print(
-                            f"Searching again without the {dropped}", style="logging.level.info"
+                        _say(
+                            query=query,
+                            message=f"Searching again without the {dropped}",
+                            style="logging.level.info",
                         )
-                    options = self.provider.find_series(attempt)
-                    if not options:
-                        CONSOLE.print(
-                            f"Unable to find any series on {self.name} for the file: {query.filename!r}",  # noqa: E501
+                    if not (options := self.provider.find_series(attempt)):
+                        _say(
+                            query=query,
+                            message=f"Unable to find a matching {noun} on {self.name}",
                             style="logging.level.warning",
                         )
                         continue
-                    label = attempt.name
-                    label += f" v{attempt.volume}" if attempt.volume else ""
-                    label += f" ({attempt.year})" if attempt.year else ""
-                    message = f"Searching {self.name} for series {label!r}"
-                    if chosen := self.prompts.select(message, options):
+                    if chosen := self.prompts.select(f"Searching {self.name} for {noun}", options):
                         return chosen.id
-                if not self.prompts.confirm("Search again") or not (
-                    name := self.prompts.text("Series name")
+                if not self.prompts.confirm("Search Again") or not (
+                    name := self.prompts.text(f"{noun} Name")
                 ):
                     return None
                 current = SeriesQuery(name=name)
         except ProviderError as err:
-            CONSOLE.print(err, style="logging.level.error")
+            _say(query=query, message=err, style="logging.level.error")
         return None
 
     def _search_issue(self, query: Query, series_id: int) -> int | None:
+        noun, current = self.provider.issue_noun, IssueQuery(series_id, query.number)
         try:
-            for attempt, dropped in _relaxed(
-                IssueQuery(series_id=series_id, number=query.number), self.provider.issue_filters
-            ):
+            for attempt, dropped in _relaxed(current, self.provider.issue_filters):
                 if dropped:
-                    CONSOLE.print(
-                        f"Searching again without the {dropped}", style="logging.level.info"
+                    _say(
+                        query=query,
+                        message=f"Searching again without the {dropped}",
+                        style="logging.level.info",
                     )
-                options = self.provider.find_issues(attempt)
-                if not options:
-                    CONSOLE.print(
-                        f"Unable to find any issues on {self.name} for the file: {query.filename!r}",  # noqa: E501
+                if not (options := self.provider.find_issues(attempt)):
+                    _say(
+                        query=query,
+                        message=f"Unable to find a matching {noun} on {self.name}",
                         style="logging.level.warning",
                     )
                     continue
-                message = (
-                    f"Searching {self.name} for issues with number {attempt.number!r}"
-                    if attempt.number
-                    else f"Searching {self.name} for issues matching {query.filename!r}"
-                )
-                if chosen := self.prompts.select(message, options):
+                if chosen := self.prompts.select(f"Searching {self.name} for {noun}", options):
                     return chosen.id
         except ProviderError as err:
-            CONSOLE.print(err, style="logging.level.error")
+            _say(query=query, message=err, style="logging.level.error")
         return None
+
+
+def _announce(query: Query) -> None:
+    if not query.announced:
+        query.announced = True
+        CONSOLE.print(f"Syncing {query.filename!r}", style="logging.level.info")
+
+
+def _say(query: Query, message: object, style: str) -> None:
+    _announce(query=query)
+    CONSOLE.print(message, style=style)

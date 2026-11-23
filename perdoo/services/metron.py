@@ -60,7 +60,7 @@ def _request(method: Callable[..., T], *args, **kwargs) -> T:  # noqa: ANN002, A
 class Metron(Provider[Series, Issue]):
     service = Service.METRON
     source = InformationSource.METRON
-    series_filters = ("year", "volume")
+    series_filters = (("year", "YearBegan"), ("volume", "Volume"))
 
     def __init__(self, token: str, cover_hash_distance: int = 10) -> None:
         cache = SqliteCache(db_name=str(get_cache_home() / "mokkari.sqlite"))

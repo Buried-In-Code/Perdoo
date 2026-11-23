@@ -42,7 +42,9 @@ def _request(method: Callable[..., T], *args, **kwargs) -> T:  # noqa: ANN002, A
 class Comicvine(Provider[Volume, Issue]):
     service = Service.COMICVINE
     source = InformationSource.COMIC_VINE
-    series_filters = ("year",)
+    series_noun = "Volume"
+    series_filters = (("year", "StartYear"),)
+    issue_filters = (("number", "IssueNumber"),)
     provides_format = False
 
     def __init__(self, api_key: str) -> None:

@@ -64,6 +64,7 @@ class Query:
     year: int | None = None
     ids: dict[Service, Ids] = field(default_factory=dict)
     cover_source: Callable[[], str | None] = field(default=_no_cover, repr=False)
+    announced: bool = field(default=False, repr=False)
 
     def ids_for(self, service: Service) -> Ids:
         return self.ids.setdefault(service, Ids())

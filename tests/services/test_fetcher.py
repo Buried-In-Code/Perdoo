@@ -5,6 +5,7 @@ import pytest
 from shortbox.metadata import ComicInfo, MetronInfo
 from shortbox.metadata.metron_info import Format, InformationSource, Series
 
+from perdoo.console import CONSOLE
 from perdoo.services import Fetcher, MetadataResult, Prompts, Provider, Query
 from perdoo.services._provider import Candidate, IssueQuery, ProviderError, SeriesQuery
 from perdoo.settings import Service, Settings
@@ -13,7 +14,7 @@ from perdoo.settings import Service, Settings
 class FakeProvider(Provider[str, str]):
     service = Service.METRON
     source = InformationSource.METRON
-    series_filters = ("year", "volume")
+    series_filters = (("year", "YearBegan"), ("volume", "Volume"))
     series_by_query: dict[SeriesQuery, list[Candidate]]
     issues_by_query: dict[IssueQuery, list[Candidate]]
 
@@ -97,10 +98,12 @@ class FakePrompts(Prompts):
     def select_format(self) -> Format | None:
         return self.format_
 
-    def confirm(self, message: str) -> bool:  # noqa: ARG002
+    def confirm(self, message: str) -> bool:
+        self.messages.append(message)
         return self.confirms.pop(0) if self.confirms else False
 
-    def text(self, message: str) -> str | None:  # noqa: ARG002
+    def text(self, message: str) -> str | None:
+        self.messages.append(message)
         return self.texts.pop(0) if self.texts else None
 
 
@@ -325,3 +328,135 @@ def test_a_series_without_the_issue_falls_through_to_the_next_series(
         "find_series",
         "find_issues",
     ]
+
+
+HEADER = "print: Syncing 'Spider 001'"
+
+
+class OtherProvider(FakeProvider):
+    service = Service.COMICVINE
+
+
+@pytest.fixture
+def events(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    seen: list[str] = []
+    monkeypatch.setattr(CONSOLE, "print", lambda message, **_: seen.append(f"print: {message}"))
+    return seen
+
+
+def prompts_in(events: list[str], **kwargs: object) -> FakePrompts:
+    prompts = FakePrompts(**kwargs)  # ty: ignore[invalid-argument-type]
+    prompts.messages = events
+    return prompts
+
+
+def test_nothing_is_announced_when_the_issue_id_resolves(
+    provider: FakeProvider, events: list[str]
+) -> None:
+    query = make_query()
+    query.ids_for(Service.METRON).issue = 10
+
+    assert Fetcher(provider, prompts_in(events)).fetch(query) is not None
+    assert events == []
+
+
+def test_nothing_is_announced_when_a_foreign_issue_id_resolves(
+    provider: FakeProvider, events: list[str]
+) -> None:
+    provider.cross_issue = 20
+
+    assert Fetcher(provider, prompts_in(events)).fetch(make_query()) is not None
+    assert events == []
+
+
+def test_the_comic_is_announced_once_before_the_first_search_or_prompt(
+    provider: FakeProvider, events: list[str]
+) -> None:
+    provider.series_by_query[SeriesQuery("Spider")] = [candidate(1)]
+    provider.issues_by_query[IssueQuery(1, "1")] = [candidate(10)]
+
+    Fetcher(provider, prompts_in(events, picks=[0, 0])).fetch(make_query())
+
+    assert events[0] == HEADER
+    assert events.count(HEADER) == 1
+    assert len(events) > 1
+
+
+def test_a_failing_id_is_announced_before_its_error(
+    provider: FakeProvider, events: list[str]
+) -> None:
+    provider.broken.add(6)
+    query = make_query()
+    query.ids_for(Service.METRON).issue = 6
+
+    Fetcher(provider, prompts_in(events)).fetch(query)
+
+    assert events[:2] == [HEADER, "print: issue 6 is gone"]
+
+
+def test_a_second_service_resolving_by_id_does_not_announce_again(events: list[str]) -> None:
+    query = make_query()
+    query.ids_for(Service.COMICVINE).issue = 10
+
+    assert Fetcher(FakeProvider(), prompts_in(events)).fetch(query) is None
+    assert Fetcher(OtherProvider(), prompts_in(events)).fetch(query) is not None
+    assert events.count(HEADER) == 1
+
+
+def test_a_second_service_that_also_searches_does_not_announce_again(events: list[str]) -> None:
+    second = OtherProvider()
+    second.series_by_query[SeriesQuery("Spider")] = [candidate(1)]
+    second.issues_by_query[IssueQuery(1, "1")] = [candidate(10)]
+    query = make_query()
+
+    assert Fetcher(FakeProvider(), prompts_in(events)).fetch(query) is None
+    assert Fetcher(second, prompts_in(events, picks=[0, 0])).fetch(query) is not None
+    assert events.count(HEADER) == 1
+
+
+class ComicvineWords(FakeProvider):
+    service = Service.COMICVINE
+    series_noun = "Volume"
+    issue_noun = "Comic"
+    series_filters = (("year", "StartYear"),)
+    issue_filters = (("number", "IssueNumber"),)
+
+
+def test_messages_use_the_services_own_words_and_never_the_file_name(events: list[str]) -> None:
+    provider = ComicvineWords()
+    provider.series_by_query[SeriesQuery("Spider")] = [candidate(1)]
+    provider.issues_by_query[IssueQuery(1)] = [candidate(10)]
+
+    Fetcher(provider, prompts_in(events, picks=[0, 0])).fetch(make_query(year=2020))
+
+    assert events == [
+        HEADER,
+        "print: Unable to find a matching Volume on Comicvine",
+        "print: Searching again without the StartYear",
+        "Searching Comicvine for Volume",
+        "print: Unable to find a matching Comic on Comicvine",
+        "print: Searching again without the IssueNumber",
+        "Searching Comicvine for Comic",
+    ]
+
+
+def test_search_again_asks_for_the_name_of_the_services_own_noun(events: list[str]) -> None:
+    provider = ComicvineWords()
+    provider.series_by_query[SeriesQuery("Spider-Man")] = [candidate(1)]
+    provider.issues_by_query[IssueQuery(1, "1")] = [candidate(10)]
+    prompts = prompts_in(events, picks=[0, 0], confirms=[True], texts=["Spider-Man"])
+
+    Fetcher(provider, prompts).fetch(make_query())
+
+    assert "Search Again" in events
+    assert "Volume Name" in events
+
+
+def test_the_cover_prompt_uses_the_services_issue_noun(
+    provider: FakeProvider, events: list[str]
+) -> None:
+    provider.cover_candidates = [candidate(10)]
+
+    Fetcher(provider, prompts_in(events, picks=[0])).fetch(make_query())
+
+    assert events == [HEADER, "Searching Metron for Issue by cover"]

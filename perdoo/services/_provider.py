@@ -41,8 +41,10 @@ class IssueQuery:
 class Provider(ABC, Generic[S, I]):
     service: ClassVar[Service]
     source: ClassVar[InformationSource]
-    series_filters: ClassVar[Sequence[str]] = ()
-    issue_filters: ClassVar[Sequence[str]] = ("number",)
+    series_noun: ClassVar[str] = "Series"
+    issue_noun: ClassVar[str] = "Issue"
+    series_filters: ClassVar[Sequence[tuple[str, str]]] = ()
+    issue_filters: ClassVar[Sequence[tuple[str, str]]] = (("number", "Number"),)
     provides_format: ClassVar[bool] = True
 
     @classmethod
