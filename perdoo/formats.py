@@ -1,4 +1,10 @@
-__all__ = ["ArchiveFormat", "ArchiveType", "ImageFormat", "standardize_image_suffix"]
+__all__ = [
+    "IMAGE_EXTENSIONS",
+    "ArchiveFormat",
+    "ArchiveType",
+    "ImageFormat",
+    "standardize_image_suffix",
+]
 
 from enum import StrEnum
 from typing import Self
@@ -54,3 +60,6 @@ class ImageFormat(_Extension):
     @property
     def pillow_format(self) -> str:
         return "JPEG" if self is ImageFormat.JPG else self.name
+
+
+IMAGE_EXTENSIONS = (*(x.extension for x in ImageFormat), ".jpeg")

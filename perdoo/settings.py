@@ -2,7 +2,7 @@ __all__ = ["Settings"]
 
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Literal, Self, get_args
+from typing import Annotated, ClassVar, Literal, Self, get_args
 
 from msgspec import Meta, Struct, ValidationError, convert, field, structs, to_builtins
 from msgspec.toml import decode, encode
@@ -32,15 +32,9 @@ class Output(Struct, rename="kebab"):
     archive_format: ArchiveFormat = ArchiveFormat.CBZ
     comic_info: ComicInfo = field(default_factory=ComicInfo)
     folder: Path = field(default_factory=lambda: get_data_home() / "comics")
-    image_extensions: list[str] = field(
-        default_factory=lambda: [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
-    )
     image_format: ImageFormat | None = None
     metron_info: MetronInfo = field(default_factory=MetronInfo)
     naming: Naming = field(default_factory=Naming)
-
-    def __post_init__(self) -> None:
-        self.image_extensions = [x.lower() for x in self.image_extensions]
 
 
 class Comicvine(Struct, rename="kebab"):
@@ -73,6 +67,8 @@ class Sync(Struct, rename="kebab"):
 
 
 class Settings(Struct, rename="kebab"):
+    _file: ClassVar[Path] = get_config_home() / "settings.toml"
+
     output: Output = field(default_factory=Output)
     removals: list[str] = field(default_factory=lambda: ["*.nfo", "*.sfv", "*.db", ".DS_Store"])
     services: Services = field(default_factory=Services)
@@ -80,31 +76,29 @@ class Settings(Struct, rename="kebab"):
 
     @property
     def path(self) -> Path:
-        return _settings_file()
+        return self._file
 
     @classmethod
     def load(cls) -> "Settings":
-        file = _settings_file()
-        if not file.exists():
+        if not cls._file.exists():
             return cls().save()
         try:
             return convert(
-                _restore_none(value=decode(file.read_bytes()), struct_type=cls),
+                _restore_none(value=decode(cls._file.read_bytes()), struct_type=cls),
                 type=cls,
                 dec_hook=lambda typ, obj: (
                     Path(obj) if typ is Path and isinstance(obj, str) else obj
                 ),
             )
         except ValidationError as err:
-            raise ValueError(f"Invalid settings file {file}: {err}") from err
+            raise ValueError(f"Invalid settings file {cls._file}: {err}") from err
 
     def save(self) -> Self:
         def encoder(obj: object) -> object:
             return str(obj) if isinstance(obj, Path) else obj
 
-        file = _settings_file()
-        file.parent.mkdir(parents=True, exist_ok=True)
-        file.write_bytes(encode(_toml_serializable(value=to_builtins(self, enc_hook=encoder))))
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_bytes(encode(_toml_serializable(value=to_builtins(self, enc_hook=encoder))))
         return self
 
     @classmethod
@@ -127,7 +121,7 @@ class Settings(Struct, rename="kebab"):
         ]
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default Settings"))
-        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(_settings_file())))
+        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
 
 
 def _toml_serializable(value: object) -> object:
@@ -152,7 +146,3 @@ def _restore_none(value: object, struct_type: type[Struct]) -> object:
         ):
             _restore_none(value=item, struct_type=info.type)
     return value
-
-
-def _settings_file() -> Path:
-    return get_config_home() / "settings.toml"

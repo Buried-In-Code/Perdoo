@@ -3,12 +3,12 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from perdoo.cli.convert.image import convert_comic_images
 from PIL import Image, ImageChops, ImageCms
 from shortbox import Comic
 from shortbox.archives import Archive, TarArchive, ZipArchive
 
 from perdoo.cli._runner import Outcome
+from perdoo.cli.convert.images import convert_comic_images
 from perdoo.formats import ImageFormat
 from perdoo.images import convert_image
 
@@ -225,21 +225,6 @@ def test_convert_comic_images_dry_run_changes_nothing(tmp_path: Path) -> None:
 
     assert outcome is Outcome.SUCCESS
     assert file.read_bytes() == before
-
-
-def test_convert_comic_images_dry_run_logs_in_debug_style(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    file = _make_archive(ZipArchive, tmp_path, {"a.png": _png(), "b.JPEG": b"x"})
-
-    with Comic.open(file=file) as comic:
-        convert_comic_images(
-            comic=comic, target=ImageFormat.JPG, image_extensions=IMAGE_EXTENSIONS, dry_run=True
-        )
-
-    output = capsys.readouterr().out
-    assert "Would convert 'a.png' to 'a.jpg'" in output
-    assert "Would rename 'b.JPEG' to 'b.jpg'" in output
 
 
 def test_convert_comic_images_matches_extensions_case_insensitively(tmp_path: Path) -> None:

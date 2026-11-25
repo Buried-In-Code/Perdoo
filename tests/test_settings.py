@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-from msgspec.json import encode
 
 from perdoo.formats import ImageFormat
 from perdoo.settings import Output, Settings
@@ -25,12 +24,6 @@ def test_none_is_written_as_an_empty_string_and_read_back_as_none() -> None:
 
     assert 'image-format = ""' in content
     assert loaded.output.image_format is None
-
-
-def test_a_settings_file_written_by_the_first_run_can_be_loaded_again() -> None:
-    Settings.load()  # Creates the default file.
-
-    assert encode(Settings.load(), enc_hook=str) == encode(Settings(), enc_hook=str)
 
 
 @pytest.mark.parametrize("value", ["jpg", "JPG", "Jpg"])

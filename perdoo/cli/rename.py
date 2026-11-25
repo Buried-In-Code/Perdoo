@@ -11,7 +11,7 @@ from shortbox.errors import ArchiveCapabilityError
 from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import add_command, add_rename_arguments, add_target_arguments
 from perdoo.console import CONSOLE
-from perdoo.formats import standardize_image_suffix
+from perdoo.formats import IMAGE_EXTENSIONS, standardize_image_suffix
 from perdoo.naming import build_file
 from perdoo.settings import Settings
 
@@ -64,7 +64,7 @@ def rename_entry(entry: Path, target: Path, settings: Settings) -> Outcome:
         if not in_place and new_file.exists() and not new_file.samefile(comic.file):
             CONSOLE.print(f"'{new_relative}' already exists, skipping")
             return Outcome.SKIPPED
-        pages_renamed = rename_comic(comic=comic, image_exts=settings.output.image_extensions)
+        pages_renamed = rename_comic(comic=comic, image_exts=IMAGE_EXTENSIONS)
     if in_place:
         return Outcome.SUCCESS if pages_renamed else Outcome.UNCHANGED
     new_file.parent.mkdir(parents=True, exist_ok=True)

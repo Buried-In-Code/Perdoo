@@ -10,7 +10,7 @@ from shortbox import Comic
 from perdoo.cli._runner import Outcome, collect_files, run_on_files
 from perdoo.cli._utils import add_command, add_dry_run_argument, add_target_arguments
 from perdoo.console import CONSOLE
-from perdoo.formats import ImageFormat, standardize_image_suffix
+from perdoo.formats import IMAGE_EXTENSIONS, ImageFormat, standardize_image_suffix
 from perdoo.images import convert_image
 from perdoo.settings import Settings
 
@@ -94,7 +94,7 @@ def run(args: Namespace, settings: Settings | None = None) -> None:
             return convert_comic_images(
                 comic=comic,
                 target=image_format,
-                image_extensions=settings.output.image_extensions,
+                image_extensions=IMAGE_EXTENSIONS,
                 dry_run=args.dry_run,
             )
 

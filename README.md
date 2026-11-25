@@ -235,7 +235,6 @@ removals = ["*.nfo", "*.sfv", "*.db", ".DS_Store"]
 [output]
 archive-format = "cbz"
 folder = "~/.local/share/perdoo"
-image-extensions = [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
 image-format = ""
 
 [output.comic-info]
@@ -292,16 +291,6 @@ The output format used for comic archives.
 Defaults to `cbz`.
 
 See [Supported Formats](#supported-formats) for available formats.
-
-#### `output.image-extensions`
-
-The file extensions Perdoo considers to be images during the clean-up step.
-
-Defaults to:
-
-```toml
-[".png", ".jpg", ".jpeg", ".webp", ".jxl"]
-```
 
 #### `output.image-format`
 

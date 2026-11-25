@@ -2,13 +2,12 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from msgspec.toml import decode
 from shortbox import Comic
 from shortbox.metadata import ComicInfo
 
 from perdoo.cli._runner import Outcome
 from perdoo.cli.rename import rename_comic, rename_entry
-from perdoo.settings import Output, Settings
+from perdoo.settings import Settings
 
 
 @pytest.fixture(autouse=True)
@@ -23,27 +22,6 @@ def _cbz(folder: Path, names: list[str]) -> Path:
         for name in names:
             archive.writestr(name, b"data")
     return file
-
-
-def test_default_extensions_are_lowercase() -> None:
-    assert all(x == x.lower() for x in Output().image_extensions)
-
-
-def test_extensions_are_read_case_insensitively() -> None:
-    output = decode(b'image-extensions = [".PNG", ".Jpg"]', type=Output)
-
-    assert tuple(output.image_extensions) == (".png", ".jpg")
-
-
-def test_extensions_are_written_lowercase() -> None:
-    settings = Settings()
-    settings.path.write_text('[output]\nimage-extensions = [".PNG"]\n')
-
-    Settings.load().save()
-
-    content = settings.path.read_text()
-    assert '".png"' in content
-    assert ".PNG" not in content
 
 
 def test_rename_standardizes_page_extensions(tmp_path: Path) -> None:

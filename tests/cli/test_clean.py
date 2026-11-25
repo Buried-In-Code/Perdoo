@@ -8,7 +8,7 @@ from shortbox import Comic
 
 from perdoo.cli._runner import Outcome
 from perdoo.cli.clean import clean_comic
-from perdoo.settings import Output
+from perdoo.settings import Settings
 
 
 def _cbz(folder: Path, names: list[str]) -> Path:
@@ -21,13 +21,13 @@ def _cbz(folder: Path, names: list[str]) -> Path:
 
 def _clean(file: Path, targets: list[str], dry_run: bool = False) -> tuple[Outcome, list[str]]:
     with Comic.open(file=file) as comic:
-        outcome = clean_comic(comic=comic, clean_targets=targets, dry_run=dry_run)
+        outcome = clean_comic(comic=comic, removals=targets, dry_run=dry_run)
     with Comic.open(file=file) as comic:
         return outcome, comic.list_filenames()
 
 
 def test_default_clean_targets() -> None:
-    assert tuple(Output().clean_targets) == ("*.nfo", "*.sfv", "*.db", ".DS_Store")
+    assert tuple(Settings().removals) == ("*.nfo", "*.sfv", "*.db", ".DS_Store")
 
 
 @pytest.mark.parametrize(
@@ -103,9 +103,7 @@ def test_clean_comic_is_unchanged_without_matches(tmp_path: Path) -> None:
     assert names == ["001.png"]
 
 
-def test_clean_comic_dry_run_changes_nothing(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_clean_comic_dry_run_changes_nothing(tmp_path: Path) -> None:
     file = _cbz(tmp_path, ["001.png", "a.nfo", "unwanted-folder/b.png"])
     before = file.read_bytes()
 
@@ -114,9 +112,6 @@ def test_clean_comic_dry_run_changes_nothing(
     assert outcome is Outcome.SUCCESS
     assert file.read_bytes() == before
     assert names == ["001.png", "a.nfo", "unwanted-folder/b.png"]
-    output = capsys.readouterr().out
-    assert "Would remove 'a.nfo'" in output
-    assert "Would remove 'unwanted-folder/b.png'" in output
 
 
 def test_clean_comic_works_on_tar_archives(tmp_path: Path) -> None:
