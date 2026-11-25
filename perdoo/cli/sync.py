@@ -5,13 +5,12 @@ from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
-from rich_argparse import HelpPreviewAction
 from shortbox import Comic
 from shortbox.errors import MetadataValidationError
 from shortbox.metadata import ComicInfo, MetronInfo
 
 from perdoo.cli._runner import Outcome, collect_files, run_on_files
-from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
+from perdoo.cli._utils import add_command, add_sync_arguments, add_target_arguments
 from perdoo.console import CONSOLE
 from perdoo.services import Fetcher, build_fetchers, build_query
 from perdoo.services._models import get_comic_info_note_modified
@@ -19,41 +18,16 @@ from perdoo.settings import Settings
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser(
-        "sync",
-        help="Fetch metadata for comic archives from configured services.",
+    parser = add_command(
+        subparsers=subparsers,
+        name="sync",
+        summary="Fetch metadata for comic archives from configured services.",
         description="Fetch metadata from configured services and store it in comic archives.",
-        formatter_class=RichHelpFormatter,
     )
-    parser.add_argument(
-        "target",
-        type=existing_file_or_directory,
-        help="Comic archive or directory of comic archives to synchronize.",
+    add_target_arguments(
+        parser=parser, target_help="Comic archive or directory of comic archives to sync"
     )
-    parser.add_argument(
-        "-i",
-        "--ignore",
-        action="append",
-        type=enum_arg(enum_type=ArchiveType),
-        choices=list(ArchiveType),
-        metavar="EXT",
-        help="Skip archives with this extension. Repeat to ignore multiple extensions.",
-    )
-    parser.add_argument(
-        "-f",
-        "--force",
-        action="store_true",
-        help="Synchronize even if the stored metadata was updated within the configured interval.",
-    )
-    parser.add_argument(
-        "-o",
-        "--override-cv-format",
-        action="store_true",
-        help="Override the format provided by Comicvine",
-    )
-    parser.add_argument(
-        "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_sync.svg"
-    )
+    add_sync_arguments(parser=parser)
     parser.set_defaults(func=run)
 
 

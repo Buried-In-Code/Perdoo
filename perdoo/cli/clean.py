@@ -4,45 +4,36 @@ from argparse import Namespace, _SubParsersAction
 from collections.abc import Sequence
 from pathlib import Path
 
-from rich_argparse import HelpPreviewAction
+from pathspec import GitIgnoreSpec
 from shortbox import Comic
 
 from perdoo.cli._runner import Outcome, collect_files, run_on_files
-from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
+from perdoo.cli._utils import add_command, add_dry_run_argument, add_target_arguments
 from perdoo.console import CONSOLE
 from perdoo.settings import Settings
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser(
-        "clean",
-        help="Remove configured unwanted files from comic archives.",
-        description="Remove files with extensions configured in output.remove-extensions from comic archives.",  # noqa: E501
-        formatter_class=RichHelpFormatter,
+    parser = add_command(
+        subparsers=subparsers,
+        name="clean",
+        summary="Remove configured unwanted files and folders from comic archives.",
+        description="Remove files and folders matching the .gitignore-style patterns configured in output.clean-targets from comic archives.",  # noqa: E501
     )
-    parser.add_argument(
-        "target",
-        type=existing_file_or_directory,
-        help="Comic archive or directory of comic archives to clean.",
+    add_target_arguments(
+        parser=parser, target_help="Comic archive or directory of comic archives to clean."
     )
-    parser.add_argument(
-        "-i",
-        "--ignore",
-        action="append",
-        type=enum_arg(enum_type=ArchiveType),
-        choices=list(ArchiveType),
-        metavar="EXT",
-        help="Skip archives with this extension. Repeat to ignore multiple extensions.",
-    )
-    parser.add_argument(
-        "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_clean.svg"
-    )
+    add_dry_run_argument(parser=parser)
     parser.set_defaults(func=run)
 
 
-def clean_comic(comic: Comic, remove_extensions: Sequence[str]) -> Outcome:
-    removed = [name for name in comic.list_filenames() if Path(name).suffix in remove_extensions]
+def clean_comic(comic: Comic, removals: Sequence[str], dry_run: bool = False) -> Outcome:
+    spec = GitIgnoreSpec.from_lines(removals)
+    removed = [name for name in comic.list_filenames() if spec.match_file(name)]
     for filename in removed:
+        if dry_run:
+            CONSOLE.print(f"Would remove {filename!r}", style="logging.level.debug")
+            continue
         CONSOLE.print(f"Removing {filename!r}")
         comic.remove_file(filename=filename)
     return Outcome.SUCCESS if removed else Outcome.UNCHANGED
@@ -54,6 +45,6 @@ def run(args: Namespace, settings: Settings | None = None) -> None:
 
     def handle(entry: Path) -> Outcome:
         with Comic.open(file=entry) as comic:
-            return clean_comic(comic=comic, remove_extensions=settings.output.remove_extensions)
+            return clean_comic(comic=comic, removals=settings.removals, dry_run=args.dry_run)
 
     run_on_files(files=collect_files(args), action="Cleaning", handler=handle)

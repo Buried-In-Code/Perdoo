@@ -1,7 +1,7 @@
-__all__ = ["SEPARATOR_CHARS", "display", "flatten_dict", "list_files", "sanitize"]
+__all__ = ["SEPARATOR_CHARS", "display", "flatten_dict", "is_same_path", "list_files", "sanitize"]
 
 import re
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any, Literal
 
 from msgspec import to_builtins
@@ -71,3 +71,7 @@ def sanitize(value: str | int | None, seperator: Literal["-", "_", ".", " "]) ->
     text = text.replace(_DECIMAL_PLACEHOLDER, ".")
     text = " ".join(text.split())
     return text.replace(" ", seperator) or None
+
+
+def is_same_path(left: PurePath, right: PurePath) -> bool:
+    return left.parent == right.parent and left.name == right.name

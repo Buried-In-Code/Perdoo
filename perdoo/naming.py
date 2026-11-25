@@ -294,4 +294,5 @@ def build_file(comic: Comic, folder: Path, settings: Naming) -> Path | None:
         filename = comic.file.stem
 
     filename = enforce_filesystem_safety(filename)
-    return (folder / (filename + comic.file.suffix)).resolve()
+    new_file = folder / (filename + comic.file.suffix.lower())
+    return new_file.parent.resolve() / new_file.name

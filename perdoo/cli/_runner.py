@@ -47,8 +47,8 @@ class RunSummary:
 
 def collect_files(args: Namespace) -> list[Path]:
     files = list_files(args.target) if args.target.is_dir() else [args.target]
-    ignored = {f".{x}" for x in args.ignore or ()}
-    return [x for x in files if x.suffix not in ignored]
+    ignored = {x.extension for x in args.ignore or ()}
+    return [x for x in files if x.suffix.lower() not in ignored]
 
 
 def run_on_files(

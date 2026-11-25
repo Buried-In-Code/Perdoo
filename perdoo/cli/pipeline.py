@@ -2,64 +2,39 @@ __all__ = ["register"]
 
 from argparse import Namespace, _SubParsersAction
 
-from rich_argparse import HelpPreviewAction
-
-from perdoo.cli._utils import ArchiveType, RichHelpFormatter, enum_arg, existing_file_or_directory
+from perdoo.cli._utils import (
+    add_command,
+    add_rename_arguments,
+    add_sync_arguments,
+    add_target_arguments,
+)
 from perdoo.cli.clean import run as run_clean
-from perdoo.cli.convert import run as run_convert
+from perdoo.cli.convert.archive import run as run_convert_archive
+from perdoo.cli.convert.images import run as run_convert_images
 from perdoo.cli.rename import run as run_rename
 from perdoo.cli.sync import run as run_sync
 from perdoo.settings import Settings
 
 
 def register(subparsers: _SubParsersAction) -> None:
-    parser = subparsers.add_parser(
-        "pipeline",
-        help="Runs convert, clean, sync and rename one after another",
-        description="Runs convert, clean, sync and rename one after another",
-        formatter_class=RichHelpFormatter,
+    parser = add_command(
+        subparsers=subparsers,
+        name="pipeline",
+        summary="Runs convert (archives & images), clean, sync and rename in order",
+        description="Runs convert (archives & images), clean, sync and rename in order",
     )
-    parser.add_argument(
-        "target",
-        type=existing_file_or_directory,
-        help="Comic archive or directory of comic archives to synchronize.",
+    add_target_arguments(
+        parser=parser, target_help="Comic archive or directory of comic archives to process"
     )
-    parser.add_argument(
-        "-i",
-        "--ignore",
-        action="append",
-        type=enum_arg(enum_type=ArchiveType),
-        choices=list(ArchiveType),
-        metavar="EXT",
-        help="Skip archives with this extension. Repeat to ignore multiple extensions.",
-    )
-    parser.add_argument(
-        "-f",
-        "--force",
-        action="store_true",
-        help="Synchronize even if the stored metadata was updated within the configured interval.",
-    )
-    parser.add_argument(
-        "-o",
-        "--override-cv-format",
-        action="store_true",
-        help="Override the format provided by Comicvine",
-    )
-    parser.add_argument(
-        "-c",
-        "--clean-empty",
-        action="store_true",
-        help="Remove any empty folders after processing inside the target, including the target",
-    )
-    parser.add_argument(
-        "--generate-help-preview", action=HelpPreviewAction, path="docs/img/perdoo_pipeline.svg"
-    )
-    parser.set_defaults(func=run)
+    add_sync_arguments(parser=parser)
+    add_rename_arguments(parser=parser)
+    parser.set_defaults(func=run, dry_run=False)
 
 
 def run(args: Namespace) -> None:
     settings = Settings.load().save()
-    run_convert(args, settings)
+    run_convert_archive(args, settings)
+    run_convert_images(args, settings)
     run_clean(args, settings)
     run_sync(args, settings)
     run_rename(args, settings)

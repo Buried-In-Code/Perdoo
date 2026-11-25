@@ -23,7 +23,7 @@ SOURCES = {
     [
         (
             (
-                "Tagged with Perdoo v2026.4.1 using info from Comic Vine at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
+                "Tagged with Perdoo v1.5.0 using info from Comic Vine at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
             ),
             InformationSource.COMIC_VINE,
             123,
@@ -50,7 +50,7 @@ def test_get_comic_info_note_id_recognizes_supported_taggers(
 
 
 def test_get_comic_info_note_id_requires_the_requested_source() -> None:
-    notes = "Tagged with Perdoo v2026.4.1 using info from Comic Vine at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
+    notes = "Tagged with Perdoo v1.5.0 using info from Comic Vine at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
 
     assert get_comic_info_note_id(notes, InformationSource.METRON) is None
 
@@ -60,7 +60,7 @@ def test_get_comic_info_note_id_requires_the_requested_source() -> None:
     [
         (
             (
-                "Tagged with Perdoo v2026.4.1 using info from Metron at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
+                "Tagged with Perdoo v1.5.0 using info from Metron at 2026-09-04T12:00:00+00:00. [issue_id:123]"  # noqa: E501
             ),
             datetime(2026, 9, 4, 12, tzinfo=UTC),
         ),
@@ -70,7 +70,7 @@ def test_get_comic_info_note_id_requires_the_requested_source() -> None:
             ),
             "2026-09-04T12:00:00",
         ),
-        ("Tagged with Perdoo v2026.4.1 using info from Metron at invalid. [issue_id:123]", None),
+        ("Tagged with Perdoo v1.5.0 using info from Metron at invalid. [issue_id:123]", None),
     ],
     ids=["perdoo-iso-timestamp", "metron-tagger-timestamp", "invalid-timestamp"],
 )
@@ -93,7 +93,7 @@ def test_set_comic_info_note_id_records_source_identifier_and_timestamp() -> Non
     set_comic_info_note_id(metadata, InformationSource.METRON, 456, modified)
 
     assert metadata.notes == (
-        "Tagged with Perdoo v2026.4.1 using info from Metron at 2026-09-04T12:00:00+00:00. [issue_id:456]"  # noqa: E501
+        "Tagged with Perdoo v1.5.0 using info from Metron at 2026-09-04T12:00:00+00:00. [issue_id:456]"  # noqa: E501
     )
 
 
