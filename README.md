@@ -85,9 +85,23 @@ Unlike fully automated tagging tools, Perdoo takes a manual approach when metada
 </details>
 
 <details>
-<summary><code>perdoo convert</code></summary>
+<summary><code>perdoo convert</code> commands</summary>
 
 ![perdoo convert help](docs/img/perdoo_convert.svg)
+
+<details>
+<summary><code>perdoo convert archive</code></summary>
+
+![perdoo convert archive help](docs/img/perdoo_convert_archive.svg)
+
+</details>
+
+<details>
+<summary><code>perdoo convert images</code></summary>
+
+![perdoo convert images help](docs/img/perdoo_convert_images.svg)
+
+</details>
 
 </details>
 
@@ -216,10 +230,13 @@ The file is created automatically on first run.
 ### Example
 
 ```toml
+removals = ["*.nfo", "*.sfv", "*.db", ".DS_Store"]
+
 [output]
+archive-format = "cbz"
 folder = "~/.local/share/perdoo"
-format = "cbz"
 image-extensions = [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
+image-format = ""
 
 [output.comic-info]
 create = true
@@ -246,6 +263,16 @@ days = 28
 cover-hash-distance = 10
 ```
 
+### `removals`
+
+A list of gitignore-style file regexes to remove, during the clean stage.
+
+Defaults to:
+
+```toml
+["*.nfo", "*.sfv", "*.db", ".DS_Store"]
+```
+
 ### Output
 
 #### `output.folder`
@@ -258,7 +285,7 @@ Defaults to:
 ~/.local/share/perdoo/comics
 ```
 
-#### `output.format`
+#### `output.archive-format`
 
 The output format used for comic archives.
 
@@ -275,6 +302,14 @@ Defaults to:
 ```toml
 [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
 ```
+
+#### `output.image-format`
+
+The target format to convert the images inside an archive to.
+
+Defaults to `""`
+
+Supported values are: `""`, `jpg`, `png`, `webp`, `jxl`
 
 ### ComicInfo
 

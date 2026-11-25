@@ -1,16 +1,16 @@
 __all__ = ["Settings"]
 
-from collections.abc import Sequence
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal, Self, get_args
 
-from msgspec import Meta, Struct, ValidationError, field, to_builtins
+from msgspec import Meta, Struct, ValidationError, convert, field, structs, to_builtins
 from msgspec.toml import decode, encode
 from rich.panel import Panel
 
 from perdoo import get_config_home, get_data_home
 from perdoo.console import CONSOLE
+from perdoo.formats import ArchiveFormat, ImageFormat
 from perdoo.utils import flatten_dict
 
 
@@ -29,13 +29,18 @@ class Naming(Struct, rename="kebab"):
 
 
 class Output(Struct, rename="kebab"):
+    archive_format: ArchiveFormat = ArchiveFormat.CBZ
     comic_info: ComicInfo = field(default_factory=ComicInfo)
     folder: Path = field(default_factory=lambda: get_data_home() / "comics")
-    format: Literal["cbz", "cbt", "cb7"] = "cbz"
-    image_extensions: Sequence[str] = (".png", ".jpg", ".jpeg", ".webp", ".jxl")
+    image_extensions: list[str] = field(
+        default_factory=lambda: [".png", ".jpg", ".jpeg", ".webp", ".jxl"]
+    )
+    image_format: ImageFormat | None = None
     metron_info: MetronInfo = field(default_factory=MetronInfo)
     naming: Naming = field(default_factory=Naming)
-    remove_extensions: Sequence[str] = (".nfo", ".sfv", ".db", ".DS_Store")
+
+    def __post_init__(self) -> None:
+        self.image_extensions = [x.lower() for x in self.image_extensions]
 
 
 class Comicvine(Struct, rename="kebab"):
@@ -57,7 +62,7 @@ class Service(StrEnum):
 class Services(Struct, rename="kebab"):
     comicvine: Comicvine = field(default_factory=Comicvine)
     metron: Metron = field(default_factory=Metron)
-    order: Sequence[Service] = (Service.METRON, Service.COMICVINE)
+    order: list[Service] = field(default_factory=lambda: [Service.METRON, Service.COMICVINE])
 
 
 class Sync(Struct, rename="kebab"):
@@ -69,6 +74,7 @@ class Sync(Struct, rename="kebab"):
 
 class Settings(Struct, rename="kebab"):
     output: Output = field(default_factory=Output)
+    removals: list[str] = field(default_factory=lambda: ["*.nfo", "*.sfv", "*.db", ".DS_Store"])
     services: Services = field(default_factory=Services)
     sync: Sync = field(default_factory=Sync)
 
@@ -82,8 +88,8 @@ class Settings(Struct, rename="kebab"):
         if not file.exists():
             return cls().save()
         try:
-            return decode(
-                file.read_bytes(),
+            return convert(
+                _restore_none(value=decode(file.read_bytes()), struct_type=cls),
                 type=cls,
                 dec_hook=lambda typ, obj: (
                     Path(obj) if typ is Path and isinstance(obj, str) else obj
@@ -131,6 +137,20 @@ def _toml_serializable(value: object) -> object:
         return {key: _toml_serializable(value=item) for key, item in value.items()}
     if isinstance(value, list):
         return [_toml_serializable(value=item) for item in value]
+    return value
+
+
+def _restore_none(value: object, struct_type: type[Struct]) -> object:
+    if not isinstance(value, dict):
+        return value
+    for info in structs.fields(struct_type):
+        item = value.get(info.encode_name)
+        if item == "" and type(None) in get_args(info.type):
+            value[info.encode_name] = None
+        elif (
+            isinstance(item, dict) and isinstance(info.type, type) and issubclass(info.type, Struct)
+        ):
+            _restore_none(value=item, struct_type=info.type)
     return value
 
 

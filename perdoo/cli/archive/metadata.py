@@ -3,12 +3,11 @@ __all__ = ["register"]
 from argparse import Namespace, _SubParsersAction
 
 from rich.panel import Panel
-from rich_argparse import HelpPreviewAction
 from shortbox import Comic
 from shortbox.errors import MetadataValidationError
 from shortbox.metadata import ComicInfo, Metadata, MetronInfo
 
-from perdoo.cli._utils import RichHelpFormatter, existing_file
+from perdoo.cli._utils import add_command, existing_file
 from perdoo.console import CONSOLE
 from perdoo.utils import display
 
@@ -26,11 +25,11 @@ def register_metadata_command(
     subparsers: _SubParsersAction, command: str, metadata_type: type[Metadata]
 ) -> None:
     metadata_name = metadata_type.__name__
-    parser = subparsers.add_parser(
-        command,
-        help=f"Display {metadata_name} metadata from a comic archive.",
+    parser = add_command(
+        subparsers=subparsers,
+        name=command,
+        summary=f"Display {metadata_name} metadata from a comic archive.",
         description=f"Display the {metadata_name} metadata stored in a comic archive.",
-        formatter_class=RichHelpFormatter,
     )
     parser.add_argument(
         "target",
@@ -41,11 +40,6 @@ def register_metadata_command(
         "--validate",
         action="store_true",
         help=f"Validate the {metadata_name} metadata against its schema.",
-    )
-    parser.add_argument(
-        "--generate-help-preview",
-        action=HelpPreviewAction,
-        path=f"docs/img/perdoo_archive_{command}.svg",
     )
     parser.set_defaults(func=run, metadata_type=metadata_type)
 
