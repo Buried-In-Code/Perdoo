@@ -10,6 +10,7 @@ from perdoo.cli._utils import add_command, add_dry_run_argument, add_target_argu
 from perdoo.console import CONSOLE
 from perdoo.formats import ArchiveFormat
 from perdoo.settings import Settings
+from perdoo.utils import is_same_path
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -81,7 +82,7 @@ def run(args: Namespace, settings: Settings | None = None) -> None:
         outcome, new_file = convert_entry(
             entry=entry, archive_format=archive_format, dry_run=args.dry_run
         )
-        if new_file != entry and entry == args.target:
+        if not is_same_path(new_file, entry) and entry == args.target:
             args.target = new_file
         return outcome
 

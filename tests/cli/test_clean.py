@@ -27,7 +27,7 @@ def _clean(file: Path, targets: list[str], dry_run: bool = False) -> tuple[Outco
 
 
 def test_default_clean_targets() -> None:
-    assert tuple(Settings().removals) == ("*.nfo", "*.sfv", "*.db", ".DS_Store")
+    assert tuple(Settings().removals) == ("*.db", "*.ini", "*.nfo", "*.sfv", ".DS_Store")
 
 
 @pytest.mark.parametrize(

@@ -106,11 +106,12 @@ def test_convert_entry_standardizes_the_extension_case(tmp_path: Path) -> None:
     outcome, new_file = convert_entry(entry=upper, archive_format=ArchiveFormat.CBT, dry_run=False)
 
     assert outcome is Outcome.SUCCESS
-    assert new_file == tmp_path / "comic.cbt"
+    assert new_file.name == "comic.cbt"
     assert new_file.read_bytes() == before
     assert [x.name for x in tmp_path.iterdir() if x.is_file()] == ["comic.cbt"]
 
 
+@pytest.mark.usefixtures("case_sensitive_fs")
 def test_convert_entry_never_overwrites_when_standardizing(tmp_path: Path) -> None:
     file = _cbt(tmp_path)
     upper = tmp_path / "comic.CBT"

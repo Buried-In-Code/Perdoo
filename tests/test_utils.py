@@ -1,6 +1,8 @@
+from pathlib import PurePosixPath, PureWindowsPath
+
 import pytest
 
-from perdoo.utils import flatten_dict, sanitize
+from perdoo.utils import flatten_dict, is_same_path, sanitize
 
 
 @pytest.mark.parametrize(
@@ -36,3 +38,28 @@ def test_flatten_dict_flattens_nested_mappings_and_mapping_lists() -> None:
         "series.name": "Spider-Man",
         "tags": ["Marvel", "Comics"],
     }
+
+
+@pytest.mark.parametrize("path_type", [PurePosixPath, PureWindowsPath])
+def test_is_same_path_matches_identical_paths(path_type: type[PurePosixPath]) -> None:
+    assert is_same_path(path_type("lib/Series/a.cbz"), path_type("lib/Series/a.cbz"))
+
+
+@pytest.mark.parametrize("path_type", [PurePosixPath, PureWindowsPath])
+@pytest.mark.parametrize("other", ["lib/Series/a.CBZ", "lib/Series/A.cbz", "lib/Series/b.cbz"])
+def test_is_same_path_tells_apart_names_that_differ_in_case(
+    path_type: type[PurePosixPath], other: str
+) -> None:
+    assert not is_same_path(path_type("lib/Series/a.cbz"), path_type(other))
+
+
+@pytest.mark.parametrize("path_type", [PurePosixPath, PureWindowsPath])
+def test_is_same_path_tells_apart_folders(path_type: type[PurePosixPath]) -> None:
+    assert not is_same_path(path_type("lib/one/a.cbz"), path_type("lib/two/a.cbz"))
+
+
+def test_windows_paths_hide_case_only_differences_without_is_same_path() -> None:
+    left, right = PureWindowsPath("lib/a.CBZ"), PureWindowsPath("lib/a.cbz")
+
+    assert left == right
+    assert not is_same_path(left, right)

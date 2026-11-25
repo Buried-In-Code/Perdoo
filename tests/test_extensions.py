@@ -7,6 +7,7 @@ from shortbox.metadata import ComicInfo
 
 from perdoo.cli._runner import Outcome
 from perdoo.cli.rename import rename_comic, rename_entry
+from perdoo.naming import build_file
 from perdoo.settings import Settings
 
 
@@ -74,3 +75,16 @@ def test_rename_entry_fixes_a_case_only_difference_in_place(tmp_path: Path) -> N
 
     assert outcome is Outcome.SUCCESS
     assert [x.name for x in folder.iterdir()] == ["Test-Series_#001.cbz"]
+
+
+def test_build_file_keeps_a_lowercase_extension_next_to_an_existing_file(tmp_path: Path) -> None:
+    library = tmp_path / "library"
+    folder = library / "Test-Series"
+    folder.mkdir(parents=True)
+    file = _tagged_cbz(folder / "Test-Series_#001.CBZ")
+
+    with Comic.open(file=file) as comic:
+        new_file = build_file(comic=comic, folder=library, settings=Settings().output.naming)
+
+    assert new_file is not None
+    assert new_file.name == "Test-Series_#001.cbz"

@@ -14,6 +14,7 @@ from perdoo.console import CONSOLE
 from perdoo.formats import IMAGE_EXTENSIONS, standardize_image_suffix
 from perdoo.naming import build_file
 from perdoo.settings import Settings
+from perdoo.utils import is_same_path
 
 
 def register(subparsers: _SubParsersAction) -> None:
@@ -60,7 +61,7 @@ def rename_entry(entry: Path, target: Path, settings: Settings) -> Outcome:
             CONSOLE.print(f"'{entry.name}' has no recognised metadata, skipping")
             return Outcome.SKIPPED
         new_relative = new_file.relative_to(settings.output.folder.resolve())
-        in_place = comic.file == new_file
+        in_place = is_same_path(comic.file, new_file)
         if not in_place and new_file.exists() and not new_file.samefile(comic.file):
             CONSOLE.print(f"'{new_relative}' already exists, skipping")
             return Outcome.SKIPPED
