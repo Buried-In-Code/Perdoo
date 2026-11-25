@@ -230,7 +230,7 @@ The file is created automatically on first run.
 ### Example
 
 ```toml
-removals = ["*.nfo", "*.sfv", "*.db", ".DS_Store"]
+removals = ["*.db", "*.ini", "*.nfo", "*.sfv", ".DS_Store"]
 
 [output]
 archive-format = "cbz"
@@ -269,7 +269,7 @@ A list of gitignore-style file regexes to remove, during the clean stage.
 Defaults to:
 
 ```toml
-["*.nfo", "*.sfv", "*.db", ".DS_Store"]
+["*.db", "*.ini", "*.nfo", "*.sfv", ".DS_Store"]
 ```
 
 ### Output

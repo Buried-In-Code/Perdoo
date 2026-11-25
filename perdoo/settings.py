@@ -70,7 +70,9 @@ class Settings(Struct, rename="kebab"):
     _file: ClassVar[Path] = get_config_home() / "settings.toml"
 
     output: Output = field(default_factory=Output)
-    removals: list[str] = field(default_factory=lambda: ["*.nfo", "*.sfv", "*.db", ".DS_Store"])
+    removals: list[str] = field(
+        default_factory=lambda: ["*.db", "*.ini", "*.nfo", "*.sfv", ".DS_Store"]
+    )
     services: Services = field(default_factory=Services)
     sync: Sync = field(default_factory=Sync)
 
