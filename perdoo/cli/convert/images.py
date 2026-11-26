@@ -69,7 +69,10 @@ def convert_comic_images(
                 continue
             comic.write_file(filename=new_name, data=data)
             comic.remove_file(filename=name)
-            CONSOLE.print(f"Converted {name!r} to {new_name!r}")
+            CONSOLE.print(
+                f"Converted '{comic.file.name}!/{name}' to '{comic.file.name}!/{new_name}'",
+                style="logging.level.info",
+            )
         existing.add(new_name)
         changed += 1
     if failed:

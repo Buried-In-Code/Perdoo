@@ -42,7 +42,10 @@ def rename_comic(comic: Comic, image_exts: Sequence[str]) -> bool:
                 new_name = f"{str(idx).zfill(pad)}{standardize_image_suffix(suffix)}"
                 idx += 1
                 if filename != new_name:
-                    CONSOLE.print(f"Renaming {filename!r} to {new_name!r}")
+                    CONSOLE.print(
+                        f"Renaming '{comic.file.name}!/{filename}' to '{comic.file.name}!/{new_name}''",  # noqa: E501
+                        style="logging.level.info",
+                    )
                     comic.rename_file(filename=filename, new_name=new_name, override=True)
                     renamed = True
     except ArchiveCapabilityError as err:

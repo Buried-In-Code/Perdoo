@@ -374,7 +374,7 @@ Defaults to `28`.
 
 The maximum Hamming distance accepted when matching an archive cover.
 
-Defaults to `10`. Supported values range from `0` to `64`.
+Defaults to `10`. Supported values range from `0` to `20`.
 
 ## Socials
 

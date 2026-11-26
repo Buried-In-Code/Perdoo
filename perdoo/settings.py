@@ -2,7 +2,7 @@ __all__ = ["Settings"]
 
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, ClassVar, Literal, Self, get_args
+from typing import Annotated, Literal, Self, get_args
 
 from msgspec import Meta, Struct, ValidationError, convert, field, structs, to_builtins
 from msgspec.toml import decode, encode
@@ -61,14 +61,12 @@ class Services(Struct, rename="kebab"):
 
 class Sync(Struct, rename="kebab"):
     cover_hash_distance: Annotated[
-        int, Meta(ge=0, le=64, description="'cover-hash-distance' must be between 0 and 64")
+        int, Meta(ge=0, le=20, description="'cover-hash-distance' must be between 0 and 20")
     ] = 10
     days: Annotated[int, Meta(ge=7, description="'days' must be greater than 6")] = 28
 
 
 class Settings(Struct, rename="kebab"):
-    _file: ClassVar[Path] = get_config_home() / "settings.toml"
-
     output: Output = field(default_factory=Output)
     removals: list[str] = field(
         default_factory=lambda: ["*.db", "*.ini", "*.nfo", "*.sfv", ".DS_Store"]
@@ -76,24 +74,29 @@ class Settings(Struct, rename="kebab"):
     services: Services = field(default_factory=Services)
     sync: Sync = field(default_factory=Sync)
 
+    @classmethod
+    def _file(cls) -> Path:
+        return get_config_home() / "settings.toml"
+
     @property
     def path(self) -> Path:
-        return self._file
+        return self._file()
 
     @classmethod
     def load(cls) -> "Settings":
-        if not cls._file.exists():
+        file = cls._file()
+        if not file.exists():
             return cls().save()
         try:
             return convert(
-                _restore_none(value=decode(cls._file.read_bytes()), struct_type=cls),
+                _restore_none(value=decode(file.read_bytes()), struct_type=cls),
                 type=cls,
                 dec_hook=lambda typ, obj: (
                     Path(obj) if typ is Path and isinstance(obj, str) else obj
                 ),
             )
         except ValidationError as err:
-            raise ValueError(f"Invalid settings file {cls._file}: {err}") from err
+            raise ValueError(f"Invalid settings file {file}: {err}") from err
 
     def save(self) -> Self:
         def encoder(obj: object) -> object:
@@ -123,7 +126,7 @@ class Settings(Struct, rename="kebab"):
         ]
 
         CONSOLE.print(Panel.fit("\n".join(default_vals), title="Default Settings"))
-        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file)))
+        CONSOLE.print(Panel.fit("\n".join(override_vals), title=str(cls._file())))
 
 
 def _toml_serializable(value: object) -> object:
