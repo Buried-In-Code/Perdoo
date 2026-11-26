@@ -7,7 +7,6 @@ from functools import wraps
 from math import ceil
 from typing import Self, TypeVar
 
-from imagehash import hex_to_hash
 from mokkari.exceptions import ApiError, RateLimitError
 from mokkari.rate_limit import HeaderPacedRateLimiter
 from mokkari.schemas.issue import BaseIssue, Issue
@@ -20,6 +19,7 @@ from shortbox.metadata.metron_info import Format, InformationSource
 
 from perdoo import get_cache_home
 from perdoo.console import CONSOLE
+from perdoo.phash import hamming_distance
 from perdoo.services._models import MetadataResult, Query, set_comic_info_note_id
 from perdoo.services._provider import Candidate, IssueQuery, Provider, ProviderError, SeriesQuery
 from perdoo.settings import Service, Settings
@@ -132,12 +132,13 @@ class Metron(Provider[Series, Issue]):
     def find_by_cover(self, query: Query) -> Sequence[Candidate]:
         if not query.cover_hash:
             return ()
-        source_hash = hex_to_hash(hexstr=query.cover_hash)
         issues = _request(self._session.issues_list, params={"cover_hash": query.cover_hash})
         return [
             self._candidate(x)
             for x in issues
-            if source_hash - hex_to_hash(hexstr=x.cover_hash) <= self._cover_hash_distance
+            if x.cover_hash
+            and hamming_distance(left=query.cover_hash, right=x.cover_hash)
+            <= self._cover_hash_distance
         ]
 
     @staticmethod
