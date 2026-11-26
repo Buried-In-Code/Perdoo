@@ -15,11 +15,8 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import cached_property
-from io import BytesIO
 
 from comicfn2dict import comicfn2dict
-from imagehash import phash
-from PIL import Image
 from shortbox import Comic
 from shortbox.errors import MissingArchiveMemberError
 from shortbox.metadata import ComicInfo, MetronInfo
@@ -27,6 +24,7 @@ from shortbox.metadata.metron_info import Id, InformationSource
 
 from perdoo import __version__
 from perdoo.console import CONSOLE
+from perdoo.phash import phash
 from perdoo.settings import Service
 
 _PERDOO_NOTE = re.compile(
@@ -91,8 +89,7 @@ class Query:
 
 def _get_cover_hash(comic: Comic) -> str | None:
     try:
-        with Image.open(BytesIO(comic.get_cover())) as cover:
-            return str(phash(cover))
+        return phash(comic.get_cover())
     except (MissingArchiveMemberError, OSError) as err:
         CONSOLE.print(
             f"Unable to generate a cover hash for {comic.file.name!r}: {err}",
