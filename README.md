@@ -1,13 +1,13 @@
 # Perdoo
 
-[![PyPI - Python](https://img.shields.io/pypi/pyversions/Perdoo.svg?logo=PyPI&label=Python&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
-[![PyPI - Status](https://img.shields.io/pypi/status/Perdoo.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
-[![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Perdoo/)
-[![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
+[![PyPI - Python](https://img.shields.io/pypi/pyversions/Perdoo.svg?label=Python&style=flat-square&logo=PyPI&logoColor=white)](https://pypi.python.org/pypi/Perdoo/)
+[![PyPI - Status](https://img.shields.io/pypi/status/Perdoo.svg?label=Status&style=flat-square&logo=PyPI&logoColor=white)](https://pypi.python.org/pypi/Perdoo/)
+[![PyPI - Version](https://img.shields.io/pypi/v/Perdoo.svg?label=Version&style=flat-square&logo=PyPI&logoColor=white)](https://pypi.python.org/pypi/Perdoo/)
+[![PyPI - License](https://img.shields.io/pypi/l/Perdoo.svg?label=License&style=flat-square&logo=PyPI&logoColor=white)](https://opensource.org/licenses/MIT)
 
-[![prek](https://img.shields.io/badge/prek-enabled-informational?logo=prek&style=flat-square)](https://github.com/j178/prek)
-[![Ruff](https://img.shields.io/badge/ruff-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ruff)
-[![Ty](https://img.shields.io/badge/ty-enabled-informational?logo=ruff&style=flat-square)](https://github.com/astral-sh/ty)
+[![prek](https://img.shields.io/badge/prek-grey?style=flat-square&logo=prek&logoColor=white)](https://github.com/j178/prek)
+[![Ruff](https://img.shields.io/badge/ruff-grey?style=flat-square&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
+[![Ty](https://img.shields.io/badge/ty-grey?style=flat-square&logo=ty&logoColor=white)](https://github.com/astral-sh/ty)
 
 [![Linting](https://github.com/Buried-In-Code/Perdoo/actions/workflows/linting.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/linting.yaml)
 [![Testing](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml/badge.svg)](https://github.com/Buried-In-Code/Perdoo/actions/workflows/testing.yaml)
@@ -378,4 +378,4 @@ Defaults to `10`. Supported values range from `0` to `20`.
 
 ## Socials
 
-[![Social - Matrix](https://img.shields.io/matrix/The-Dev-Environment:matrix.org?label=The-Dev-Environment&logo=matrix&style=for-the-badge)](https://matrix.to/#/#The-Dev-Environment:matrix.org)
+[![Social - Matrix](https://img.shields.io/matrix/The-Dev-Environment:matrix.org?label=The-Dev-Environment&style=for-the-badge&logo=matrix&logoColor=white)](https://matrix.to/#/#The-Dev-Environment:matrix.org)
